@@ -123,6 +123,30 @@ Still needs confirmation before Phase 1:
 
 ## Useful Commands
 
+Push local repo scripts/docs to RunPod:
+
+```bash
+scripts/runpod_sync.sh push
+```
+
+Run a one-off command on RunPod:
+
+```bash
+scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'
+```
+
+Bootstrap the RunPod environment:
+
+```bash
+scripts/runpod_exec.sh 'bash scripts/runpod_bootstrap.sh'
+```
+
+Pull remote results back:
+
+```bash
+scripts/runpod_sync.sh pull-results
+```
+
 Inspect AgriPotential CSV metadata without downloading imagery:
 
 ```bash
@@ -143,6 +167,8 @@ python scripts/inspect_subtask1.py \
 Inspect extracted DACIA5 data:
 
 ```bash
+python scripts/download_subtask2_zenodo.py
+bash scripts/extract_subtask2_zip.sh
 python scripts/inspect_subtask2.py \
   --data-dir data/subtask2 \
   --read-arrays
@@ -169,8 +195,9 @@ python scripts/validate_submission_zip.py \
 
 ## Claude Handoffs
 
-Use [`claude_handoffs/phase0.md`](claude_handoffs/phase0.md) to split research work while Codex continues implementation. The first three handoffs are:
+Use [`claude_handoffs/phase0.md`](claude_handoffs/phase0.md) to split research work while Codex continues implementation. Completed Phase 0 findings are tracked in [`claude_handoffs/findings_phase0.md`](claude_handoffs/findings_phase0.md):
 
 1. Confirm CodaBench submission format.
 2. Summarize AgriPotential loader and smoke-test usage.
 3. Summarize DACIA5 data structure, labels, and split logic.
+4. Recommend fast baseline approaches for both subtasks.

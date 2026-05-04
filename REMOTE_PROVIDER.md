@@ -51,22 +51,29 @@ python3 scripts/validate_submission_zip.py --help
 
 ## Next Commands
 
-On the Pod:
+From local Mac, push current repo scripts/docs to the Pod:
+
+```bash
+scripts/runpod_sync.sh push
+```
+
+Then bootstrap from local over SSH:
+
+```bash
+scripts/runpod_exec.sh 'bash scripts/runpod_bootstrap.sh'
+```
+
+Or run directly on the Pod:
 
 ```bash
 cd /workspace/ai4agri
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install git+https://github.com/MohammadElSakka/agripotential
+bash scripts/runpod_bootstrap.sh
 ```
 
-Then verify:
+Check Pod/data status any time:
 
 ```bash
-python -c "import torch; print(torch.__version__); print(torch.cuda.is_available())"
-python scripts/validate_submission_zip.py --help
+scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'
 ```
 
 ## Sync From Mac
@@ -74,14 +81,19 @@ python scripts/validate_submission_zip.py --help
 Use this when local docs/scripts change:
 
 ```bash
-rsync -rtv --no-owner --no-group --no-perms \
-  --exclude .git \
-  --exclude .DS_Store \
-  --exclude data \
-  --exclude results/subtask1/submissions \
-  --exclude results/subtask2/submissions \
-  -e "ssh -p 34365 -i ~/.ssh/id_ed25519" \
-  ./ root@213.173.107.6:/workspace/ai4agri/
+scripts/runpod_sync.sh push
+```
+
+Pull remote results back:
+
+```bash
+scripts/runpod_sync.sh pull-results
+```
+
+Pull only inspection outputs:
+
+```bash
+scripts/runpod_sync.sh pull-inspection
 ```
 
 If the Pod lacks `rsync`:
@@ -89,6 +101,34 @@ If the Pod lacks `rsync`:
 ```bash
 apt-get update
 apt-get install -y rsync
+```
+
+The sync helper excludes `.git`, `.env`, `.venv`, `.DS_Store`, `data`, and submission ZIP directories by default.
+
+## Data Management
+
+Download Subtask 2 on the Pod:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/download_subtask2_zenodo.py
+bash scripts/extract_subtask2_zip.sh
+```
+
+Inspect metadata/layout:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/inspect_subtask1.py --splits train val test
+python scripts/inspect_subtask2.py --data-dir data/subtask2 --read-arrays
+```
+
+Watch disk and GPU state:
+
+```bash
+bash scripts/runpod_status.sh
 ```
 
 ## Local `.env`

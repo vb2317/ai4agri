@@ -1,0 +1,27 @@
+{
+  "source": "data/subtask2",
+  "total_files": 0,
+  "top_level_dirs": {},
+  "suffix_counts": {},
+  "years_seen_in_paths": {},
+  "problem1_labels": {
+    "0": "Wheat",
+    "1": "Corn",
+    "2": "Peas",
+    "3": "Rapeseed",
+    "4": "Potato",
+    "5": "Sugarbeet",
+    "6": "Alfalfa"
+  },
+  "problem2_labels": {
+    "0": "Winter Wheat",
+    "1": "Alfalfa"
+  },
+  "groups": {},
+  "array_reads": [],
+  "notes": [
+    "Problem 1 challenge: train on 2020-2023 and test on 2024.",
+    "Problem 2 ImageCLEF 2026 challenge: March-only winter wheat vs alfalfa.",
+    "Zenodo v1 text describes Sentinel-2 32x32x12 patches; inspect actual extracted files for naming details."
+  ]
+}

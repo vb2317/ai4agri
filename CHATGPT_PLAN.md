@@ -107,11 +107,11 @@ Good candidates: RunPod, Vast.ai, Lambda Labs, Paperspace, AWS, GCP, Azure, Cola
 
 ### Codex / Remote
 
-- [ ] Run inspection scripts on actual data.
-- [ ] Save inspection outputs under `results/subtask*/inspection/`.
-- [ ] Bring small metadata outputs back to local repo.
+- [X] Run inspection scripts on actual data.
+- [X] Save inspection outputs under `results/subtask*/inspection/`.
+- [X] Bring small metadata outputs back to local repo.
 - [X] Verify remote Python/PyTorch/CUDA environment and validator script.
-- [ ] Finish remote dependency install after latest `requirements.txt` sync.
+- [X] Finish remote dependency install after latest `requirements.txt` sync.
 
 ### Claude / Parallel
 
@@ -316,16 +316,58 @@ Needed output:
 
 ## Remote Command Checklist
 
-Prepare these once scripts exist.
+Use these as the current RunPod copy-paste baseline. Update this section when data paths or training scripts change.
 
-- [ ] Environment setup command.
+- [X] Environment setup command:
+
+```bash
+scripts/runpod_sync.sh push
+scripts/runpod_exec.sh 'bash scripts/runpod_bootstrap.sh'
+```
+
 - [ ] Data download command.
-- [ ] Data inspection command.
+
+Subtask 1 needs the official AgriPotential package or direct Hugging Face dataset access. Start with metadata inspection before pulling all imagery.
+
+Subtask 2 source file:
+
+```bash
+cd /workspace/ai4agri
+mkdir -p data/subtask2
+source .venv/bin/activate
+python scripts/download_subtask2_zenodo.py
+bash scripts/extract_subtask2_zip.sh
+```
+
+- [X] Data inspection command:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/inspect_subtask1.py --splits train val test
+python scripts/inspect_subtask2.py --data-dir data/subtask2 --read-arrays
+```
+
 - [ ] Feature extraction command.
 - [ ] Train command.
 - [ ] Inference command.
-- [ ] Package submission command.
-- [ ] Result sync command.
+- [X] Package submission validation command:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/example.zip \
+  --subtask1-codabench \
+  --expected-ids-file data/subtask1/test.csv \
+  --check-class-values
+```
+
+- [X] Result sync command:
+
+```bash
+scripts/runpod_sync.sh pull-results
+```
 
 ## Daily Decision Log
 
@@ -348,6 +390,10 @@ Prepare these once scripts exist.
 - `REMOTE_PROVIDER.md` was reduced to current RunPod state, next commands, sync command, local `.env`, and operating rules only.
 - Claude Phase 0 research handoffs 2-4 are complete in `claude_handoffs/findings_phase0.md`.
 - Added local/remote inspection scripts: `scripts/inspect_subtask1.py` and `scripts/inspect_subtask2.py`.
+- Codex reviewed Claude's Phase 0 updates and syntax-checked all operational scripts with `py_compile`.
+- Added RunPod operations scripts for sync, SSH execution, bootstrap, status checks, and Subtask 2 Zenodo download/extract.
+- RunPod inspection scripts completed and wrote `results/subtask1/inspection/subtask1_inspection.json` and `results/subtask2/inspection/subtask2_inspection.json` on the remote machine.
+- Pulled inspection JSONs back to local repo. Subtask 1 metadata is usable: 34 image rows, train/val/test counts 6329/781/800, and 128x128 patches. Subtask 2 inspection found `total_files: 0`, so the Zenodo archive still needs to be downloaded/extracted under `/workspace/ai4agri/data/subtask2` or the inspection command needs the corrected extracted path.
 
 ## Open Questions
 
