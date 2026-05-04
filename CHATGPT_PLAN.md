@@ -82,9 +82,9 @@ Good candidates: RunPod, Vast.ai, Lambda Labs, Paperspace, AWS, GCP, Azure, Cola
 ### Claude / Local Or Remote Research
 
 - [X] Review official CodaBench instructions and summarize required output file names and ZIP layout.
-- [ ] Review AgriPotential package examples and summarize the fastest way to stream or download data. Prompt tightened in `claude_handoffs/phase0.md`.
-- [ ] Review DACIA5 file structure from Zenodo documentation and summarize labels, splits, and expected prediction format. Prompt tightened in `claude_handoffs/phase0.md`.
-- [ ] Produce fast baseline recommendation memo for both subtasks. Prompt added in `claude_handoffs/phase0.md`.
+- [X] Review AgriPotential package examples and summarize the fastest way to stream or download data. Findings in `claude_handoffs/findings_phase0.md`.
+- [X] Review DACIA5 file structure from Zenodo documentation and summarize labels, splits, and expected prediction format. Findings in `claude_handoffs/findings_phase0.md`.
+- [X] Produce fast baseline recommendation memo for both subtasks. Findings in `claude_handoffs/findings_phase0.md`.
 
 ## Phase 1: Data Acquisition
 
@@ -99,11 +99,11 @@ Good candidates: RunPod, Vast.ai, Lambda Labs, Paperspace, AWS, GCP, Azure, Cola
 
 ### Codex / Local
 
-- [ ] Create data inspection scripts:
-  - [ ] Subtask 1: list patches, tensor shapes, label shapes, class distribution.
-  - [ ] Subtask 2: list files, patch shapes, crop labels, year/month metadata.
-- [ ] Make scripts accept `--data-dir` and `--out-dir` so they work on remote and local paths.
-- [ ] Add small smoke-test mode: `--limit N`.
+- [X] Create data inspection scripts:
+  - [X] Subtask 1: list patches, tensor shapes, label shapes, class distribution.
+  - [X] Subtask 2: list files, patch shapes, crop labels, year/month metadata.
+- [X] Make scripts accept `--data-dir` and `--out-dir` so they work on remote and local paths.
+- [X] Add small smoke-test mode: `--limit N`.
 
 ### Codex / Remote
 
@@ -115,9 +115,9 @@ Good candidates: RunPod, Vast.ai, Lambda Labs, Paperspace, AWS, GCP, Azure, Cola
 
 ### Claude / Parallel
 
-- [ ] Identify any known baseline notebooks, papers, or package tutorials for AgriPotential.
-- [ ] Identify strong DACIA5 feature baselines from crop classification literature that are implementable within one day.
-- [ ] Return a short ranked list of feature sets and model choices.
+- [X] Identify any known baseline notebooks, papers, or package tutorials for AgriPotential.
+- [X] Identify strong DACIA5 feature baselines from crop classification literature that are implementable within one day.
+- [X] Return a short ranked list of feature sets and model choices.
 
 ## Phase 2: Subtask 2 Fast Baseline
 
@@ -346,6 +346,8 @@ Prepare these once scripts exist.
 - Repo files are now present on RunPod at `/workspace/ai4agri` after corrected sync/copy. Directory contains planning docs, scripts, notebooks, results, source folders, and handoff folders.
 - RunPod environment check passed: `torch==2.4.1+cu124`, CUDA available, and `scripts/validate_submission_zip.py --help` works.
 - `REMOTE_PROVIDER.md` was reduced to current RunPod state, next commands, sync command, local `.env`, and operating rules only.
+- Claude Phase 0 research handoffs 2-4 are complete in `claude_handoffs/findings_phase0.md`.
+- Added local/remote inspection scripts: `scripts/inspect_subtask1.py` and `scripts/inspect_subtask2.py`.
 
 ## Open Questions
 
