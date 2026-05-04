@@ -153,6 +153,12 @@ Inspect AgriPotential CSV metadata without downloading imagery:
 python scripts/inspect_subtask1.py --splits train val test
 ```
 
+Download AgriPotential CSVs and the viticulture label raster:
+
+```bash
+python scripts/download_subtask1_hf.py --out-dir data/subtask1 --skip-images
+```
+
 On a remote machine with local data, smoke-read one patch:
 
 ```bash
@@ -180,6 +186,29 @@ Validate a candidate Subtask 1 CodaBench ZIP once predictions exist:
 python scripts/validate_submission_zip.py \
   --zip-path results/subtask1/submissions/example.zip \
   --subtask1-codabench \
+  --check-class-values
+```
+
+Create a packaging-smoke baseline ZIP with constant class masks:
+
+```bash
+python scripts/create_subtask1_constant_zip.py
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/constant_class_2.zip \
+  --subtask1-codabench \
+  --expected-ids-file data/subtask1/test.csv \
+  --check-class-values
+```
+
+Train and run the sampled-pixel Subtask 1 baseline once local rasters are available:
+
+```bash
+python scripts/subtask1_baseline.py train --data-dir data/subtask1
+python scripts/subtask1_baseline.py infer --data-dir data/subtask1
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/subtask1_baseline.zip \
+  --subtask1-codabench \
+  --expected-ids-file data/subtask1/test.csv \
   --check-class-values
 ```
 

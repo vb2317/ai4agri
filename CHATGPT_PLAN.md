@@ -40,6 +40,7 @@ Current strategy:
 - Input metadata: `34` Sentinel-2 image rows.
 - Confirmed CodaBench format: ZIP root contains PNG masks named `<patch_id>.png`; values are class ids `0..4`; optional method PDF must be named `report.pdf`.
 - Still needed: local or remote access to actual image/label rasters for smoke-read, training, validation, and test inference.
+- Added downloader can fetch CSVs, label rasters, and optional Sentinel-2 image rasters into `data/subtask1`.
 
 ### Subtask 2: DACIA5
 
@@ -89,6 +90,8 @@ Current strategy:
   - [X] Save metrics, confusion matrices, predictions, and run metadata.
   - [ ] Run remotely after DACIA5 label source is confirmed.
 - [ ] Implement a Subtask 1 smoke-read command against local/remote rasters once actual files are available.
+- [X] Implement a Subtask 1 constant-mask ZIP writer for CodaBench packaging smoke tests.
+- [X] Implement a Subtask 1 Hugging Face downloader for CSVs, labels, and image rasters.
 - [ ] Keep `README.md`, `REMOTE_PROVIDER.md`, and this plan aligned after each material change.
 
 ### Claude
@@ -130,6 +133,7 @@ Remaining:
 Remaining:
 
 - [ ] Smoke-read Subtask 1 actual image and label rasters.
+- [X] Add reproducible Subtask 1 downloader for remote `data/subtask1`.
 - [ ] Record exact Subtask 1 raster storage path once available on RunPod.
 
 ### Phase 2: Subtask 2 Fast Baseline
@@ -147,9 +151,11 @@ Priority: active now.
 Priority: parallel but behind Subtask 2 until raster access is confirmed.
 
 - [ ] Smoke-read rasters and labels.
-- [ ] Train sampled-pixel ordinal baseline.
-- [ ] Implement test inference writer for `800` PNG masks.
-- [ ] Validate candidate ZIP with `scripts/validate_submission_zip.py`.
+- [X] Implement sampled-pixel ordinal baseline trainer.
+- [ ] Train sampled-pixel ordinal baseline once rasters are available.
+- [X] Implement constant test inference writer for `800` PNG masks.
+- [X] Implement model-based test inference writer for `800` PNG masks.
+- [X] Validate constant candidate ZIP with `scripts/validate_submission_zip.py`.
 - [ ] Submit first valid ZIP through VB.
 
 ### Phase 4: Model Improvement
@@ -194,6 +200,7 @@ Inspect data on RunPod:
 cd /workspace/ai4agri
 source .venv/bin/activate
 python scripts/inspect_subtask1.py --splits train val test
+python scripts/create_subtask1_constant_zip.py
 python scripts/inspect_subtask2.py --data-dir data/subtask2 --read-arrays
 python scripts/subtask2_baseline.py manifest --data-dir data/subtask2
 python scripts/subtask2_baseline.py features
