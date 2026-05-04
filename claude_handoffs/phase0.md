@@ -42,32 +42,78 @@ Constraints:
 
 ## 2. AgriPotential Loader
 
+Status: Ready for Claude while VB launches Lambda.
+
 ```text
 Project: AI4Agri 2026, Subtask 1 AgriPotential.
 
 Task:
-Review the official AgriPotential package/tutorial and summarize the fastest way to load a small training sample, validation sample, and test sample.
+Review the official AgriPotential package/tutorial and summarize the fastest way for Codex to implement local/remote inspection scripts.
 
 Needed output:
 - Install command.
-- Minimal smoke-test Python snippet.
-- Data path or streaming options.
-- Tensor shapes and label shapes if documented.
-- Any gotchas for memory or disk.
+- Minimal smoke-test Python snippet for `subset="train"`, `subset="val"` or equivalent validation split, and `subset="test"`.
+- Exact import names/functions, especially whether `get_input_loader(subset="test")` is real API or pseudocode.
+- How `patch_id` is yielded for test samples.
+- Tensor shape, dtype, band/time ordering, and label shape if documented.
+- Data path configuration and whether streaming/partial download avoids the full ~200GB upfront.
+- Any documented train/validation/test file names such as `test.csv`.
+- Gotchas for memory, disk, PNG mask writing, or class ids.
+
+Format:
+- Keep answer concise.
+- Include source links or file names.
+- End with a `Codex implementation notes` section listing what `scripts/inspect_subtask1.py` should do.
 ```
 
 ## 3. DACIA5 Data Format
+
+Status: Ready for Claude while VB launches Lambda.
 
 ```text
 Project: AI4Agri 2026, Subtask 2 DACIA5.
 
 Task:
-Review the Zenodo dataset documentation and any included metadata docs.
+Review the Zenodo dataset documentation and any included metadata docs so Codex can implement a loader and a fast tabular baseline.
 
 Needed output:
 - Download command or file list.
 - Label mapping.
 - Year/month split logic for both challenges.
-- Patch file layout and shapes.
+- Patch file layout and shapes for Sentinel-2 optical and Sentinel-1 SAR.
+- File formats and how labels/metadata connect to patch arrays.
+- Which fields identify year, date/month, crop class, parcel/patch id, and challenge.
 - Recommended prediction/report submission format.
+- Any official baseline or notebook if present.
+
+Format:
+- Keep answer concise.
+- Include source links or file names.
+- End with a `Codex implementation notes` section listing what `scripts/inspect_subtask2.py` and the first baseline should do.
+```
+
+## 4. Fast Baseline Recommendations
+
+Status: Ready for Claude while VB launches Lambda.
+
+```text
+Project: AI4Agri 2026, both subtasks.
+
+Task:
+Produce a low-risk baseline recommendation memo that Codex can implement immediately once data inspection works.
+
+Needed output:
+- Subtask 1: lowest-risk ordinal baseline for Accuracy +/- 1 using sampled pixels or patch summaries.
+- Subtask 1: feature list from Sentinel-2 time series that can be extracted quickly.
+- Subtask 1: how to write PNG masks robustly from model outputs.
+- Subtask 2 Challenge 1: feature list and model choice for crop identification, optimized for Q = 0.5*AA + 0.5*OA.
+- Subtask 2 Challenge 2: March-only feature list and binary model choice.
+- Class imbalance handling for both subtasks.
+- Ranked list: implement first, implement second, skip unless time remains.
+
+Constraints:
+- Favor methods implementable in under one day.
+- Prefer scikit-learn / PyTorch basics already in `requirements.txt`.
+- Avoid speculative deep architectures unless the data format is confirmed.
+- Include failure modes or assumptions.
 ```

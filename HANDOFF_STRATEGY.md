@@ -230,6 +230,23 @@ Codex follow-up:
 - Implement `scripts/inspect_subtask2.py`.
 - Start Subtask 2 baseline pipeline.
 
+### Handoff 5: VB To Claude
+
+Status: Ready for Claude.
+
+Use `claude_handoffs/phase0.md`, prompt 4.
+
+Expected output:
+
+- Low-risk baseline recommendation memo for both subtasks.
+- Ranked feature/model list.
+- Class imbalance handling notes.
+- Explicit assumptions and failure modes.
+
+Codex follow-up:
+
+- Convert recommendations into first baseline scripts after data inspection confirms shapes.
+
 ### Handoff 4: VB To Codex
 
 Status: Blocked until VB chooses remote provider.

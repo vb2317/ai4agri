@@ -63,30 +63,34 @@ Good candidates: RunPod, Vast.ai, Lambda Labs, Paperspace, AWS, GCP, Azure, Cola
 
 - [X] Confirm ImageCLEF/CLEF registration status.
 - [X] Confirm CodaBench access for Subtask 1.
-- [X] Confirm any submission limits, file naming rules, and expected ZIP structure on CodaBench.
-- [ ] Create or confirm accounts for remote compute provider.
-- [ ] Decide budget ceiling for remote compute until May 7.
+- [X] Confirm Subtask 1 CodaBench file naming rules and ZIP structure.
+- [ ] Confirm Subtask 1 CodaBench submission limits and evaluation timing.
+- [ ] Create or confirm Lambda Cloud account for remote compute.
+- [ ] Launch recommended Lambda Cloud 1x NVIDIA A10 instance, or report capacity/quota blocker.
+- [ ] Confirm budget ceiling; Codex recommends $75 for the initial deadline push unless VB chooses otherwise.
 - [ ] Share only necessary access tokens through secure local environment variables, not committed files.
 
 ### Codex / Local
 
-- [ ] Add `.env.example` if scripts need environment variables.
-- [ ] Add `scripts/` or `src/common/` helpers if needed for reproducible setup.
-- [ ] Add a `runs/` or `results/runs.csv` convention for experiment tracking.
-- [ ] Create validation scripts for prediction file shape, class range, and ZIP structure.
-- [ ] Keep `README.md`, `Next.md`, and this plan aligned as decisions change.
+- [X] Add `.env.example` if scripts need environment variables.
+- [X] Add `scripts/` or `src/common/` helpers if needed for reproducible setup.
+- [X] Add a `runs/` or `results/runs.csv` convention for experiment tracking.
+- [X] Create validation scripts for prediction file shape, class range, and ZIP structure.
+- [X] Keep `README.md`, `Next.md`, and this plan aligned as decisions change.
+- [X] Research remote compute providers and document VB subscription/setup instructions.
 
 ### Claude / Local Or Remote Research
 
 - [X] Review official CodaBench instructions and summarize required output file names and ZIP layout.
-- [ ] Review AgriPotential package examples and summarize the fastest way to stream or download data.
-- [ ] Review DACIA5 file structure from Zenodo documentation and summarize labels, splits, and expected prediction format.
+- [ ] Review AgriPotential package examples and summarize the fastest way to stream or download data. Prompt tightened in `claude_handoffs/phase0.md`.
+- [ ] Review DACIA5 file structure from Zenodo documentation and summarize labels, splits, and expected prediction format. Prompt tightened in `claude_handoffs/phase0.md`.
+- [ ] Produce fast baseline recommendation memo for both subtasks. Prompt added in `claude_handoffs/phase0.md`.
 
 ## Phase 1: Data Acquisition
 
 ### VB / Remote
 
-- [ ] Start Subtask 1 data access on a remote machine with enough disk.
+- [ ] Start Subtask 1 data access on the Lambda A10 remote machine with enough disk.
 - [ ] Start Subtask 2 Zenodo download locally or remotely.
 - [ ] Record exact data source URLs, download commands, and local paths.
 - [ ] Confirm checksums or file counts where available.
@@ -328,12 +332,17 @@ Prepare these once scripts exist.
 - Strategy: get valid baselines first; use remote resources for data-heavy work; prioritize Subtask 2 quick iteration and Subtask 1 valid CodaBench upload.
 - VB added logged-in ImageCLEF/CodaBench handoffs under `vb_handoffs/`.
 - Confirmed Subtask 1 CodaBench format: ZIP root contains PNG masks named `<patch_id>.png` for `test.csv`; target count is 800; values are integer classes `0..4`; optional method PDF must be `report.pdf`; extraneous files are ignored by scorer.
+- Submission limits and evaluation timing remain unconfirmed.
+- Codex Phase 0 local scaffolding is complete: `.env.example`, `results/runs.csv`, `scripts/validate_submission_zip.py`, `scripts/README.md`, Claude handoff prompts, README updates, and handoff strategy docs.
+- Remote provider recommendation documented in `REMOTE_PROVIDER.md`: use Lambda Cloud 1x NVIDIA A10 by default; use RunPod as fallback if Lambda capacity/quota blocks launch. Recommended initial budget ceiling is $75.
 
 ## Open Questions
 
 - [ ] Is ImageCLEF registration complete despite the listed April 23 registration close date?
 - [X] What is the exact CodaBench ZIP/file format for Subtask 1?
+- [ ] What are the Subtask 1 CodaBench submission limits and evaluation timing?
 - [ ] Are Subtask 2 test labels hidden, or is this primarily notebook/report evaluation?
-- [ ] Which remote provider will be used?
-- [ ] What is the max budget for remote jobs before May 7?
+- [X] Which remote provider will be used?
+- [ ] What max budget will VB approve for remote jobs before May 7?
+- [ ] Did Lambda Cloud have A10 capacity and account quota for launch?
 - [ ] Should Subtask 1 or Subtask 2 be prioritized if time becomes constrained?

@@ -89,6 +89,8 @@ Primary strategy:
 
 The handoff operating model is in [`HANDOFF_STRATEGY.md`](HANDOFF_STRATEGY.md). Use it to decide what belongs with VB, Codex, or Claude, and when a task is blocked versus ready for implementation.
 
+The remote compute recommendation and VB subscription instructions are in [`REMOTE_PROVIDER.md`](REMOTE_PROVIDER.md). Current default: Lambda Cloud 1x NVIDIA A10, with RunPod as fallback.
+
 ## Phase 0 Status
 
 Phase 0 is about access and environment setup.
@@ -112,7 +114,7 @@ Confirmed from VB logged-in handoffs:
 Still needs confirmation before Phase 1:
 
 - CodaBench submission limits and evaluation timing
-- Remote provider, budget ceiling, and disk/GPU configuration
+- VB launch details for the selected remote provider
 - Final data locations for Subtask 1 and Subtask 2
 
 ## Useful Commands
