@@ -2,12 +2,15 @@
 
 ## Now (before May 7)
 
-- [ ] Register on ImageCLEF: https://support.aimultimedialab.ro/imageclef/index.html
-- [ ] Download Subtask 1 data via HuggingFace (`m-sakka/agripotential`)
-- [ ] Download Subtask 2 data from Zenodo (3.4GB)
-- [ ] Explore data — patch sizes, class distributions, cloud cover
-- [ ] Baseline: Subtask 1 — simple per-pixel classifier (RF or lightweight CNN)
-- [ ] Baseline: Subtask 2 — temporal mean features + logistic regression
+- [ ] VB: confirm Subtask 1 CodaBench submission limits and evaluation timing.
+- [X] VB: launch RunPod On-Demand GPU Pod.
+- [X] VB: confirm remote budget ceiling.
+- [ ] VB: confirm RunPod global networking status.
+- [ ] Download Subtask 1 data via Hugging Face (`m-sakka/agripotential`) on remote.
+- [ ] Download Subtask 2 data from Zenodo on local or remote.
+- [ ] Run `scripts/inspect_subtask1.py` and `scripts/inspect_subtask2.py` on actual data.
+- [ ] Baseline: Subtask 2 — tabular patch features + ExtraTrees/HistGradientBoosting.
+- [ ] Baseline: Subtask 1 — sampled-pixel ordinal model.
 - [ ] Submit baseline predictions to CodaBench (Subtask 1)
 
 ## Before May 28 (Notebook submission)
@@ -24,3 +27,12 @@
 - [ ] Ensemble strategies across temporal frames
 
 ## Completed
+
+- [X] Confirm ImageCLEF/CLEF registration status.
+- [X] Confirm CodaBench access for Subtask 1.
+- [X] Confirm Subtask 1 CodaBench ZIP structure and file naming rules.
+- [X] Add Subtask 1 CodaBench validator mode.
+- [X] Research AgriPotential loader and DACIA5 data format.
+- [X] Add data inspection scripts for both subtasks.
+- [X] Sync repo files to RunPod at `/workspace/ai4agri`.
+- [X] Verify RunPod Python/PyTorch/CUDA environment.

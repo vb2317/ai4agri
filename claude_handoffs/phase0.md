@@ -42,7 +42,7 @@ Constraints:
 
 ## 2. AgriPotential Loader
 
-Status: Ready for Claude while VB launches Lambda.
+Status: Done. Findings recorded in `claude_handoffs/findings_phase0.md`.
 
 ```text
 Project: AI4Agri 2026, Subtask 1 AgriPotential.
@@ -68,7 +68,7 @@ Format:
 
 ## 3. DACIA5 Data Format
 
-Status: Ready for Claude while VB launches Lambda.
+Status: Done. Findings recorded in `claude_handoffs/findings_phase0.md`.
 
 ```text
 Project: AI4Agri 2026, Subtask 2 DACIA5.
@@ -94,7 +94,7 @@ Format:
 
 ## 4. Fast Baseline Recommendations
 
-Status: Ready for Claude while VB launches Lambda.
+Status: Done. Findings recorded in `claude_handoffs/findings_phase0.md`.
 
 ```text
 Project: AI4Agri 2026, both subtasks.

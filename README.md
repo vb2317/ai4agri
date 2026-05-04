@@ -123,6 +123,31 @@ Still needs confirmation before Phase 1:
 
 ## Useful Commands
 
+Inspect AgriPotential CSV metadata without downloading imagery:
+
+```bash
+python scripts/inspect_subtask1.py --splits train val test
+```
+
+On a remote machine with local data, smoke-read one patch:
+
+```bash
+python scripts/inspect_subtask1.py \
+  --data-dir data/subtask1/agripotential \
+  --splits train val test \
+  --limit 1 \
+  --read-pixels \
+  --read-labels
+```
+
+Inspect extracted DACIA5 data:
+
+```bash
+python scripts/inspect_subtask2.py \
+  --data-dir data/subtask2 \
+  --read-arrays
+```
+
 Validate a candidate Subtask 1 CodaBench ZIP once predictions exist:
 
 ```bash
