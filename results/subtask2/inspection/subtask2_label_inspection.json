@@ -1,0 +1,1017 @@
+{
+  "source": "data/subtask2",
+  "full_label_masks": {
+    "Dataset/Masks_and_legend/Sentinel2_2020/Labels_mask_2020.mat": {
+      "mask": {
+        "shape": [
+          800,
+          450
+        ],
+        "dtype": "uint8",
+        "unique_count": 11,
+        "unique_values": [
+          0,
+          1,
+          2,
+          6,
+          9,
+          10,
+          12,
+          13,
+          14,
+          15,
+          16
+        ]
+      }
+    },
+    "Dataset/Masks_and_legend/Sentinel2_2020/Labels_mask_2020.png": {
+      "shape": [
+        800,
+        450
+      ],
+      "dtype": "uint8",
+      "unique_count": 11,
+      "top_values": [
+        {
+          "value": [
+            0
+          ],
+          "count": 298931
+        },
+        {
+          "value": [
+            1
+          ],
+          "count": 16494
+        },
+        {
+          "value": [
+            13
+          ],
+          "count": 9744
+        },
+        {
+          "value": [
+            2
+          ],
+          "count": 9659
+        },
+        {
+          "value": [
+            14
+          ],
+          "count": 6184
+        },
+        {
+          "value": [
+            16
+          ],
+          "count": 4681
+        },
+        {
+          "value": [
+            9
+          ],
+          "count": 4574
+        },
+        {
+          "value": [
+            15
+          ],
+          "count": 4505
+        },
+        {
+          "value": [
+            12
+          ],
+          "count": 2349
+        },
+        {
+          "value": [
+            6
+          ],
+          "count": 1467
+        },
+        {
+          "value": [
+            10
+          ],
+          "count": 1412
+        }
+      ]
+    },
+    "Dataset/Masks_and_legend/Sentinel2_2021/Labels_mask_2021.mat": {
+      "mask": {
+        "shape": [
+          800,
+          450
+        ],
+        "dtype": "uint8",
+        "unique_count": 13,
+        "unique_values": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          10,
+          11,
+          12,
+          13,
+          15,
+          16
+        ]
+      }
+    },
+    "Dataset/Masks_and_legend/Sentinel2_2021/Labels_mask_2021.png": {
+      "shape": [
+        800,
+        450
+      ],
+      "dtype": "uint8",
+      "unique_count": 13,
+      "top_values": [
+        {
+          "value": [
+            0
+          ],
+          "count": 299263
+        },
+        {
+          "value": [
+            3
+          ],
+          "count": 12374
+        },
+        {
+          "value": [
+            13
+          ],
+          "count": 11227
+        },
+        {
+          "value": [
+            9
+          ],
+          "count": 9656
+        },
+        {
+          "value": [
+            1
+          ],
+          "count": 8247
+        },
+        {
+          "value": [
+            16
+          ],
+          "count": 5902
+        },
+        {
+          "value": [
+            2
+          ],
+          "count": 5365
+        },
+        {
+          "value": [
+            15
+          ],
+          "count": 2861
+        },
+        {
+          "value": [
+            12
+          ],
+          "count": 2349
+        },
+        {
+          "value": [
+            10
+          ],
+          "count": 1412
+        },
+        {
+          "value": [
+            4
+          ],
+          "count": 844
+        },
+        {
+          "value": [
+            11
+          ],
+          "count": 324
+        },
+        {
+          "value": [
+            5
+          ],
+          "count": 176
+        }
+      ]
+    },
+    "Dataset/Masks_and_legend/Sentinel2_2022/Labels_mask_2022.mat": {
+      "mask": {
+        "shape": [
+          800,
+          450
+        ],
+        "dtype": "uint8",
+        "unique_count": 13,
+        "unique_values": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ]
+      }
+    },
+    "Dataset/Masks_and_legend/Sentinel2_2022/Labels_mask_2022.png": {
+      "shape": [
+        800,
+        450
+      ],
+      "dtype": "uint8",
+      "unique_count": 13,
+      "top_values": [
+        {
+          "value": [
+            0
+          ],
+          "count": 299759
+        },
+        {
+          "value": [
+            13
+          ],
+          "count": 13547
+        },
+        {
+          "value": [
+            3
+          ],
+          "count": 9732
+        },
+        {
+          "value": [
+            1
+          ],
+          "count": 8303
+        },
+        {
+          "value": [
+            9
+          ],
+          "count": 8106
+        },
+        {
+          "value": [
+            14
+          ],
+          "count": 6235
+        },
+        {
+          "value": [
+            4
+          ],
+          "count": 5581
+        },
+        {
+          "value": [
+            11
+          ],
+          "count": 2683
+        },
+        {
+          "value": [
+            12
+          ],
+          "count": 2349
+        },
+        {
+          "value": [
+            5
+          ],
+          "count": 1068
+        },
+        {
+          "value": [
+            2
+          ],
+          "count": 1067
+        },
+        {
+          "value": [
+            10
+          ],
+          "count": 914
+        },
+        {
+          "value": [
+            15
+          ],
+          "count": 656
+        }
+      ]
+    },
+    "Dataset/Masks_and_legend/Sentinel2_2023/Labels_mask_2023.mat": {
+      "mask": {
+        "shape": [
+          800,
+          450
+        ],
+        "dtype": "uint8",
+        "unique_count": 13,
+        "unique_values": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      }
+    },
+    "Dataset/Masks_and_legend/Sentinel2_2023/Labels_mask_2023.png": {
+      "shape": [
+        800,
+        450
+      ],
+      "dtype": "uint8",
+      "unique_count": 13,
+      "top_values": [
+        {
+          "value": [
+            0
+          ],
+          "count": 299595
+        },
+        {
+          "value": [
+            3
+          ],
+          "count": 25758
+        },
+        {
+          "value": [
+            1
+          ],
+          "count": 7808
+        },
+        {
+          "value": [
+            4
+          ],
+          "count": 7375
+        },
+        {
+          "value": [
+            9
+          ],
+          "count": 7337
+        },
+        {
+          "value": [
+            2
+          ],
+          "count": 3307
+        },
+        {
+          "value": [
+            11
+          ],
+          "count": 3007
+        },
+        {
+          "value": [
+            12
+          ],
+          "count": 2349
+        },
+        {
+          "value": [
+            5
+          ],
+          "count": 1552
+        },
+        {
+          "value": [
+            10
+          ],
+          "count": 914
+        },
+        {
+          "value": [
+            8
+          ],
+          "count": 629
+        },
+        {
+          "value": [
+            6
+          ],
+          "count": 208
+        },
+        {
+          "value": [
+            7
+          ],
+          "count": 161
+        }
+      ]
+    },
+    "Dataset/Masks_and_legend/Sentinel2_2024/Labels_mask_2024.mat": {
+      "mask": {
+        "shape": [
+          800,
+          450
+        ],
+        "dtype": "uint8",
+        "unique_count": 12,
+        "unique_values": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          9,
+          10,
+          11,
+          12,
+          16,
+          17
+        ]
+      }
+    },
+    "Dataset/Masks_and_legend/Sentinel2_2024/Labels_mask_2024.png": {
+      "shape": [
+        800,
+        450
+      ],
+      "dtype": "uint8",
+      "unique_count": 12,
+      "top_values": [
+        {
+          "value": [
+            0
+          ],
+          "count": 299606
+        },
+        {
+          "value": [
+            9
+          ],
+          "count": 12900
+        },
+        {
+          "value": [
+            1
+          ],
+          "count": 10132
+        },
+        {
+          "value": [
+            16
+          ],
+          "count": 9492
+        },
+        {
+          "value": [
+            3
+          ],
+          "count": 7963
+        },
+        {
+          "value": [
+            2
+          ],
+          "count": 4830
+        },
+        {
+          "value": [
+            4
+          ],
+          "count": 4322
+        },
+        {
+          "value": [
+            5
+          ],
+          "count": 4053
+        },
+        {
+          "value": [
+            11
+          ],
+          "count": 3007
+        },
+        {
+          "value": [
+            12
+          ],
+          "count": 2349
+        },
+        {
+          "value": [
+            10
+          ],
+          "count": 914
+        },
+        {
+          "value": [
+            17
+          ],
+          "count": 432
+        }
+      ]
+    }
+  },
+  "patch_mask_matches": {
+    "problem1/test/mask_found": 1017,
+    "problem1/training/mask_found": 5436,
+    "problem2/test/mask_found": 1073,
+    "problem2/training/mask_found": 1176
+  },
+  "examples": [
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_1.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_1.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 2,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 777
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 247
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_10.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_10.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 4,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 878
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 139
+          },
+          {
+            "value": [
+              112,
+              38,
+              1
+            ],
+            "count": 6
+          },
+          {
+            "value": [
+              255,
+              165,
+              226
+            ],
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_11.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_11.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 3,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 818
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 176
+          },
+          {
+            "value": [
+              255,
+              165,
+              226
+            ],
+            "count": 30
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_12.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_12.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 3,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 799
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 185
+          },
+          {
+            "value": [
+              255,
+              165,
+              226
+            ],
+            "count": 40
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_2.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_2.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 2,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 804
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 220
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_3.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_3.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 2,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 838
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 186
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_4.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_4.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 2,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 771
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 253
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_5.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_5.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 2,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 964
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 60
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_6.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_6.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 2,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 909
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 115
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_7.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_7.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 3,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 854
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 125
+          },
+          {
+            "value": [
+              209,
+              255,
+              0
+            ],
+            "count": 45
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_8.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_8.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 2,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 800
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 224
+          }
+        ]
+      }
+    },
+    {
+      "patch": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240222_101_9.tif",
+      "problem": "problem1",
+      "split": "test",
+      "mask": "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/mask_2024_101_9.png",
+      "status": "mask_found",
+      "mask_values": {
+        "shape": [
+          32,
+          32,
+          3
+        ],
+        "dtype": "uint8",
+        "unique_count": 3,
+        "top_values": [
+          {
+            "value": [
+              165,
+              112,
+              0
+            ],
+            "count": 948
+          },
+          {
+            "value": [
+              0,
+              0,
+              0
+            ],
+            "count": 61
+          },
+          {
+            "value": [
+              112,
+              38,
+              1
+            ],
+            "count": 15
+          }
+        ]
+      }
+    }
+  ],
+  "notes": [
+    "Patch filenames appear to use the final token as a patch index, not a crop label.",
+    "Per-patch RGB mask files may provide class information if their color-to-class mapping is confirmed."
+  ]
+}
