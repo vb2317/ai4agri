@@ -1,0 +1,27 @@
+# Core
+numpy
+pandas
+scikit-learn
+torch
+torchvision
+
+# Geospatial / satellite
+rasterio
+geopandas
+shapely
+
+# Subtask 1 — AgriPotential
+agripotential  # pip install git+https://github.com/MohammadElSakka/agripotential
+
+# Subtask 2 — DACIA5
+# Data from Zenodo: https://zenodo.org/records/14283243
+
+# Visualization
+matplotlib
+seaborn
+
+# Utilities
+tqdm
+einops
+huggingface_hub
+datasets
