@@ -199,6 +199,10 @@ Inspect AgriPotential CSV metadata without downloading imagery:
 python scripts/inspect_subtask1.py --splits train val test
 ```
 
+Download AgriPotential CSVs, including `test.csv`:
+
+```bash
+python scripts/download_subtask1_agripotential.py
 Download AgriPotential CSVs and the viticulture label raster:
 
 ```bash
@@ -229,8 +233,11 @@ python scripts/inspect_subtask2.py \
 Train first DACIA5 tabular baselines on RunPod:
 
 ```bash
-python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 1
-python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 2
+python scripts/inspect_subtask2_labels.py --data-dir data/subtask2
+python scripts/subtask2_baseline.py manifest --data-dir data/subtask2 --label-mode apia-code
+python scripts/subtask2_baseline.py label-features
+python scripts/subtask2_baseline.py train --problem problem1
+python scripts/subtask2_baseline.py train --problem problem2
 ```
 
 Validate a candidate Subtask 1 CodaBench ZIP once predictions exist:

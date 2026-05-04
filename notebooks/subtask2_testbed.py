@@ -36,6 +36,7 @@ RESULTS_DIR = REPO_ROOT / "results" / "subtask2"
 INSPECTION_PATH = RESULTS_DIR / "inspection" / "subtask2_inspection.json"
 MANIFEST_PATH = RESULTS_DIR / "manifest.csv"
 FEATURES_PATH = RESULTS_DIR / "features" / "subtask2_features.csv"
+BASELINE_SUMMARY_PATH = RESULTS_DIR / "inspection" / "subtask2_baseline_summary.json"
 
 plt.rcParams["figure.figsize"] = (9, 5)
 
@@ -131,6 +132,36 @@ if not features.empty:
     features[feature_cols[:6]].hist(figsize=(12, 8), bins=40)
     plt.suptitle("First six band mean distributions")
     plt.tight_layout()
+
+
+# %% [markdown]
+# ## Baseline Metrics Review
+#
+# Load the compact baseline summary produced from script outputs. This section is for comparing candidate models, not for launching training.
+
+# %%
+if BASELINE_SUMMARY_PATH.exists():
+    baseline = json.loads(BASELINE_SUMMARY_PATH.read_text())
+    rows = []
+    for problem, details in baseline["problems"].items():
+        for model, metrics in details["models"].items():
+            rows.append(
+                {
+                    "problem": problem,
+                    "model": model,
+                    "split_method": details["split_method"],
+                    "q_score": metrics["q_score"],
+                    "overall_accuracy": metrics["overall_accuracy"],
+                    "average_accuracy": metrics["average_accuracy"],
+                }
+            )
+    baseline_frame = pd.DataFrame(rows).sort_values(["problem", "q_score"], ascending=[True, False])
+    display(baseline_frame)
+    baseline_frame.plot.bar(x="problem", y="q_score")
+    plt.title("Best available leakage-free baseline Q scores")
+    plt.ylabel("Q")
+else:
+    print(f"Baseline summary not found: {BASELINE_SUMMARY_PATH}")
 
 
 # %% [markdown]

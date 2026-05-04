@@ -17,6 +17,26 @@ from typing import Iterable
 
 PROBLEM_LABEL_COUNTS = {"problem1": 7, "problem2": 2}
 PATCH_RE = re.compile(r"^patch_(?P<date>\d{8})_(?P<parcel_id>\d+)_(?P<patch_index>\d+)\.tif$", re.IGNORECASE)
+PROBLEM1_APIA_TO_LABEL = {
+    101: 0,  # Common winter wheat
+    1010: 0,  # Common spring wheat
+    108: 1,  # Corn
+    131: 1,  # Corn silage
+    151: 2,  # Peas
+    202: 3,  # Winter rapeseed
+    253: 4,  # Late potatoes
+    254: 4,  # Other potato crop
+    255: 4,  # Potatoes for seed
+    2557: 4,  # Potatoes for seed
+    3017: 5,  # Sugarbeets
+    9747: 6,  # Alfalfa
+    9748: 6,  # Alfalfa
+}
+PROBLEM2_APIA_TO_LABEL = {
+    101: 0,  # Common winter wheat
+    9747: 1,  # Alfalfa
+    9748: 1,  # Alfalfa
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -30,9 +50,9 @@ def parse_args() -> argparse.Namespace:
     manifest.add_argument("--limit", type=int, default=0, help="Optional max files per problem/split.")
     manifest.add_argument(
         "--label-mode",
-        choices=["none", "filename-last-token"],
+        choices=["none", "filename-last-token", "apia-code"],
         default="none",
-        help="How to populate label. Use filename-last-token only after the DACIA5 label token is confirmed.",
+        help="How to populate label. Use apia-code for the confirmed crop-code token; filename-last-token is kept for checks only.",
     )
 
     features = subparsers.add_parser("features", help="Extract cached tabular features from manifest TIFFs.")
@@ -44,6 +64,11 @@ def parse_args() -> argparse.Namespace:
         default="5,25,50,75,95",
         help="Comma-separated per-band percentiles. Use empty string to disable.",
     )
+
+    label_features = subparsers.add_parser("label-features", help="Copy manifest labels into an existing feature CSV.")
+    label_features.add_argument("--manifest", type=Path, default=Path("results/subtask2/manifest.csv"))
+    label_features.add_argument("--features", type=Path, default=Path("results/subtask2/features/subtask2_features.csv"))
+    label_features.add_argument("--out", type=Path, default=Path("results/subtask2/features/subtask2_features.csv"))
 
     train = subparsers.add_parser("train", help="Train ExtraTrees and HistGradientBoosting baselines.")
     train.add_argument("--features", type=Path, default=Path("results/subtask2/features/subtask2_features.csv"))
@@ -105,11 +130,23 @@ def parse_patch_name(path: Path) -> dict[str, object]:
     }
 
 
-def label_from_name(patch_index: object, mode: str) -> tuple[str, str]:
-    if mode == "none" or patch_index == "":
+def label_from_name(problem: str, parcel_id: object, patch_index: object, mode: str) -> tuple[str, str]:
+    if mode == "none":
         return "", "not_set"
-    value = int(patch_index)
-    return str(value), "filename_last_token_unverified"
+    if mode == "filename-last-token":
+        if patch_index == "":
+            return "", "not_set"
+        value = int(patch_index)
+        return str(value), "filename_last_token_unverified"
+    if mode == "apia-code":
+        if parcel_id == "":
+            return "", "apia_code_unmapped"
+        apia_code = int(parcel_id)
+        mapping = PROBLEM1_APIA_TO_LABEL if problem == "problem1" else PROBLEM2_APIA_TO_LABEL
+        if apia_code not in mapping:
+            return "", "apia_code_unmapped"
+        return str(mapping[apia_code]), "apia_code_confirmed"
+    raise ValueError(f"unknown label mode: {mode}")
 
 
 def discover_patch_tiffs(data_dir: Path, problem_filter: str, limit: int, label_mode: str) -> list[dict[str, object]]:
@@ -131,7 +168,7 @@ def discover_patch_tiffs(data_dir: Path, problem_filter: str, limit: int, label_
             continue
         parsed = parse_patch_name(path)
         label_candidate = "" if parsed["patch_index"] == "" else str(parsed["patch_index"])
-        label, label_status = label_from_name(parsed["patch_index"], label_mode)
+        label, label_status = label_from_name(problem, parsed["parcel_id"], parsed["patch_index"], label_mode)
         rows.append(
             {
                 "path": str(path),
@@ -267,6 +304,32 @@ def command_features(args: argparse.Namespace) -> None:
     print(json.dumps({"rows": len(rows), "errors": errors, "out": str(args.out)}, indent=2))
 
 
+def command_label_features(args: argparse.Namespace) -> None:
+    manifest = {row["relative_path"]: row for row in read_csv(args.manifest)}
+    rows = read_csv(args.features)
+    missing = 0
+    for row in rows:
+        manifest_row = manifest.get(row["relative_path"])
+        if not manifest_row:
+            missing += 1
+            continue
+        for column in ("label_candidate", "label", "label_status"):
+            row[column] = manifest_row.get(column, "")
+    write_csv(args.out, rows, list(rows[0].keys()) if rows else [])
+    summary = Counter((row["problem"], row["split"], row["label_status"]) for row in rows)
+    print(
+        json.dumps(
+            {
+                "rows": len(rows),
+                "missing_manifest_rows": missing,
+                "out": str(args.out),
+                "summary": {str(key): value for key, value in summary.items()},
+            },
+            indent=2,
+        )
+    )
+
+
 def metric_report(y_true, y_pred, labels: list[int]) -> dict[str, object]:
     import numpy as np
     from sklearn.metrics import accuracy_score, balanced_accuracy_score, confusion_matrix
@@ -291,6 +354,9 @@ def feature_columns(rows: list[dict[str, str]]) -> list[str]:
         "problem",
         "split",
         "date",
+        "parcel_id",
+        "patch_index",
+        "filename_parse_ok",
         "label_candidate",
         "label",
         "label_status",
@@ -438,6 +504,8 @@ def main() -> None:
         command_manifest(args)
     elif args.command == "features":
         command_features(args)
+    elif args.command == "label-features":
+        command_label_features(args)
     elif args.command == "train":
         command_train(args)
     else:

@@ -5,6 +5,7 @@ results/subtask1/baseline/
 results/subtask1/features/
 results/subtask2/baseline/
 results/subtask2/features/
+results/subtask2/manifest.csv
 __pycache__/
 *.pyc
 .env

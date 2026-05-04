@@ -64,6 +64,10 @@ Current strategy:
   - problem 2 test: `1073`
 - Patch array smoke-read: `12 x 32 x 32`, `uint16`.
 - Full Sentinel-2 GeoTIFF smoke-read: `12 x 800 x 450`, `uint16`.
+- Label source: confirmed from `Legend_crops.pdf`; patch filename middle token is APIA crop code, final token is patch index.
+- Current leakage-free baselines:
+  - Problem 1, HistGradientBoosting, 2023 holdout: `Q=0.6655`, `OA=0.7442`, `AA=0.5867`.
+  - Problem 2, ExtraTrees, 2024 holdout: `Q=0.8102`, `OA=0.8308`, `AA=0.7896`.
 - Tabular baseline implementation is complete locally.
 - Still needed: confirmed DACIA5 label source, confirmed Sentinel-2 band order before vegetation indices, and remote execution on RunPod.
 
@@ -97,9 +101,17 @@ Current strategy:
   - [X] `notebooks/subtask1_testbed.ipynb`
   - [X] `notebooks/subtask2_testbed.ipynb`
 - [X] Pair notebooks with `.py:percent` files using `nbpair`; keep them synced with `nbsync`.
-- [ ] Run Subtask 2 manifest and feature extraction on RunPod.
-- [ ] Confirm DACIA5 label source before running training with labels.
+- [X] Run Subtask 2 manifest and feature extraction on RunPod:
+  - [X] Manifest: `8702` rows.
+  - [X] Features: `8702 x 124`, `0` extraction errors.
+- [X] Confirm DACIA5 label source before running training with labels:
+  - [X] `Legend_crops.pdf` maps APIA codes to crop labels/colors.
+  - [X] Filename token 2 is APIA crop code.
+  - [X] Filename token 3 is patch index and is not a label.
+- [X] Train first leakage-free Subtask 2 tabular baselines.
 - [ ] Add simple vegetation indices only after band order is confirmed.
+- [X] Add Subtask 1 downloader that includes `test.csv` and optional label/image raster downloads.
+- [X] Download Subtask 1 CSV metadata/test files on RunPod.
 - [ ] Implement a Subtask 1 smoke-read command against local/remote rasters once actual files are available.
 - [X] Implement a Subtask 1 constant-mask ZIP writer for CodaBench packaging smoke tests.
 - [X] Implement a Subtask 1 Hugging Face downloader for CSVs, labels, and image rasters.
@@ -107,7 +119,7 @@ Current strategy:
 
 ### Claude
 
-- [ ] Verify DACIA5 file-name label interpretation from examples like `patch_20240716_9748_3.tif`; confirm which token is crop label and whether `9748`/`3017` are field or parcel ids.
+- [X] Verify DACIA5 file-name label interpretation from examples like `patch_20240716_9748_3.tif`; confirm which token is crop label and whether `9748`/`3017` are field or parcel ids.
 - [ ] Confirm Sentinel-2 band order for the 12-band patch TIFFs so Codex can safely add NDVI/NDWI/red-edge features.
 - [ ] Find or infer expected Subtask 2 prediction artifact format from ImageCLEF/DACIA5 materials:
   - notebook-only evaluation,
@@ -136,6 +148,7 @@ Remaining:
 ### Phase 1: Data Acquisition And Inspection
 
 - [X] Inspect Subtask 1 metadata.
+- [X] Download Subtask 1 CSV files on RunPod, including `test.csv`.
 - [X] Download/extract Subtask 2 data.
 - [X] Inspect Subtask 2 data.
 - [X] Pull inspection JSONs locally.
@@ -144,6 +157,7 @@ Remaining:
 Remaining:
 
 - [ ] Smoke-read Subtask 1 actual image and label rasters.
+- [ ] Download Subtask 1 label/image rasters on RunPod when VB approves storage/time.
 - [X] Add reproducible Subtask 1 downloader for remote `data/subtask1`.
 - [ ] Record exact Subtask 1 raster storage path once available on RunPod.
 
@@ -155,10 +169,17 @@ Priority: blocked on DACIA5 label confirmation and RunPod execution access.
 - [X] Add notebook cells that showcase data, artifact summaries, visual checks, and feature distributions without running the workflow.
 - [X] Add notebook alias routine: `nbopen`, `nbpair`, `nbsync`, `nbrun` when data is available.
 - [X] Run manifest from patch TIFF folders on RunPod.
-- [ ] Extract cached tabular features on RunPod.
-- [ ] Train baseline models after label source is confirmed.
-- [ ] Save remote validation metrics and confusion matrices.
-- [ ] Generate candidate predictions/artifacts for review.
+- [X] Extract cached tabular features on RunPod.
+- [X] Derive labels from APIA crop-code token and `Legend_crops.pdf`.
+- [X] Train baseline models after label source is confirmed.
+- [X] Save remote validation metrics and confusion matrices.
+- [X] Generate candidate predictions/artifacts for review.
+
+Remaining:
+
+- [ ] Confirm Subtask 2 submission artifact expectations.
+- [ ] Confirm Sentinel-2 band order before vegetation indices.
+- [ ] Decide whether current tabular baseline is enough for the first notebook/report pass or whether to run a neural attempt.
 
 ### Phase 3: Subtask 1 Valid Baseline
 

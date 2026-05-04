@@ -1,5 +1,5 @@
 {
-  "source": "https://huggingface.co/datasets/m-sakka/agripotential/resolve/main/",
+  "source": "data/subtask1/agripotential",
   "label_name": "viticulture",
   "metadata": {
     "rows": 34,
