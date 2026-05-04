@@ -22,7 +22,7 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 - Challenge 2: classify winter wheat vs alfalfa using March imagery only
 - Metric: `Q = 0.5 * OA + 0.5 * AA`
 - Data: Zenodo `14283243`
-- Submission material: final notebook/source plus technical report, exact artifact format still pending confirmation
+- Submission material: Colab notebook or zipped source folder with README, plus max 3-page technical report
 
 ## Current Status
 
@@ -31,7 +31,7 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 - Subtask 1 full data is on RunPod under `/workspace/ai4agri/data/subtask1` and uses about `185G`.
 - Subtask 1 sampled-pixel baseline ZIP was submitted to CodaBench and scored `39.74`.
 - Subtask 1 next step is a quick improvement decision: rerun with the optimized baseline settings or move attention to Subtask 2 packaging/report work.
-- Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete and ready for packaging-format confirmation.
+- Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete, deliverable format is confirmed, and vegetation indices remain blocked on confirmed Sentinel-2 band order.
 
 ## Operating Docs
 
@@ -138,3 +138,13 @@ python scripts/subtask2_baseline.py label-features
 python scripts/subtask2_baseline.py train --problem problem1
 python scripts/subtask2_baseline.py train --problem problem2
 ```
+
+## Claude Handoffs
+
+Use [`claude_handoffs/phase0.md`](claude_handoffs/phase0.md) and [`claude_handoffs/phase1.md`](claude_handoffs/phase1.md) to split research work while Codex continues implementation. Completed findings are tracked in [`claude_handoffs/findings_phase0.md`](claude_handoffs/findings_phase0.md) and [`claude_handoffs/findings_phase1.md`](claude_handoffs/findings_phase1.md):
+
+1. Confirm CodaBench submission format.
+2. Summarize AgriPotential loader and smoke-test usage.
+3. Summarize DACIA5 data structure, labels, and split logic.
+4. Recommend fast baseline approaches for both subtasks.
+5. Confirm Subtask 2 deliverable format and review the leakage-free tabular baseline.

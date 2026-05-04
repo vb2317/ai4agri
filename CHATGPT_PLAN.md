@@ -104,7 +104,8 @@ Related docs:
   - Problem 1, HistGradientBoosting, 2023 holdout: `Q=0.6655`, `OA=0.7442`, `AA=0.5867`.
   - Problem 2, ExtraTrees, 2024 holdout: `Q=0.8102`, `OA=0.8308`, `AA=0.7896`.
 - Tabular baseline implementation is complete locally.
-- Still needed: confirmed Sentinel-2 band order before vegetation indices and confirmed final Subtask 2 notebook/report/submission artifact expectations.
+- Confirmed Subtask 2 final deliverable format: Google Colab notebook or zipped source folder with README, plus a max 3-page technical report, submitted by email.
+- Still needed: confirmed Sentinel-2 band order before vegetation indices.
 
 ## Active Assignments
 
@@ -177,16 +178,17 @@ Related docs:
 
 - [X] Verify DACIA5 file-name label interpretation from examples like `patch_20240716_9748_3.tif`; confirm which token is crop label and whether `9748`/`3017` are field or parcel ids.
 - [ ] Confirm Sentinel-2 band order for the 12-band patch TIFFs so Codex can safely add NDVI/NDWI/red-edge features.
-- [ ] Find or infer expected Subtask 2 prediction artifact format from ImageCLEF/DACIA5 materials:
+- [X] Find or infer expected Subtask 2 prediction artifact format from ImageCLEF/DACIA5 materials:
   - notebook-only evaluation,
   - CSV prediction file,
   - or zipped source plus report.
-- [ ] Review `results/subtask2/inspection/subtask2_baseline_summary.json` and recommend whether the leakage-free tabular baseline is acceptable for the first report/notebook pass.
-- [ ] Provide one compact Subtask 2 neural baseline recommendation only if it can realistically improve on:
+- [X] Review `results/subtask2/inspection/subtask2_baseline_summary.json` and recommend whether the leakage-free tabular baseline is acceptable for the first report/notebook pass.
+- [X] Provide one compact Subtask 2 neural baseline recommendation only if it can realistically improve on:
   - Problem 1 HGB `Q=0.6655`
   - Problem 2 ExtraTrees `Q=0.8102`
 - [X] For Subtask 1, verify whether official package examples include a direct raster download command that includes `test.csv`.
   - Repo downloader `scripts/download_subtask1_hf.py` is the current canonical path and includes `test.csv`.
+  - Detailed Phase 1 findings are in `claude_handoffs/findings_phase1.md`.
 
 ## Phase Tracker
 
@@ -238,9 +240,9 @@ Priority: active again unless VB chooses one quick Subtask 1 retry.
 
 Remaining:
 
-- [ ] Confirm Subtask 2 submission artifact expectations.
+- [X] Confirm Subtask 2 submission artifact expectations.
 - [ ] Confirm Sentinel-2 band order before vegetation indices.
-- [ ] Decide whether current tabular baseline is enough for the first notebook/report pass or whether to run a neural attempt.
+- [X] Decide whether current tabular baseline is enough for the first notebook/report pass or whether to run a neural attempt.
 
 ### Phase 3: Subtask 1 Valid Baseline
 
@@ -459,6 +461,6 @@ Needed output:
 - [X] What are the Subtask 1 CodaBench submission limits and evaluation timing?
 - [X] Is RunPod global networking enabled?
 - [ ] Are Subtask 2 test labels hidden, or is this primarily notebook/report evaluation?
-- [ ] What is the exact Subtask 2 prediction/submission artifact format?
+- [X] What is the exact Subtask 2 prediction/submission artifact format?
 - [ ] What is the confirmed Sentinel-2 band order for DACIA5 12-band patch TIFFs?
 - [X] What is the confirmed label token in DACIA5 patch filenames?

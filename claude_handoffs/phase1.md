@@ -23,6 +23,18 @@ Tracked evidence:
 - `results/subtask2/inspection/subtask2_feature_summary.json`
 - `results/subtask2/inspection/subtask2_baseline_summary.json`
 
+## Findings Status
+
+Detailed findings are tracked in [`findings_phase1.md`](findings_phase1.md).
+
+- [X] Confirm expected Subtask 2 final deliverable format for ImageCLEF 2026.
+- [ ] Confirm Sentinel-2 12-band order for the patch TIFFs.
+  - Public docs confirm 12 bands but do not name/order them.
+  - `scripts/inspect_subtask2.py` now records TIFF descriptions, band tags, dataset tags, and color interpretation when re-run on RunPod.
+- [X] Review whether grouping APIA codes as implemented is defensible.
+- [X] Review whether the leakage-free tabular baseline is acceptable for the first report/notebook pass.
+- [X] Recommend a compact neural baseline only if realistic within the remaining time.
+
 ## Needed From Claude
 
 ```text

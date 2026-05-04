@@ -93,6 +93,8 @@
 
 - [X] Confirm DACIA5 patch label source before training Subtask 2 baseline.
 - [X] Baseline: Subtask 2 — run tabular script on RunPod after label source is confirmed.
+- [X] Confirm Subtask 2 deliverable format: Colab notebook or zipped source folder with README, plus max 3-page report, submitted by email.
+- [ ] Confirm DACIA5 Sentinel-2 12-band order before adding vegetation-index features.
 - [ ] Subtask 1: improve model — U-Net or ViT on multi-temporal stack
 - [ ] Subtask 2 Challenge 1: temporal model (LSTM / Transformer) on patch sequences
 - [ ] Subtask 2 Challenge 2: early detection with March-only features
