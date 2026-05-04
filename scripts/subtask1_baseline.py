@@ -8,9 +8,9 @@ import csv
 import json
 import pickle
 import struct
-import tempfile
 import zipfile
 import zlib
+from contextlib import ExitStack
 from pathlib import Path
 
 
@@ -33,6 +33,8 @@ def parse_args() -> argparse.Namespace:
     train.add_argument("--max-train-pixels", type=int, default=200000)
     train.add_argument("--random-state", type=int, default=42)
     train.add_argument("--model", choices=["hist_gradient_boosting", "extra_trees"], default="hist_gradient_boosting")
+    train.add_argument("--sampling", choices=["uniform", "class_balanced"], default="class_balanced")
+    train.add_argument("--feature-mode", choices=["raw", "raw_temporal"], default="raw_temporal")
 
     infer = subparsers.add_parser("infer", help="Predict test masks and write a CodaBench ZIP.")
     infer.add_argument("--data-dir", required=True, type=Path, help="Local AgriPotential data directory.")
@@ -40,6 +42,7 @@ def parse_args() -> argparse.Namespace:
     infer.add_argument("--split", default="test.csv")
     infer.add_argument("--out", type=Path, default=Path("results/subtask1/submissions/subtask1_baseline.zip"))
     infer.add_argument("--limit", type=int, default=0, help="Optional max patches for smoke tests.")
+    infer.add_argument("--feature-mode", choices=["raw", "raw_temporal"], default=None, help="Override saved feature mode.")
 
     return parser.parse_args()
 
@@ -70,29 +73,42 @@ def metadata_files(data_dir: Path) -> list[Path]:
     return files
 
 
-def read_window(path: Path, row: int, col: int, patch_size: int):
+def read_window(source, row: int, col: int, patch_size: int):
     import rasterio
     from rasterio.windows import Window
 
-    with rasterio.open(path) as src:
-        return src.read(window=Window(col, row, patch_size, patch_size))
+    window = Window(col, row, patch_size, patch_size)
+    if hasattr(source, "read"):
+        return source.read(window=window)
+    with rasterio.open(source) as src:
+        return src.read(window=window)
 
 
-def read_patch_stack(files: list[Path], patch: dict[str, str]):
+def read_patch_stack(sources, patch: dict[str, str]):
     import numpy as np
 
     row = int(patch["row"])
     col = int(patch["col"])
     patch_size = int(patch["patch_size"])
-    arrays = [read_window(path, row, col, patch_size) for path in files]
+    arrays = [read_window(source, row, col, patch_size) for source in sources]
     return np.stack(arrays, axis=0)
 
 
-def pixel_features(stack):
+def pixel_features(stack, feature_mode: str = "raw"):
     import numpy as np
 
     # stack: time, bands, height, width -> pixels, flattened time-band features.
-    return np.moveaxis(stack, (0, 1), (-2, -1)).reshape(-1, stack.shape[0] * stack.shape[1]).astype("float32")
+    raw = np.moveaxis(stack, (0, 1), (-2, -1)).reshape(-1, stack.shape[0] * stack.shape[1]).astype("float32")
+    if feature_mode == "raw":
+        return raw
+    if feature_mode != "raw_temporal":
+        raise ValueError(f"unknown feature mode: {feature_mode}")
+
+    summaries = []
+    for reducer in (np.nanmean, np.nanstd, np.nanmin, np.nanmax):
+        reduced = reducer(stack.astype("float32", copy=False), axis=0)
+        summaries.append(np.moveaxis(reduced, 0, -1).reshape(-1, stack.shape[1]))
+    return np.concatenate([raw, *summaries], axis=1).astype("float32", copy=False)
 
 
 def valid_label_mask(labels):
@@ -101,34 +117,68 @@ def valid_label_mask(labels):
     return np.isfinite(labels) & (labels >= 0) & (labels <= 4)
 
 
-def sample_patch_pixels(stack, labels, pixels_per_patch: int, rng):
+def balanced_indices(y_all, valid, pixels_per_patch: int, rng):
     import numpy as np
 
-    x_all = pixel_features(stack)
+    classes = np.unique(y_all[valid])
+    if classes.size == 0:
+        return valid[:0]
+    base = max(pixels_per_patch // classes.size, 1)
+    remainder = pixels_per_patch - base * classes.size
+    chosen_blocks = []
+    for offset, label in enumerate(rng.permutation(classes)):
+        candidates = valid[y_all[valid] == label]
+        count = min(candidates.size, base + (1 if offset < remainder else 0))
+        if count:
+            chosen_blocks.append(rng.choice(candidates, size=count, replace=False))
+    chosen = np.concatenate(chosen_blocks) if chosen_blocks else valid[:0]
+    if chosen.size < min(pixels_per_patch, valid.size):
+        missing = min(pixels_per_patch, valid.size) - chosen.size
+        remaining = np.setdiff1d(valid, chosen, assume_unique=False)
+        if remaining.size:
+            chosen = np.concatenate([chosen, rng.choice(remaining, size=min(missing, remaining.size), replace=False)])
+    rng.shuffle(chosen)
+    return chosen
+
+
+def sample_patch_pixels(stack, labels, pixels_per_patch: int, rng, sampling: str, feature_mode: str):
+    import numpy as np
+
+    x_all = pixel_features(stack, feature_mode)
     y_all = labels.reshape(-1).astype("int64")
     valid = np.flatnonzero(valid_label_mask(y_all))
     if valid.size == 0:
         return x_all[:0], y_all[:0]
     count = min(pixels_per_patch, valid.size)
-    chosen = rng.choice(valid, size=count, replace=False)
+    if sampling == "class_balanced":
+        chosen = balanced_indices(y_all, valid, count, rng)
+    elif sampling == "uniform":
+        chosen = rng.choice(valid, size=count, replace=False)
+    else:
+        raise ValueError(f"unknown sampling mode: {sampling}")
     return x_all[chosen], y_all[chosen]
 
 
 def collect_samples(
     data_dir: Path,
-    raster_files: list[Path],
+    raster_sources,
+    label_source,
     label_name: str,
     split_name: str,
     patch_limit: int,
     pixels_per_patch: int,
     max_pixels: int,
     random_state: int,
+    sampling: str,
+    feature_mode: str,
 ):
     import numpy as np
 
     split_path = data_dir / split_name
     rows = read_csv_rows(split_path)
     require_split_columns(rows, split_path)
+    rng = np.random.default_rng(random_state)
+    rng.shuffle(rows)
     if patch_limit:
         rows = rows[:patch_limit]
 
@@ -136,14 +186,13 @@ def collect_samples(
     if not label_path.exists():
         raise SystemExit(f"missing label raster: {label_path}")
 
-    rng = np.random.default_rng(random_state)
     feature_blocks = []
     label_blocks = []
     patches_read = 0
     for patch in rows:
-        stack = read_patch_stack(raster_files, patch)
-        labels = read_window(label_path, int(patch["row"]), int(patch["col"]), int(patch["patch_size"]))[0]
-        x_patch, y_patch = sample_patch_pixels(stack, labels, pixels_per_patch, rng)
+        stack = read_patch_stack(raster_sources, patch)
+        labels = read_window(label_source, int(patch["row"]), int(patch["col"]), int(patch["patch_size"]))[0]
+        x_patch, y_patch = sample_patch_pixels(stack, labels, pixels_per_patch, rng, sampling, feature_mode)
         if x_patch.size:
             feature_blocks.append(x_patch)
             label_blocks.append(y_patch)
@@ -187,29 +236,40 @@ def make_model(model_name: str, random_state: int):
 
 def train_command(args: argparse.Namespace) -> None:
     import numpy as np
+    import rasterio
     from sklearn.metrics import accuracy_score, confusion_matrix, mean_absolute_error
 
     raster_files = metadata_files(args.data_dir)
-    x_train, y_train, train_patches = collect_samples(
-        args.data_dir,
-        raster_files,
-        args.label_name,
-        args.train_split,
-        args.patch_limit,
-        args.pixels_per_patch,
-        args.max_train_pixels,
-        args.random_state,
-    )
-    x_val, y_val, val_patches = collect_samples(
-        args.data_dir,
-        raster_files,
-        args.label_name,
-        args.val_split,
-        args.val_patch_limit,
-        args.pixels_per_patch,
-        max(args.pixels_per_patch, min(args.max_train_pixels // 4, 50000)),
-        args.random_state + 1,
-    )
+    label_path = args.data_dir / f"{args.label_name}.tif"
+    with ExitStack() as stack:
+        raster_sources = [stack.enter_context(rasterio.open(path)) for path in raster_files]
+        label_source = stack.enter_context(rasterio.open(label_path))
+        x_train, y_train, train_patches = collect_samples(
+            args.data_dir,
+            raster_sources,
+            label_source,
+            args.label_name,
+            args.train_split,
+            args.patch_limit,
+            args.pixels_per_patch,
+            args.max_train_pixels,
+            args.random_state,
+            args.sampling,
+            args.feature_mode,
+        )
+        x_val, y_val, val_patches = collect_samples(
+            args.data_dir,
+            raster_sources,
+            label_source,
+            args.label_name,
+            args.val_split,
+            args.val_patch_limit,
+            args.pixels_per_patch,
+            max(args.pixels_per_patch, min(args.max_train_pixels // 4, 50000)),
+            args.random_state + 1,
+            args.sampling,
+            args.feature_mode,
+        )
 
     model = make_model(args.model, args.random_state)
     model.fit(x_train, y_train)
@@ -218,6 +278,8 @@ def train_command(args: argparse.Namespace) -> None:
     report = {
         "model": args.model,
         "label_name": args.label_name,
+        "sampling": args.sampling,
+        "feature_mode": args.feature_mode,
         "train_split": args.train_split,
         "val_split": args.val_split,
         "train_patches_read": train_patches,
@@ -236,7 +298,16 @@ def train_command(args: argparse.Namespace) -> None:
     args.out_dir.mkdir(parents=True, exist_ok=True)
     model_path = args.out_dir / "model.pkl"
     with model_path.open("wb") as file:
-        pickle.dump({"model": model, "raster_count": len(raster_files), "report": report}, file)
+        pickle.dump(
+            {
+                "model": model,
+                "raster_count": len(raster_files),
+                "feature_mode": args.feature_mode,
+                "sampling": args.sampling,
+                "report": report,
+            },
+            file,
+        )
     metrics_path = args.out_dir / "metrics.json"
     metrics_path.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
@@ -265,6 +336,7 @@ def grayscale_png(width: int, height: int, values) -> bytes:
 
 def infer_command(args: argparse.Namespace) -> None:
     import numpy as np
+    import rasterio
 
     raster_files = metadata_files(args.data_dir)
     split_path = args.data_dir / args.split
@@ -276,14 +348,16 @@ def infer_command(args: argparse.Namespace) -> None:
     with args.model_path.open("rb") as file:
         payload = pickle.load(file)
     model = payload["model"]
+    feature_mode = args.feature_mode or payload.get("feature_mode", "raw")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory() as _tmpdir:
+    with ExitStack() as stack:
+        raster_sources = [stack.enter_context(rasterio.open(path)) for path in raster_files]
         with zipfile.ZipFile(args.out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             for index, patch in enumerate(rows, start=1):
                 patch_size = int(patch["patch_size"])
-                stack = read_patch_stack(raster_files, patch)
-                x = pixel_features(stack)
+                stack_array = read_patch_stack(raster_sources, patch)
+                x = pixel_features(stack_array, feature_mode)
                 prediction = np.clip(model.predict(x).astype("uint8"), 0, 4).reshape(patch_size, patch_size)
                 zf.writestr(f"{patch['patch_id']}.png", grayscale_png(patch_size, patch_size, prediction))
                 if index % 50 == 0:

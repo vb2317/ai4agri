@@ -242,6 +242,13 @@ Priority: active now.
 - [X] Download full Sentinel-2 image rasters if RunPod disk/time budget allows.
 - [ ] Smoke-read image rasters and labels together.
 - [X] Implement sampled-pixel ordinal baseline trainer.
+- [X] Implement sampled-pixel baseline improvements for next run:
+  - [X] Keep all Sentinel-2 rasters open across patches for train/infer.
+  - [X] Shuffle split rows before sampling.
+  - [X] Default to class-balanced pixel sampling.
+  - [X] Add raw plus temporal summary features via `--feature-mode raw_temporal`.
+  - [X] Remove unused inference temp directory.
+  - Note: the full run already triggered by VB used the previous script version unless RunPod was updated before launch.
 - [X] Run sampled-pixel smoke training:
   ```bash
   python scripts/subtask1_baseline.py train \

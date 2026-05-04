@@ -27,6 +27,7 @@ Current scripts:
 - `subtask1_baseline.py`: train a sampled-pixel AgriPotential baseline from local rasters and write test PNG masks in a CodaBench ZIP.
 - `subtask2_baseline.py`: build a DACIA5 patch TIFF manifest, cache tabular per-band features, and train ExtraTrees/HistGradientBoosting baselines once labels are confirmed.
 - `summarize_subtask2_features.py`: summarize the generated Subtask 2 manifest/features into a small tracked inspection JSON.
+- `subtask1_baseline.py`: train/infer the sampled-pixel AgriPotential baseline. It keeps rasters open across patches, shuffles split rows, defaults to class-balanced pixel sampling, and uses raw plus temporal-summary pixel features.
 - `train_subtask2_baseline.py`: direct experimental DACIA5 trainer that assumes the last filename token is the crop label; use only after label semantics are confirmed.
 - `validate_submission_zip.py`: configurable ZIP sanity checker for candidate submissions. Use `--subtask1-codabench` for confirmed AgriPotential rules: root-level `<patch_id>.png` masks, optional `report.pdf`, and class ids `0..4`.
 
