@@ -62,6 +62,8 @@ For Subtask 1 data:
 pip install git+https://github.com/MohammadElSakka/agripotential
 ```
 
+`agripotential` is intentionally not listed as an installable package in `requirements.txt` because it is not published on PyPI. Install it from GitHub after the base requirements.
+
 Copy the environment template before running local or remote jobs:
 
 ```bash
@@ -89,7 +91,9 @@ Primary strategy:
 
 The handoff operating model is in [`HANDOFF_STRATEGY.md`](HANDOFF_STRATEGY.md). Use it to decide what belongs with VB, Codex, or Claude, and when a task is blocked versus ready for implementation.
 
-The remote compute recommendation and VB subscription instructions are in [`REMOTE_PROVIDER.md`](REMOTE_PROVIDER.md). Current default: Lambda Cloud 1x NVIDIA A10, with RunPod as fallback.
+The remote compute recommendation and VB subscription instructions are in [`REMOTE_PROVIDER.md`](REMOTE_PROVIDER.md). Current default: RunPod On-Demand GPU Pod.
+
+Current RunPod Pod recorded there: ID `vit08hc86csllk`, 1x RTX PRO 4500, 28 vCPU, 62GB RAM, `runpod-torch-v240`, 450GB `/workspace` volume, JupyterLab URL recorded, direct SSH recorded, total listed price $0.71/hr.
 
 ## Phase 0 Status
 
@@ -114,7 +118,7 @@ Confirmed from VB logged-in handoffs:
 Still needs confirmation before Phase 1:
 
 - CodaBench submission limits and evaluation timing
-- VB launch details for the selected remote provider
+- RunPod global networking status
 - Final data locations for Subtask 1 and Subtask 2
 
 ## Useful Commands

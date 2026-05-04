@@ -11,7 +11,8 @@ geopandas
 shapely
 
 # Subtask 1 — AgriPotential
-agripotential  # pip install git+https://github.com/MohammadElSakka/agripotential
+# Install separately because it is not published on PyPI:
+# pip install git+https://github.com/MohammadElSakka/agripotential
 
 # Subtask 2 — DACIA5
 # Data from Zenodo: https://zenodo.org/records/14283243

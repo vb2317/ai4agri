@@ -65,9 +65,9 @@ Good candidates: RunPod, Vast.ai, Lambda Labs, Paperspace, AWS, GCP, Azure, Cola
 - [X] Confirm CodaBench access for Subtask 1.
 - [X] Confirm Subtask 1 CodaBench file naming rules and ZIP structure.
 - [ ] Confirm Subtask 1 CodaBench submission limits and evaluation timing.
-- [ ] Create or confirm Lambda Cloud account for remote compute.
-- [ ] Launch recommended Lambda Cloud 1x NVIDIA A10 instance, or report capacity/quota blocker.
-- [ ] Confirm budget ceiling; Codex recommends $75 for the initial deadline push unless VB chooses otherwise.
+- [X] Create or confirm RunPod account for remote compute.
+- [X] Launch recommended RunPod On-Demand GPU Pod, or report capacity/billing blocker.
+- [X] Confirm budget ceiling; current ceiling is $75.
 - [ ] Share only necessary access tokens through secure local environment variables, not committed files.
 
 ### Codex / Local
@@ -90,10 +90,12 @@ Good candidates: RunPod, Vast.ai, Lambda Labs, Paperspace, AWS, GCP, Azure, Cola
 
 ### VB / Remote
 
-- [ ] Start Subtask 1 data access on the Lambda A10 remote machine with enough disk.
+- [ ] Start Subtask 1 data access on the RunPod remote machine with enough disk.
 - [ ] Start Subtask 2 Zenodo download locally or remotely.
 - [ ] Record exact data source URLs, download commands, and local paths.
 - [ ] Confirm checksums or file counts where available.
+- [ ] Send Codex RunPod global networking status from the Connect/details tab.
+- [X] Place repo files on RunPod at `/workspace/ai4agri`.
 
 ### Codex / Local
 
@@ -108,6 +110,8 @@ Good candidates: RunPod, Vast.ai, Lambda Labs, Paperspace, AWS, GCP, Azure, Cola
 - [ ] Run inspection scripts on actual data.
 - [ ] Save inspection outputs under `results/subtask*/inspection/`.
 - [ ] Bring small metadata outputs back to local repo.
+- [X] Verify remote Python/PyTorch/CUDA environment and validator script.
+- [ ] Finish remote dependency install after latest `requirements.txt` sync.
 
 ### Claude / Parallel
 
@@ -334,7 +338,14 @@ Prepare these once scripts exist.
 - Confirmed Subtask 1 CodaBench format: ZIP root contains PNG masks named `<patch_id>.png` for `test.csv`; target count is 800; values are integer classes `0..4`; optional method PDF must be `report.pdf`; extraneous files are ignored by scorer.
 - Submission limits and evaluation timing remain unconfirmed.
 - Codex Phase 0 local scaffolding is complete: `.env.example`, `results/runs.csv`, `scripts/validate_submission_zip.py`, `scripts/README.md`, Claude handoff prompts, README updates, and handoff strategy docs.
-- Remote provider recommendation documented in `REMOTE_PROVIDER.md`: use Lambda Cloud 1x NVIDIA A10 by default; use RunPod as fallback if Lambda capacity/quota blocks launch. Recommended initial budget ceiling is $75.
+- Remote provider changed to RunPod after Lambda Cloud billing setup was blocked. Use a RunPod On-Demand GPU Pod with 500-750GB persistent volume. Recommended initial budget ceiling is $75.
+- VB launched RunPod Pod: ID `vit08hc86csllk`, Secure cloud, 1x RTX PRO 4500, 28 vCPU, 62GB RAM, `runpod-torch-v240`, 20GB container disk, 450GB `/workspace` volume, JupyterLab at `https://vit08hc86csllk-8888.proxy.runpod.net/lab`, direct SSH `ssh root@213.173.107.6 -p 34365 -i ~/.ssh/id_ed25519`, total price $0.71/hr, budget ceiling $75.
+- GitHub HTTPS clone from the Pod failed because password authentication is not supported. Use SSH clone with a GitHub deploy/account key, or rsync the repo from local over direct SSH.
+- GitHub SSH from the Pod now authenticates successfully for `vb2317`. Prefer `git clone git@github.com:vb2317/ai4agri.git ai4agri`.
+- Local-to-Pod `rsync` failed because `rsync` is not installed on the Pod. Install `rsync` on the Pod or use `scp` fallback.
+- Repo files are now present on RunPod at `/workspace/ai4agri` after corrected sync/copy. Directory contains planning docs, scripts, notebooks, results, source folders, and handoff folders.
+- RunPod environment check passed: `torch==2.4.1+cu124`, CUDA available, and `scripts/validate_submission_zip.py --help` works.
+- `REMOTE_PROVIDER.md` was reduced to current RunPod state, next commands, sync command, local `.env`, and operating rules only.
 
 ## Open Questions
 
@@ -343,6 +354,8 @@ Prepare these once scripts exist.
 - [ ] What are the Subtask 1 CodaBench submission limits and evaluation timing?
 - [ ] Are Subtask 2 test labels hidden, or is this primarily notebook/report evaluation?
 - [X] Which remote provider will be used?
-- [ ] What max budget will VB approve for remote jobs before May 7?
-- [ ] Did Lambda Cloud have A10 capacity and account quota for launch?
+- [X] What max budget will VB approve for remote jobs before May 7?
+- [X] Did RunPod SSH and Jupyter access work?
+- [X] What are the RunPod Pod ID, cloud type/location, SSH command, and JupyterLab URL?
+- [ ] Is RunPod global networking enabled?
 - [ ] Should Subtask 1 or Subtask 2 be prioritized if time becomes constrained?

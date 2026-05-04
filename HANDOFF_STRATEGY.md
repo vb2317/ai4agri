@@ -249,17 +249,11 @@ Codex follow-up:
 
 ### Handoff 4: VB To Codex
 
-Status: Blocked until VB chooses remote provider.
+Status: Mostly done. RunPod Pod launched and connection details recorded; global networking status still needed from VB.
 
 Needed from VB:
 
-- Provider name.
-- Remote OS/image if known.
-- Disk size.
-- GPU type, if any.
-- Project directory path.
-- Data directory path.
-- Budget ceiling.
+- RunPod global networking status.
 
 Codex follow-up:
 
