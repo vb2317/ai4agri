@@ -8,10 +8,11 @@ Produce valid, reproducible AI4Agri 2026 submissions before the May 7, 2026 comp
 
 Current strategy:
 
-1. Focus Subtask 1 first until the sampled-pixel model ZIP is submitted and feedback is recorded.
-2. Use the constant ZIP result as the floor score while the sampled-pixel baseline is trained and validated.
-3. Use RunPod for data, feature extraction, training, inference, and anything that touches the full datasets.
-4. Use local for code edits, review, result sync, documentation, commits, and submission prep.
+1. Treat Subtask 1 score `39.74` as the current submitted model baseline and `39.52` as the packaging floor.
+2. Decide whether one quick optimized Subtask 1 rerun is worth the CodaBench submission/time budget.
+3. Resume Subtask 2 packaging/report work while any Subtask 1 rerun is active.
+4. Use RunPod for data, feature extraction, training, inference, and anything that touches the full datasets.
+5. Use local for code edits, review, result sync, documentation, commits, and submission prep.
 
 Related docs:
 
@@ -56,6 +57,11 @@ Related docs:
   - daily submissions: `10`
   - total submissions: `100`
   - scoring: immediate
+- Sampled-pixel baseline CodaBench submission completed:
+  - file: `results/subtask1/submissions/subtask1_baseline.zip`
+  - score: `39.74`
+  - improvement over constant baseline: `+0.22`
+  - note: confirm whether this ZIP was produced by the older script version or the optimized class-balanced/raw-temporal version.
 - RunPod Subtask 1 data state:
   - path: `/workspace/ai4agri/data/subtask1`
   - CSVs present: `metadata.csv`, `train.csv`, `val.csv`, `test.csv`
@@ -63,7 +69,7 @@ Related docs:
   - Sentinel-2 image rasters downloaded
   - disk usage reported by VB: `185G`
   - label smoke-read succeeded for train/val/test samples.
-- Still needed: smoke train sampled-pixel baseline, run full sampled-pixel baseline, infer ZIP, validate ZIP, submit to CodaBench.
+- Still needed: decide whether to rerun optimized sampled-pixel baseline or move effort to Subtask 2 deliverables.
 - Latest sampled-pixel smoke run:
   - model: `hist_gradient_boosting`
   - train patches: `20`
@@ -115,8 +121,10 @@ Related docs:
   - global networking: off
   - public internet downloads nevertheless succeeded.
 - [ ] Keep the RunPod Pod running while Subtask 1 training/inference is active; stop it when idle.
-- [ ] After sampled-pixel Subtask 1 ZIP validates, submit it to CodaBench and record score/errors.
-- [ ] Defer Subtask 2 review decisions until Subtask 1 sampled-pixel submission is complete.
+- [X] After sampled-pixel Subtask 1 ZIP validates, submit it to CodaBench and record score/errors:
+  - score: `39.74`
+- [ ] Decide whether to run one optimized Subtask 1 retry before spending more CodaBench submissions.
+- [ ] Resume Subtask 2 review decisions now that the first Subtask 1 model ZIP has been submitted.
 
 ### Codex
 
@@ -150,16 +158,13 @@ Related docs:
 - [X] Download Subtask 1 CSV metadata/test files on RunPod.
 - [X] Implement a Subtask 1 smoke-read command against local/remote rasters once actual files are available.
 - [X] Run Subtask 1 sampled-pixel smoke training on RunPod.
-- [ ] While full Subtask 1 training runs:
-  - [ ] Receive completion output from VB.
-  - [ ] Check whether validation class coverage is representative enough for a first submission decision.
-  - [ ] If full training fails from I/O/runtime, revise `scripts/subtask1_baseline.py` to keep raster datasets open across patches and rerun with bounded samples.
-- [ ] After full Subtask 1 training completes:
-  - [ ] Pull `results/subtask1/baseline/metrics.json` and model metadata locally.
-  - [ ] Summarize exact accuracy, Accuracy +/- 1, MAE, label counts, confusion matrix, train/val pixels, and model type.
-  - [ ] Run model-based inference on RunPod.
-  - [ ] Validate `results/subtask1/submissions/subtask1_baseline.zip`.
-  - [ ] Pull the validated ZIP locally for VB submission.
+- [X] First full Subtask 1 training/inference/submission path completed:
+  - [X] Model-based ZIP submitted to CodaBench.
+  - [X] CodaBench score recorded: `39.74`.
+- [ ] If doing one quick Subtask 1 retry:
+  - [ ] Confirm RunPod has commit `5bb8c08` or newer.
+  - [ ] Rerun train with current defaults: class-balanced sampling and `raw_temporal` features.
+  - [ ] Run inference, validate ZIP, pull locally, and submit only if local validation passes.
 - [ ] If sampled-pixel score underperforms constant baseline:
   - [X] Add class-balanced pixel sampling.
   - [ ] Try `--model extra_trees`.
@@ -219,7 +224,7 @@ Remaining:
 
 ### Phase 2: Subtask 2 Fast Baseline
 
-Priority: parked until Subtask 1 sampled-pixel CodaBench submission is complete.
+Priority: active again unless VB chooses one quick Subtask 1 retry.
 
 - [X] Build manifest/feature/training scripts for patch TIFF folders.
 - [X] Add notebook cells that showcase data, artifact summaries, visual checks, and feature distributions without running the workflow.
@@ -239,7 +244,7 @@ Remaining:
 
 ### Phase 3: Subtask 1 Valid Baseline
 
-Priority: active now.
+Priority: first model submission complete; optional quick improvement pass.
 
 - [X] VB submits validated constant ZIP: `results/subtask1/submissions/constant_class_2.zip`.
 - [X] Record constant baseline CodaBench score: `39.52`.
@@ -266,24 +271,25 @@ Priority: active now.
   ```
   - Result: exact `0.5648`, Accuracy +/- 1 `0.9136`, MAE `0.5768`.
   - Caveat: validation sample covered only classes `0` and `1`.
-- [ ] Full sampled-pixel baseline training:
-  - Status: running on RunPod.
+- [X] Full sampled-pixel baseline training/inference/submission:
+  - Status: submitted to CodaBench.
   ```bash
   python scripts/subtask1_baseline.py train --data-dir data/subtask1
   ```
-  - Capture on completion: exact accuracy, Accuracy +/- 1, MAE, label counts, confusion matrix, model path, metrics path.
-- [ ] Review full-run metrics:
+  - CodaBench score: `39.74`.
+  - Improvement over constant baseline `39.52`: `+0.22`.
+- [ ] Review local/remote full-run metrics if available:
+  - [ ] Capture exact accuracy, Accuracy +/- 1, MAE, label counts, confusion matrix, model path, metrics path.
   - [ ] Confirm validation covers more than the smoke-run classes `0` and `1`.
-  - [ ] Compare Accuracy +/- 1 against constant baseline score `39.52`.
-  - [ ] Decide whether to submit immediately or do one quick improvement pass.
+  - [ ] Decide whether to rerun optimized defaults or accept this as the first model baseline.
 - [X] Implement constant test inference writer for `800` PNG masks.
 - [X] Implement model-based test inference writer for `800` PNG masks.
 - [X] Validate constant candidate ZIP with `scripts/validate_submission_zip.py`.
-- [ ] Infer model-based ZIP:
+- [X] Infer model-based ZIP:
   ```bash
   python scripts/subtask1_baseline.py infer --data-dir data/subtask1
   ```
-- [ ] Validate model-based ZIP:
+- [X] Validate model-based ZIP:
   ```bash
   python scripts/validate_submission_zip.py \
     --zip-path results/subtask1/submissions/subtask1_baseline.zip \
@@ -291,8 +297,9 @@ Priority: active now.
     --expected-ids-file data/subtask1/test.csv \
     --check-class-values
   ```
-- [ ] Pull metrics/submission locally.
-- [ ] VB submits `results/subtask1/submissions/subtask1_baseline.zip` and records score/errors.
+- [X] VB submits `results/subtask1/submissions/subtask1_baseline.zip` and records score/errors:
+  - score: `39.74`
+- [ ] Pull metrics/submission locally if not already synced.
 
 ### Phase 4: Model Improvement
 
@@ -440,6 +447,7 @@ Needed output:
 - Added validators, inspection scripts, remote sync/exec/bootstrap/status helpers, and Subtask 2 download/extract helpers.
 - Subtask 1 metadata inspection confirmed `6329/781/800` train/val/test patches.
 - Subtask 1 constant class `2` ZIP submitted to CodaBench and scored `39.52`.
+- Subtask 1 sampled-pixel baseline ZIP submitted to CodaBench and scored `39.74`.
 - CodaBench limits confirmed: `10` daily submissions, `100` total submissions, immediate scoring.
 - Subtask 1 full RunPod data downloaded under `/workspace/ai4agri/data/subtask1`; reported disk usage `185G`.
 - Subtask 2 data downloaded, extracted, inspected, and pulled locally.

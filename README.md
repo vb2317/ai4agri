@@ -29,9 +29,9 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 - Branch: `main`
 - Subtask 1 constant baseline was submitted to CodaBench and scored `39.52`.
 - Subtask 1 full data is on RunPod under `/workspace/ai4agri/data/subtask1` and uses about `185G`.
-- Subtask 1 sampled-pixel smoke training completed; full sampled-pixel training is running on RunPod.
-- Subtask 1 next step is to review full-run metrics, run inference, validate `subtask1_baseline.zip`, pull it locally, and submit.
-- Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete and parked until Subtask 1 has a model ZIP submitted.
+- Subtask 1 sampled-pixel baseline ZIP was submitted to CodaBench and scored `39.74`.
+- Subtask 1 next step is a quick improvement decision: rerun with the optimized baseline settings or move attention to Subtask 2 packaging/report work.
+- Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete and ready for packaging-format confirmation.
 
 ## Operating Docs
 

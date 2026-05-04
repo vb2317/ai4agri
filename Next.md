@@ -59,7 +59,7 @@
   - Record final disk usage with `du -sh data/subtask1`.
   > root@6528cb1710c5:/workspace/ai4agri# du -sh data/subtask1
 185G	data/subtask1
-- [ ] VB or RunPod operator: finish the sampled-pixel Subtask 1 baseline after image rasters are present.
+- [X] VB or RunPod operator: finish the sampled-pixel Subtask 1 baseline after image rasters are present.
   - Start with a smoke run:
     ```bash
     python scripts/subtask1_baseline.py train \
@@ -80,14 +80,19 @@
       --check-class-values
     ```
   - Record `metrics.json` exact accuracy, Accuracy +/- 1, MAE, and validation confusion matrix.
-- [ ] VB: submit `results/subtask1/submissions/subtask1_baseline.zip` only after validation passes, then record CodaBench score/errors.
+- [X] VB: submit `results/subtask1/submissions/subtask1_baseline.zip` only after validation passes, then record CodaBench score/errors.
+  > Score is 39.74
 
-## Parked Until Subtask 1 Is Submitted
+## Now (After First Subtask 1 Model Submission)
+
+- [ ] Decide whether to rerun Subtask 1 with the optimized baseline settings before spending more CodaBench submissions.
+- [ ] Confirm whether the submitted `39.74` ZIP came from the older script version or the optimized version.
+- [ ] Resume Subtask 2 packaging/report work while any Subtask 1 rerun is active.
 
 ## Before May 28 (Notebook submission)
 
-- [ ] Confirm DACIA5 patch label source before training Subtask 2 baseline.
-- [ ] Baseline: Subtask 2 — run tabular script on RunPod after label source is confirmed.
+- [X] Confirm DACIA5 patch label source before training Subtask 2 baseline.
+- [X] Baseline: Subtask 2 — run tabular script on RunPod after label source is confirmed.
 - [ ] Subtask 1: improve model — U-Net or ViT on multi-temporal stack
 - [ ] Subtask 2 Challenge 1: temporal model (LSTM / Transformer) on patch sequences
 - [ ] Subtask 2 Challenge 2: early detection with March-only features
