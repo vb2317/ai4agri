@@ -8,8 +8,8 @@ Produce valid, reproducible AI4Agri 2026 submissions before the May 7, 2026 comp
 
 Current strategy:
 
-1. Build Subtask 2 first because the data is now local on RunPod, small enough for fast iteration, and has clear patch folders.
-2. Keep Subtask 1 moving in parallel toward a valid CodaBench ZIP; do not wait for a high-quality model before proving packaging.
+1. Focus Subtask 1 first until a CodaBench submission is made and feedback is recorded.
+2. Use the validated constant ZIP as the first submission while remote raster access is prepared for the sampled-pixel baseline.
 3. Use RunPod for data, feature extraction, training, inference, and anything that touches the full datasets.
 4. Use local for code edits, review, result sync, documentation, commits, and submission prep.
 
@@ -75,12 +75,16 @@ Current strategy:
 
 ### VB
 
-- [ ] Confirm Subtask 1 CodaBench submission limits and evaluation timing.
-- [ ] Confirm whether RunPod global networking is enabled in the Pod Connect/details tab.
-- [ ] Keep the RunPod Pod running while Codex builds/runs Subtask 2 baseline; stop it when idle.
-- [ ] After Codex produces first Subtask 2 metrics, review confusion matrices and decide whether to freeze tabular baseline or allow one neural attempt.
-- [ ] Once Codex produces first Subtask 1 ZIP, submit to CodaBench and report score/errors.
-  - Current ZIP ready for submission: `results/subtask1/submissions/constant_class_2.zip`.
+- [ ] Submit Subtask 1 constant baseline ZIP to CodaBench and record score/errors:
+  - `results/subtask1/submissions/constant_class_2.zip`
+- [ ] Confirm Subtask 1 CodaBench submission limits and evaluation timing:
+  - daily/total cap,
+  - immediate vs queued scoring,
+  - whether failed submissions count.
+- [ ] Confirm whether RunPod global networking is enabled in the Pod Connect/details tab before raster downloads.
+- [ ] Keep the RunPod Pod running while Subtask 1 raster download/training is active; stop it when idle.
+- [ ] After sampled-pixel Subtask 1 ZIP validates, submit it to CodaBench and record score/errors.
+- [ ] Defer Subtask 2 review decisions until Subtask 1 first submission is complete.
 
 ### Codex
 
@@ -163,7 +167,7 @@ Remaining:
 
 ### Phase 2: Subtask 2 Fast Baseline
 
-Priority: blocked on DACIA5 label confirmation and RunPod execution access.
+Priority: parked until Subtask 1 has a CodaBench submission.
 
 - [X] Build manifest/feature/training scripts for patch TIFF folders.
 - [X] Add notebook cells that showcase data, artifact summaries, visual checks, and feature distributions without running the workflow.
@@ -183,8 +187,12 @@ Remaining:
 
 ### Phase 3: Subtask 1 Valid Baseline
 
-Priority: VB submission of constant ZIP is next; model baseline waits for raster access.
+Priority: active now.
 
+- [ ] VB submits validated constant ZIP: `results/subtask1/submissions/constant_class_2.zip`.
+- [ ] Download Subtask 1 CSVs and `viticulture.tif` on RunPod with `scripts/download_subtask1_hf.py --skip-images`.
+- [ ] Smoke-read labels from one patch.
+- [ ] Download full Sentinel-2 image rasters if RunPod disk/time budget allows.
 - [ ] Smoke-read rasters and labels.
 - [X] Implement sampled-pixel ordinal baseline trainer.
 - [ ] Train sampled-pixel ordinal baseline once rasters are available.
