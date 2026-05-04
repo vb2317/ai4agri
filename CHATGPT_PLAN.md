@@ -74,19 +74,20 @@ Current strategy:
 
 - [ ] Commit and push the current Subtask 2 inspection JSON and parser update.
 - [ ] Implement Subtask 2 TIFF patch dataset discovery:
-  - [ ] Parse problem, split, date, field/parcel id, and crop label from file paths/names.
-  - [ ] Load patch arrays through `rasterio`.
-  - [ ] Create a dataframe manifest under `results/subtask2/`.
+  - [X] Parse problem, split, date, field/parcel id, and unverified label candidates from file paths/names.
+  - [X] Load patch arrays through `rasterio`.
+  - [X] Create a CSV manifest under `results/subtask2/`.
 - [ ] Implement Subtask 2 feature extraction:
-  - [ ] Per-band mean, std, min, max.
-  - [ ] Selected percentiles.
+  - [X] Per-band mean, std, min, max.
+  - [X] Selected percentiles.
   - [ ] Simple vegetation indices only after band order is confirmed.
-  - [ ] Cache features under remote `results/subtask2/features/`.
+  - [X] Cache features under remote `results/subtask2/features/`.
 - [ ] Implement Subtask 2 tabular baseline:
-  - [ ] ExtraTreesClassifier.
-  - [ ] HistGradientBoostingClassifier.
-  - [ ] Overall accuracy, average class accuracy, and `Q = 0.5 * OA + 0.5 * AA`.
-  - [ ] Save metrics, confusion matrices, predictions, and run metadata.
+  - [X] ExtraTreesClassifier.
+  - [X] HistGradientBoostingClassifier.
+  - [X] Overall accuracy, average class accuracy, and `Q = 0.5 * OA + 0.5 * AA`.
+  - [X] Save metrics, confusion matrices, predictions, and run metadata.
+  - [ ] Run remotely after DACIA5 label source is confirmed.
 - [ ] Implement a Subtask 1 smoke-read command against local/remote rasters once actual files are available.
 - [ ] Keep `README.md`, `REMOTE_PROVIDER.md`, and this plan aligned after each material change.
 
@@ -137,8 +138,8 @@ Priority: active now.
 
 - [ ] Build manifest from patch TIFF folders.
 - [ ] Extract cached tabular features.
-- [ ] Train baseline models.
-- [ ] Save local validation metrics and confusion matrices.
+- [ ] Train baseline models after label source is confirmed.
+- [ ] Save remote validation metrics and confusion matrices.
 - [ ] Generate candidate predictions/artifacts for review.
 
 ### Phase 3: Subtask 1 Valid Baseline
@@ -194,6 +195,10 @@ cd /workspace/ai4agri
 source .venv/bin/activate
 python scripts/inspect_subtask1.py --splits train val test
 python scripts/inspect_subtask2.py --data-dir data/subtask2 --read-arrays
+python scripts/subtask2_baseline.py manifest --data-dir data/subtask2
+python scripts/subtask2_baseline.py features
+# After the DACIA5 crop-label source is confirmed and labels are present:
+python scripts/subtask2_baseline.py train --problem problem1
 ```
 
 Download/extract Subtask 2 on RunPod:

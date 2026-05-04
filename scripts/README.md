@@ -19,6 +19,7 @@ Current scripts:
 - `extract_subtask2_zip.sh`: extract the downloaded Subtask 2 ZIP under `data/subtask2`, installing `unzip` on apt-based images if needed.
 - `inspect_subtask1.py`: inspect AgriPotential CSV metadata and optionally smoke-read Sentinel-2/label windows with `--limit`, `--read-pixels`, and `--read-labels`.
 - `inspect_subtask2.py`: inspect extracted DACIA5 file layout, labels, years, and optional TIFF array shapes.
+- `subtask2_baseline.py`: build a DACIA5 patch TIFF manifest, cache tabular per-band features, and train ExtraTrees/HistGradientBoosting baselines once labels are confirmed.
 - `validate_submission_zip.py`: configurable ZIP sanity checker for candidate submissions. Use `--subtask1-codabench` for confirmed AgriPotential rules: root-level `<patch_id>.png` masks, optional `report.pdf`, and class ids `0..4`.
 
 Common local commands:
@@ -39,4 +40,8 @@ python scripts/download_subtask2_zenodo.py
 bash scripts/extract_subtask2_zip.sh
 python scripts/inspect_subtask1.py --splits train val test
 python scripts/inspect_subtask2.py --data-dir data/subtask2 --read-arrays
+python scripts/subtask2_baseline.py manifest --data-dir data/subtask2
+python scripts/subtask2_baseline.py features
+# After the DACIA5 crop-label source is confirmed and labels are present:
+python scripts/subtask2_baseline.py train --problem problem1
 ```
