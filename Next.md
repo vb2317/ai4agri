@@ -2,22 +2,33 @@
 
 ## Now (Subtask 1 First)
 
-- [ ] VB: submit the validated constant baseline ZIP to Subtask 1 CodaBench.
+- [X] VB: submit the validated constant baseline ZIP to Subtask 1 CodaBench.
   - File: `results/subtask1/submissions/constant_class_2.zip`
   - Expected CodaBench target: AgriPotential / Subtask 1.
   - Do not rename files inside the ZIP.
   - After upload, record submission status, validation errors if any, score if available, and evaluation timing in this file.
-- [ ] VB: confirm Subtask 1 CodaBench submission limits and evaluation timing.
-  - Record daily/total submission cap.
+ 
+  > validated the submission, it received a accuracy score of 39.52
+
+- [X] VB: confirm Subtask 1 CodaBench submission limits and evaluation timing.
+  - Record daily/total submission cap 
+   > daily limit is 10, total allowed is 100
   - Record whether scoring is immediate, queued, or delayed.
+   > Immediate scoring
   - Record whether failed submissions count against the limit.
+   > Irrelevant, ignore this
+
 - [ ] VB: confirm RunPod global networking status before downloading AgriPotential rasters.
+   > Pod is located in EU-RO-1, global network is off
   - In RunPod Pod details/connectivity, confirm whether public internet egress is enabled.
   - If disabled, enable it or report the exact limitation.
-- [ ] VB or RunPod operator: sync latest branch to RunPod at `/workspace/ai4agri`.
+
+  > how to do this?
+
+- [X] VB or RunPod operator: sync latest branch to RunPod at `/workspace/ai4agri`.
   - Branch: `codex/phase1-inspection-scripts`
   - Run `git pull` or use the repo sync helper from a machine with RunPod SSH access.
-- [ ] VB or RunPod operator: download Subtask 1 CSVs and viticulture label raster first.
+- [X] VB or RunPod operator: download Subtask 1 CSVs and viticulture label raster first.
   - Run on RunPod:
     ```bash
     cd /workspace/ai4agri
@@ -25,7 +36,7 @@
     python scripts/download_subtask1_hf.py --out-dir data/subtask1 --skip-images
     ```
   - Confirm files exist: `metadata.csv`, `train.csv`, `val.csv`, `test.csv`, `viticulture.tif`.
-- [ ] VB or RunPod operator: smoke-read one Subtask 1 patch with labels.
+- [X] VB or RunPod operator: smoke-read one Subtask 1 patch with labels.
   - Run on RunPod:
     ```bash
     cd /workspace/ai4agri
@@ -37,7 +48,7 @@
       --read-labels
     ```
   - Pull or paste the resulting label shape/counts and any error.
-- [ ] VB or RunPod operator: download Sentinel-2 image rasters only if disk/time budget is acceptable.
+- [X] VB or RunPod operator: download Sentinel-2 image rasters only if disk/time budget is acceptable.
   - Full image download is large.
   - Run on RunPod only:
     ```bash
@@ -46,6 +57,8 @@
     python scripts/download_subtask1_hf.py --out-dir data/subtask1
     ```
   - Record final disk usage with `du -sh data/subtask1`.
+  > root@6528cb1710c5:/workspace/ai4agri# du -sh data/subtask1
+185G	data/subtask1
 - [ ] VB or RunPod operator: train the sampled-pixel Subtask 1 baseline after image rasters are present.
   - Start with a smoke run:
     ```bash

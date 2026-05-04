@@ -1,5 +1,5 @@
 {
-  "source": "data/subtask1/agripotential",
+  "source": "data/subtask1",
   "label_name": "viticulture",
   "metadata": {
     "rows": 34,
@@ -75,7 +75,24 @@
         "5184_12672",
         "5248_12608"
       ],
-      "samples": []
+      "samples": [
+        {
+          "patch_id": "7296_14720",
+          "row": 7296,
+          "col": 14720,
+          "patch_size": 128,
+          "label_shape": [
+            128,
+            128
+          ],
+          "label_dtype": "uint8",
+          "label_counts": {
+            "0": 14660,
+            "2": 1148,
+            "3": 576
+          }
+        }
+      ]
     },
     "val": {
       "rows": 781,
@@ -134,7 +151,23 @@
         "9536_2048",
         "9536_2112"
       ],
-      "samples": []
+      "samples": [
+        {
+          "patch_id": "9472_2048",
+          "row": 9472,
+          "col": 2048,
+          "patch_size": 128,
+          "label_shape": [
+            128,
+            128
+          ],
+          "label_dtype": "uint8",
+          "label_counts": {
+            "0": 6996,
+            "1": 9388
+          }
+        }
+      ]
     },
     "test": {
       "rows": 800,
@@ -193,7 +226,22 @@
         "8960_12288",
         "8960_12352"
       ],
-      "samples": []
+      "samples": [
+        {
+          "patch_id": "7552_13056",
+          "row": 7552,
+          "col": 13056,
+          "patch_size": 128,
+          "label_shape": [
+            128,
+            128
+          ],
+          "label_dtype": "uint8",
+          "label_counts": {
+            "0": 16384
+          }
+        }
+      ]
     }
   }
 }
