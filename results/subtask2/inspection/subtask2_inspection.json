@@ -1,9 +1,25 @@
 {
   "source": "data/subtask2",
-  "total_files": 0,
-  "top_level_dirs": {},
-  "suffix_counts": {},
-  "years_seen_in_paths": {},
+  "total_files": 18043,
+  "top_level_dirs": {
+    "Dataset": 18042,
+    "downloads": 1
+  },
+  "suffix_counts": {
+    ".mat": 8707,
+    ".pdf": 1,
+    ".png": 455,
+    ".tif": 8874,
+    ".zip": 1,
+    "<none>": 5
+  },
+  "years_seen_in_paths": {
+    "2020": 12857,
+    "2021": 566,
+    "2022": 630,
+    "2023": 699,
+    "2024": 3290
+  },
   "problem1_labels": {
     "0": "Wheat",
     "1": "Corn",
@@ -17,8 +33,417 @@
     "0": "Winter Wheat",
     "1": "Alfalfa"
   },
-  "groups": {},
-  "array_reads": [],
+  "groups": {
+    "problem1/test/mat": {
+      "count": 1017,
+      "examples": [
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_mat/patch_20240716_9748_3.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_mat/patch_20240924_3017_12.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_mat/patch_20240817_253_4.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_mat/patch_20240815_108_3.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_mat/patch_20240812_3017_7.mat"
+      ]
+    },
+    "problem1/test/tiff": {
+      "count": 1017,
+      "examples": [
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240716_253_1.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20241009_3017_5.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240820_3017_8.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240820_3017_16.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240815_3017_6.tif"
+      ]
+    },
+    "problem1/training/mat": {
+      "count": 5436,
+      "examples": [
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_mat/patch_20231226_9748_1.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_mat/patch_20231219_9748_3.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_mat/patch_20231219_101_8.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_mat/patch_20231219_101_12.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_mat/patch_20231121_101_3.mat"
+      ]
+    },
+    "problem1/training/tiff": {
+      "count": 5436,
+      "examples": [
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231231_101_3.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231231_101_10.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231226_101_7.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231219_101_3.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231121_101_13.tif"
+      ]
+    },
+    "problem2/test/mat": {
+      "count": 1073,
+      "examples": [
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_mat/patch_20241009_9748_1.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_mat/patch_20240802_9748_2.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_mat/patch_20240716_9748_3.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_mat/patch_20240711_9748_3.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_mat/patch_20240628_9748_2.mat"
+      ]
+    },
+    "problem2/test/tiff": {
+      "count": 1073,
+      "examples": [
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240728_9748_2.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240623_202_6.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240623_202_14.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240621_202_11.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240621_151_2.tif"
+      ]
+    },
+    "problem2/training/mat": {
+      "count": 1176,
+      "examples": [
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_mat/patch_20200513_9747_3.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_mat/patch_20200513_9747_1.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_mat/patch_20200513_1010_18.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_mat/patch_20200513_1010_9.mat",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_mat/patch_20200513_1010_1.mat"
+      ]
+    },
+    "problem2/training/tiff": {
+      "count": 1176,
+      "examples": [
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_1010_19.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_1010_17.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_1010_3.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_202_4.tif",
+        "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_202_3.tif"
+      ]
+    },
+    "unknown_problem/unknown_split/mat": {
+      "count": 5,
+      "examples": [
+        "Dataset/Masks_and_legend/Sentinel2_2024/Labels_mask_2024.mat",
+        "Dataset/Masks_and_legend/Sentinel2_2023/Labels_mask_2023.mat",
+        "Dataset/Masks_and_legend/Sentinel2_2022/Labels_mask_2022.mat",
+        "Dataset/Masks_and_legend/Sentinel2_2021/Labels_mask_2021.mat",
+        "Dataset/Masks_and_legend/Sentinel2_2020/Labels_mask_2020.mat"
+      ]
+    },
+    "unknown_problem/unknown_split/pdf": {
+      "count": 1,
+      "examples": [
+        "Dataset/Masks_and_legend/Legend_crops.pdf"
+      ]
+    },
+    "unknown_problem/unknown_split/png": {
+      "count": 455,
+      "examples": [
+        "Dataset/Masks_and_legend/Sentinel2_2024/RGB_mask_2024.png",
+        "Dataset/Masks_and_legend/Sentinel2_2024/Labels_mask_2024.png",
+        "Dataset/Masks_and_legend/Sentinel2_2023/RGB_mask_2023.png",
+        "Dataset/Masks_and_legend/Sentinel2_2023/Labels_mask_2023.png",
+        "Dataset/Masks_and_legend/Sentinel2_2022/RGB_mask_2022.png"
+      ]
+    },
+    "unknown_problem/unknown_split/tiff": {
+      "count": 172,
+      "examples": [
+        "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20241021.tif",
+        "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20241019.tif",
+        "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20241009.tif",
+        "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20240924.tif",
+        "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20240921.tif"
+      ]
+    },
+    "unknown_problem/unknown_split/unknown": {
+      "count": 5,
+      "examples": [
+        "Dataset/32x32_patches/32x32_RGB_patches/patches_2024/.DS_Store",
+        "Dataset/32x32_patches/32x32_RGB_patches/patches_2023/.DS_Store",
+        "Dataset/32x32_patches/32x32_RGB_patches/patches_2022/.DS_Store",
+        "Dataset/32x32_patches/32x32_RGB_patches/patches_2021/.DS_Store",
+        "Dataset/32x32_patches/32x32_RGB_patches/patches_2020/.DS_Store"
+      ]
+    },
+    "unknown_problem/unknown_split/zip": {
+      "count": 1,
+      "examples": [
+        "downloads/AI4AGRI Sentinel-2 Brasov area 2020-2024 dataset.zip"
+      ]
+    }
+  },
+  "array_reads": [
+    {
+      "shape": [
+        12,
+        800,
+        450
+      ],
+      "dtype": "uint16",
+      "crs": "EPSG:32635",
+      "file": "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20241021.tif",
+      "group": "unknown_problem/unknown_split/tiff"
+    },
+    {
+      "shape": [
+        12,
+        800,
+        450
+      ],
+      "dtype": "uint16",
+      "crs": "EPSG:32635",
+      "file": "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20241019.tif",
+      "group": "unknown_problem/unknown_split/tiff"
+    },
+    {
+      "shape": [
+        12,
+        800,
+        450
+      ],
+      "dtype": "uint16",
+      "crs": "EPSG:32635",
+      "file": "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20241009.tif",
+      "group": "unknown_problem/unknown_split/tiff"
+    },
+    {
+      "shape": [
+        12,
+        800,
+        450
+      ],
+      "dtype": "uint16",
+      "crs": "EPSG:32635",
+      "file": "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20240924.tif",
+      "group": "unknown_problem/unknown_split/tiff"
+    },
+    {
+      "shape": [
+        12,
+        800,
+        450
+      ],
+      "dtype": "uint16",
+      "crs": "EPSG:32635",
+      "file": "Dataset/Images_Sentinel2_GeoTIFF/Sentinel2_2024/Sentinel2_L2A_20240921.tif",
+      "group": "unknown_problem/unknown_split/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240728_9748_2.tif",
+      "group": "problem2/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240623_202_6.tif",
+      "group": "problem2/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240623_202_14.tif",
+      "group": "problem2/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240621_202_11.tif",
+      "group": "problem2/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/test_after_20May/patches_tiff/patch_20240621_151_2.tif",
+      "group": "problem2/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_1010_19.tif",
+      "group": "problem2/training/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_1010_17.tif",
+      "group": "problem2/training/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_1010_3.tif",
+      "group": "problem2/training/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_202_4.tif",
+      "group": "problem2/training/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem2/training_before_20May/patches_tiff/patch_20200513_202_3.tif",
+      "group": "problem2/training/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240716_253_1.tif",
+      "group": "problem1/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20241009_3017_5.tif",
+      "group": "problem1/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240820_3017_8.tif",
+      "group": "problem1/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240820_3017_16.tif",
+      "group": "problem1/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/test_2024/patches_tiff/patch_20240815_3017_6.tif",
+      "group": "problem1/test/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231231_101_3.tif",
+      "group": "problem1/training/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231231_101_10.tif",
+      "group": "problem1/training/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231226_101_7.tif",
+      "group": "problem1/training/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231219_101_3.tif",
+      "group": "problem1/training/tiff"
+    },
+    {
+      "shape": [
+        12,
+        32,
+        32
+      ],
+      "dtype": "uint16",
+      "crs": null,
+      "file": "Dataset/32x32_patches/32x32_multispectral_patches/problem1/training_2020-2023/patches_tiff/patch_20231121_101_13.tif",
+      "group": "problem1/training/tiff"
+    }
+  ],
   "notes": [
     "Problem 1 challenge: train on 2020-2023 and test on 2024.",
     "Problem 2 ImageCLEF 2026 challenge: March-only winter wheat vs alfalfa.",

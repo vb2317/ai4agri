@@ -54,9 +54,9 @@ def infer_problem(parts: tuple[str, ...]) -> str | None:
 
 def infer_split(parts: tuple[str, ...]) -> str | None:
     lowered = [part.lower() for part in parts]
-    if "training" in lowered or "train" in lowered:
+    if any(part in {"training", "train"} or part.startswith(("training_", "train_")) for part in lowered):
         return "training"
-    if "test" in lowered or "testing" in lowered:
+    if any(part in {"test", "testing"} or part.startswith(("test_", "testing_")) for part in lowered):
         return "test"
     return None
 
