@@ -178,20 +178,21 @@ Owner: Codex structures, Claude drafts, VB approves.
 
 ### Handoff 1: VB To Claude
 
-Status: Ready for Claude.
+Status: Done.
 
 Use `claude_handoffs/phase0.md`, prompt 1.
 
 Expected output:
 
-- Exact CodaBench ZIP structure.
-- Required filenames.
-- Prediction shape.
-- Submission limits.
+- Exact CodaBench ZIP structure: root-level files only.
+- Required filenames: one PNG per `test.csv` `patch_id`, named `<patch_id>.png`; optional `report.pdf`.
+- Prediction shape: each PNG is a pixel-level segmentation mask for the corresponding test patch.
+- Class ids: integer values `0` to `4`.
+- Submission limits/evaluation timing: still not captured in `vb_handoffs/phase0.md`.
 
 Codex follow-up:
 
-- Update `scripts/validate_submission_zip.py` usage examples.
+- Update `scripts/validate_submission_zip.py` usage examples. Done.
 - Add packaging script if the format is stable.
 
 ### Handoff 2: VB To Claude

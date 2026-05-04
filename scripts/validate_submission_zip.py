@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Validate a candidate AI4Agri submission ZIP.
 
-The exact CodaBench file names still need to be confirmed from the logged-in
-competition page. This checker therefore validates the invariants we know are
-safe now and supports stricter options once filenames are confirmed.
+Subtask 1 CodaBench submissions are root-level PNG masks named after test
+``patch_id`` values, with integer class ids 0..4. An optional ``report.pdf`` is
+accepted.
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ import csv
 import json
 import sys
 import zipfile
+from io import BytesIO
 from pathlib import Path
 from typing import Iterable
 
@@ -24,6 +25,11 @@ DEFAULT_IGNORED_NAMES = (".DS_Store",)
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--zip-path", required=True, type=Path, help="Submission ZIP to validate.")
+    parser.add_argument(
+        "--subtask1-codabench",
+        action="store_true",
+        help="Apply confirmed AgriPotential CodaBench rules: root PNGs named by patch_id, optional report.pdf.",
+    )
     parser.add_argument(
         "--expected-file",
         action="append",
@@ -39,9 +45,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-class", type=int, default=0, help="Minimum allowed class id.")
     parser.add_argument("--max-class", type=int, default=4, help="Maximum allowed class id.")
     parser.add_argument(
+        "--expected-count",
+        type=int,
+        default=None,
+        help="Expected number of prediction files. For Subtask 1 this is 800 PNGs.",
+    )
+    parser.add_argument(
+        "--expected-ids-file",
+        type=Path,
+        default=None,
+        help="CSV containing expected patch_id values; use with Subtask 1 test.csv.",
+    )
+    parser.add_argument(
         "--check-class-values",
         action="store_true",
-        help="Parse supported files and verify integer classes are within [min-class, max-class].",
+        help="Parse supported files/images and verify integer classes are within [min-class, max-class].",
     )
     return parser.parse_args()
 
@@ -86,6 +104,47 @@ def validate_allowed_extensions(names: Iterable[str], allowed_exts: list[str]) -
         fail("files with disallowed extensions found: " + ", ".join(bad[:10]))
 
 
+def prediction_file_names(names: Iterable[str]) -> list[str]:
+    return [name for name in names if Path(name).name != "report.pdf"]
+
+
+def validate_subtask1_codabench(names: list[str], expected_count: int | None) -> None:
+    bad = []
+    for name in names:
+        path = Path(name)
+        if path.name == "report.pdf":
+            continue
+        if path.suffix.lower() != ".png":
+            bad.append(name)
+    if bad:
+        fail("Subtask 1 CodaBench ZIP may contain only PNG predictions and optional report.pdf: " + ", ".join(bad[:10]))
+
+    predictions = prediction_file_names(names)
+    if expected_count is not None and len(predictions) != expected_count:
+        print(f"WARN: expected {expected_count} PNG predictions, found {len(predictions)}.")
+
+
+def read_expected_ids(path: Path) -> set[str]:
+    if not path.exists():
+        fail(f"expected ids file does not exist: {path}")
+    with path.open(newline="") as handle:
+        reader = csv.DictReader(handle)
+        if not reader.fieldnames or "patch_id" not in reader.fieldnames:
+            fail(f"expected ids file must be a CSV with a patch_id column: {path}")
+        return {row["patch_id"].strip() for row in reader if row.get("patch_id", "").strip()}
+
+
+def validate_expected_ids(names: Iterable[str], expected_ids_file: Path) -> None:
+    expected_ids = read_expected_ids(expected_ids_file)
+    found_ids = {Path(name).stem for name in prediction_file_names(names) if Path(name).suffix.lower() == ".png"}
+    missing = sorted(expected_ids - found_ids)
+    extra = sorted(found_ids - expected_ids)
+    if missing:
+        fail("missing PNG predictions for patch_id values: " + ", ".join(missing[:10]))
+    if extra:
+        fail("PNG predictions not present in expected patch_id list: " + ", ".join(extra[:10]))
+
+
 def iter_csv_ints(payload: str) -> Iterable[int]:
     reader = csv.reader(payload.splitlines())
     for row in reader:
@@ -125,6 +184,25 @@ def iter_json_ints(payload: str) -> Iterable[int]:
     yield from walk(json.loads(payload))
 
 
+def iter_png_ints(payload: bytes) -> Iterable[int]:
+    try:
+        from PIL import Image
+    except ImportError:
+        print("WARN: Pillow is not installed; skipping PNG class-value checks.")
+        return
+
+    try:
+        import numpy as np
+    except ImportError:
+        print("WARN: numpy is not installed; skipping PNG class-value checks.")
+        return
+
+    with Image.open(BytesIO(payload)) as image:
+        array = np.asarray(image)
+    for value in np.unique(array):
+        yield int(value)
+
+
 def validate_class_values(zf: zipfile.ZipFile, names: Iterable[str], min_class: int, max_class: int) -> None:
     checked_files = 0
     checked_values = 0
@@ -132,15 +210,20 @@ def validate_class_values(zf: zipfile.ZipFile, names: Iterable[str], min_class: 
 
     for name in names:
         suffix = Path(name).suffix.lower()
-        if suffix not in {".csv", ".txt", ".json"}:
+        if suffix not in {".csv", ".txt", ".json", ".png"}:
             continue
 
-        payload = zf.read(name).decode("utf-8")
+        raw_payload = zf.read(name)
         if suffix == ".csv":
+            payload = raw_payload.decode("utf-8")
             values = iter_csv_ints(payload)
         elif suffix == ".json":
+            payload = raw_payload.decode("utf-8")
             values = iter_json_ints(payload)
+        elif suffix == ".png":
+            values = iter_png_ints(raw_payload)
         else:
+            payload = raw_payload.decode("utf-8")
             values = iter_text_ints(payload)
 
         file_value_count = 0
@@ -179,6 +262,10 @@ def main() -> None:
         validate_root_layout(names)
         validate_expected_files(set(names), args.expected_file)
         validate_allowed_extensions(names, args.allowed_ext)
+        if args.subtask1_codabench:
+            validate_subtask1_codabench(names, args.expected_count if args.expected_count is not None else 800)
+        if args.expected_ids_file:
+            validate_expected_ids(names, args.expected_ids_file)
 
         if args.check_class_values:
             validate_class_values(zf, names, args.min_class, args.max_class)

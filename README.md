@@ -101,31 +101,39 @@ Already scaffolded in this repo:
 - `scripts/README.md` for script conventions
 - `claude_handoffs/phase0.md` for Claude research prompts
 
+Confirmed from VB logged-in handoffs:
+
+- Subtask 1 CodaBench expects one ZIP with root-level PNG masks.
+- Each PNG must be named exactly as the corresponding `test.csv` `patch_id`.
+- Target is all 800 test PNGs; fewer are accepted but hurt the score.
+- PNG values must be integer class ids `0` through `4`.
+- Optional method PDF must be named exactly `report.pdf` at ZIP root.
+
 Still needs confirmation before Phase 1:
 
-- Exact CodaBench ZIP/file format for Subtask 1
-- Submission limits and evaluation timing
+- CodaBench submission limits and evaluation timing
 - Remote provider, budget ceiling, and disk/GPU configuration
 - Final data locations for Subtask 1 and Subtask 2
 
 ## Useful Commands
 
-Validate a candidate submission ZIP once predictions exist:
-
-```bash
-python scripts/validate_submission_zip.py --zip-path results/subtask1/submissions/example.zip
-```
-
-After the exact CodaBench format is known, run it with stricter checks:
+Validate a candidate Subtask 1 CodaBench ZIP once predictions exist:
 
 ```bash
 python scripts/validate_submission_zip.py \
   --zip-path results/subtask1/submissions/example.zip \
-  --expected-file predictions.csv \
-  --allowed-ext .csv \
-  --check-class-values \
-  --min-class 0 \
-  --max-class 4
+  --subtask1-codabench \
+  --check-class-values
+```
+
+If `test.csv` is available, also verify the exact `patch_id` set:
+
+```bash
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/example.zip \
+  --subtask1-codabench \
+  --expected-ids-file data/subtask1/test.csv \
+  --check-class-values
 ```
 
 ## Claude Handoffs

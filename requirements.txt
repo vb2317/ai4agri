@@ -19,6 +19,7 @@ agripotential  # pip install git+https://github.com/MohammadElSakka/agripotentia
 # Visualization
 matplotlib
 seaborn
+Pillow
 
 # Utilities
 tqdm
