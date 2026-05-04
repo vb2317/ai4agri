@@ -100,6 +100,20 @@ python scripts/validate_submission_zip.py \
   --check-class-values
 ```
 
+Overnight Subtask 1 experiment suite:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+mkdir -p results/subtask1/experiments
+nohup python scripts/run_subtask1_experiments.py \
+  --data-dir data/subtask1 \
+  --suite overnight \
+  --infer-best \
+  --validate-best \
+  > results/subtask1/experiments/overnight.log 2>&1 &
+```
+
 ## Local `.env`
 
 Do not commit `.env`.

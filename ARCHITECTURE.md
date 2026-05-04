@@ -87,6 +87,7 @@ Claude owns bounded research: official format checks, band order, final Subtask 
 ## Current Decision Points
 
 - Subtask 1 sampled-pixel baseline scored `39.74`, only slightly above the constant baseline score `39.52`.
-- Decide whether to spend one quick RunPod pass on the optimized baseline settings or shift to Subtask 2 packaging/report work.
+- Subtask 1 stays active because CodaBench gives immediate leaderboard feedback.
+- Next RunPod work should target one optimized Subtask 1 candidate at a time, with local validation before every upload.
 - Subtask 2 needs confirmed Sentinel-2 band order before vegetation-index features.
 - Subtask 2 needs final notebook/report/prediction artifact rules before packaging.

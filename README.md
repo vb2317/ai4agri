@@ -30,8 +30,9 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 - Subtask 1 constant baseline was submitted to CodaBench and scored `39.52`.
 - Subtask 1 full data is on RunPod under `/workspace/ai4agri/data/subtask1` and uses about `185G`.
 - Subtask 1 sampled-pixel baseline ZIP was submitted to CodaBench and scored `39.74`.
-- Subtask 1 next step is a quick improvement decision: rerun with the optimized baseline settings or move attention to Subtask 2 packaging/report work.
-- Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete, deliverable format is confirmed, and vegetation indices remain blocked on confirmed Sentinel-2 band order.
+- Subtask 1 remains the active priority because it has leaderboard feedback.
+- Subtask 1 next step is to run an optimized leaderboard-improvement pass, then submit only validated candidates with a plausible score gain.
+- Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete but parked while Subtask 1 leaderboard work is active.
 
 ## Operating Docs
 
@@ -118,6 +119,11 @@ python scripts/inspect_subtask1.py --data-dir data/subtask1 --splits train val t
 Train and infer the Subtask 1 sampled-pixel baseline on RunPod:
 
 ```bash
+python scripts/run_subtask1_experiments.py \
+  --data-dir data/subtask1 \
+  --suite overnight \
+  --infer-best \
+  --validate-best
 python scripts/subtask1_baseline.py train --data-dir data/subtask1
 python scripts/subtask1_baseline.py infer --data-dir data/subtask1
 python scripts/validate_submission_zip.py \

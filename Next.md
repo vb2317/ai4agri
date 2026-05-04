@@ -83,11 +83,21 @@
 - [X] VB: submit `results/subtask1/submissions/subtask1_baseline.zip` only after validation passes, then record CodaBench score/errors.
   > Score is 39.74
 
-## Now (After First Subtask 1 Model Submission)
+## Now (Subtask 1 Leaderboard Loop)
 
-- [ ] Decide whether to rerun Subtask 1 with the optimized baseline settings before spending more CodaBench submissions.
 - [ ] Confirm whether the submitted `39.74` ZIP came from the older script version or the optimized version.
-- [ ] Resume Subtask 2 packaging/report work while any Subtask 1 rerun is active.
+- [ ] Sync/pull latest code on RunPod and confirm it has commit `5bb8c08` or newer.
+- [ ] Run the overnight Subtask 1 suite:
+  ```bash
+  python scripts/run_subtask1_experiments.py \
+    --data-dir data/subtask1 \
+    --suite overnight \
+    --infer-best \
+    --validate-best
+  ```
+- [ ] Review `results/subtask1/experiments/<timestamp>/overnight/summary.csv`.
+- [ ] If validation metrics are plausible, pull and submit the best validated candidate ZIP.
+- [ ] Record every CodaBench score and avoid spending submissions on unvalidated ZIPs.
 
 ## Before May 28 (Notebook submission)
 
@@ -96,6 +106,7 @@
 - [X] Confirm Subtask 2 deliverable format: Colab notebook or zipped source folder with README, plus max 3-page report, submitted by email.
 - [ ] Confirm DACIA5 Sentinel-2 12-band order before adding vegetation-index features.
 - [ ] Subtask 1: improve model — U-Net or ViT on multi-temporal stack
+- [ ] Subtask 1: improve leaderboard score with optimized tabular/pixel baselines first.
 - [ ] Subtask 2 Challenge 1: temporal model (LSTM / Transformer) on patch sequences
 - [ ] Subtask 2 Challenge 2: early detection with March-only features
 - [ ] Write 3-page technical report for Subtask 2
