@@ -46,6 +46,9 @@ src/
 results/
   subtask1/       # Submission ZIPs
   subtask2/       # Predictions + report
+  runs.csv        # Experiment/run tracking
+scripts/          # Operational utilities
+claude_handoffs/  # Parallel research prompts for Claude
 ```
 
 ## Setup
@@ -58,3 +61,77 @@ For Subtask 1 data:
 ```bash
 pip install git+https://github.com/MohammadElSakka/agripotential
 ```
+
+Copy the environment template before running local or remote jobs:
+
+```bash
+cp .env.example .env
+```
+
+Fill only the values needed for the current machine. Do not commit `.env`.
+
+## Current Execution Plan
+
+The detailed working plan is in [`CHATGPT_PLAN.md`](CHATGPT_PLAN.md). It separates tasks by:
+
+- **VB:** registrations, account access, remote compute choices, final submissions
+- **Codex:** repo implementation, scripts, validators, packaging, reproducibility
+- **Claude:** parallel research handoffs for data formats, baseline ideas, and report support
+- **Local vs remote:** local for code and packaging; remote for large data, feature extraction, training, and inference
+
+Primary strategy:
+
+1. Get valid baseline submissions before optimizing model quality.
+2. Use remote resources for Subtask 1 because the dataset is ~200GB.
+3. Prioritize Subtask 2 for fast iteration because the dataset is much smaller.
+4. Save reusable features and track every meaningful run in `results/runs.csv`.
+5. Update the plan as access, data format, validation scores, and submission feedback become clear.
+
+The handoff operating model is in [`HANDOFF_STRATEGY.md`](HANDOFF_STRATEGY.md). Use it to decide what belongs with VB, Codex, or Claude, and when a task is blocked versus ready for implementation.
+
+## Phase 0 Status
+
+Phase 0 is about access and environment setup.
+
+Already scaffolded in this repo:
+
+- `.env.example` for local/remote configuration
+- `results/runs.csv` for experiment tracking
+- `scripts/validate_submission_zip.py` for configurable submission ZIP checks
+- `scripts/README.md` for script conventions
+- `claude_handoffs/phase0.md` for Claude research prompts
+
+Still needs confirmation before Phase 1:
+
+- Exact CodaBench ZIP/file format for Subtask 1
+- Submission limits and evaluation timing
+- Remote provider, budget ceiling, and disk/GPU configuration
+- Final data locations for Subtask 1 and Subtask 2
+
+## Useful Commands
+
+Validate a candidate submission ZIP once predictions exist:
+
+```bash
+python scripts/validate_submission_zip.py --zip-path results/subtask1/submissions/example.zip
+```
+
+After the exact CodaBench format is known, run it with stricter checks:
+
+```bash
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/example.zip \
+  --expected-file predictions.csv \
+  --allowed-ext .csv \
+  --check-class-values \
+  --min-class 0 \
+  --max-class 4
+```
+
+## Claude Handoffs
+
+Use [`claude_handoffs/phase0.md`](claude_handoffs/phase0.md) to split research work while Codex continues implementation. The first three handoffs are:
+
+1. Confirm CodaBench submission format.
+2. Summarize AgriPotential loader and smoke-test usage.
+3. Summarize DACIA5 data structure, labels, and split logic.
