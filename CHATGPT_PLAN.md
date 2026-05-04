@@ -85,11 +85,15 @@ Current strategy:
   - [X] Overall accuracy, average class accuracy, and `Q = 0.5 * OA + 0.5 * AA`.
   - [X] Save metrics, confusion matrices, predictions, and run metadata.
 - [X] Keep `scripts/train_subtask2_baseline.py` as a direct experimental trainer; use only after DACIA5 filename label semantics are confirmed.
+- [X] Add exploratory test-bed notebooks for both subtasks:
+  - [X] `notebooks/subtask1_testbed.ipynb`
+  - [X] `notebooks/subtask2_testbed.ipynb`
+- [X] Pair notebooks with `.py:percent` files using `nbpair`; keep them synced with `nbsync`.
 - [ ] Run Subtask 2 manifest and feature extraction on RunPod.
 - [ ] Confirm DACIA5 label source before running training with labels.
 - [ ] Add simple vegetation indices only after band order is confirmed.
 - [ ] Implement a Subtask 1 smoke-read command against local/remote rasters once actual files are available.
-- [ ] Keep `README.md`, `REMOTE_PROVIDER.md`, and this plan aligned after each material change.
+- [ ] Keep `README.md`, `REMOTE_PROVIDER.md`, notebooks, and this plan aligned after each material change.
 
 ### Claude
 
@@ -137,7 +141,9 @@ Remaining:
 Priority: active now.
 
 - [X] Build manifest/feature/training scripts for patch TIFF folders.
-- [ ] Run manifest from patch TIFF folders on RunPod.
+- [X] Add notebook cells that showcase data, artifact summaries, visual checks, and feature distributions without running the workflow.
+- [X] Add notebook alias routine: `nbopen`, `nbpair`, `nbsync`, `nbrun` when data is available.
+- [X] Run manifest from patch TIFF folders on RunPod.
 - [ ] Extract cached tabular features on RunPod.
 - [ ] Train baseline models after label source is confirmed.
 - [ ] Save remote validation metrics and confusion matrices.

@@ -38,8 +38,8 @@ data/
   subtask1/       # AgriPotential patches (HuggingFace)
   subtask2/       # DACIA5 patches (Zenodo)
 notebooks/
-  subtask1/       # Exploration and experiments
-  subtask2/
+  subtask1_testbed.ipynb  # Exploration/test bed
+  subtask2_testbed.ipynb
 src/
   subtask1/       # Training and inference scripts
   subtask2/
@@ -97,6 +97,23 @@ The handoff operating model is in [`HANDOFF_STRATEGY.md`](HANDOFF_STRATEGY.md). 
 The remote compute recommendation and VB subscription instructions are in [`REMOTE_PROVIDER.md`](REMOTE_PROVIDER.md). Current default: RunPod On-Demand GPU Pod.
 
 Current RunPod Pod recorded there: ID `vit08hc86csllk`, 1x RTX PRO 4500, 28 vCPU, 62GB RAM, `runpod-torch-v240`, 450GB `/workspace` volume, JupyterLab URL recorded, direct SSH recorded, total listed price $0.71/hr.
+
+## Notebooks
+
+Keep notebooks as exploratory test beds, not workflow runners. Scripts own operational steps such as download, inspection refresh, manifest creation, feature extraction, training, validation, and packaging.
+
+- [`notebooks/subtask1_testbed.ipynb`](notebooks/subtask1_testbed.ipynb): AgriPotential metadata summaries, patch geometry charts, existing inspection artifact review, and optional manual raster smoke view.
+- [`notebooks/subtask2_testbed.ipynb`](notebooks/subtask2_testbed.ipynb): DACIA5 inspection artifact review, manifest/feature table summaries, date distributions, feature histograms, and optional patch visualization.
+
+Notebook sync workflow:
+
+```bash
+source .venv/bin/activate
+nbpair notebooks/subtask1_testbed.ipynb notebooks/subtask2_testbed.ipynb
+nbsync notebooks/subtask1_testbed.ipynb notebooks/subtask2_testbed.ipynb
+```
+
+Use `nbopen` for interactive edits and `nbrun <notebook.ipynb>` for smoke execution when the needed local or RunPod data is available. Commit both the `.ipynb` and paired `.py` files. When a script changes a major artifact shape, update the matching notebook review cell in the same commit.
 
 ## Phase 0 Status
 

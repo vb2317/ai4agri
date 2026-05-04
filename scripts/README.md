@@ -8,6 +8,7 @@ Conventions:
 - Long-running remote commands should write artifacts under `results/`.
 - Important experiments should be logged in `results/runs.csv`.
 - Smoke-test options should use `--limit` where applicable.
+- Notebooks under `notebooks/` should review and visualize script-produced artifacts; do not move operational script commands into notebooks.
 
 Current scripts:
 
