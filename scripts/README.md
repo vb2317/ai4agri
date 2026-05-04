@@ -8,6 +8,7 @@ Conventions:
 - Long-running remote commands should write artifacts under `results/`.
 - Important experiments should be logged in `results/runs.csv`.
 - Smoke-test options should use `--limit` where applicable.
+- Notebooks under `notebooks/` should review and visualize script-produced artifacts; do not move operational script commands into notebooks.
 
 Current scripts:
 
@@ -23,6 +24,7 @@ Current scripts:
 - `inspect_subtask2.py`: inspect extracted DACIA5 file layout, labels, years, and optional TIFF array shapes.
 - `subtask1_baseline.py`: train a sampled-pixel AgriPotential baseline from local rasters and write test PNG masks in a CodaBench ZIP.
 - `subtask2_baseline.py`: build a DACIA5 patch TIFF manifest, cache tabular per-band features, and train ExtraTrees/HistGradientBoosting baselines once labels are confirmed.
+- `train_subtask2_baseline.py`: direct experimental DACIA5 trainer that assumes the last filename token is the crop label; use only after label semantics are confirmed.
 - `validate_submission_zip.py`: configurable ZIP sanity checker for candidate submissions. Use `--subtask1-codabench` for confirmed AgriPotential rules: root-level `<patch_id>.png` masks, optional `report.pdf`, and class ids `0..4`.
 
 Common local commands:
@@ -51,4 +53,7 @@ python scripts/subtask2_baseline.py manifest --data-dir data/subtask2
 python scripts/subtask2_baseline.py features
 # After the DACIA5 crop-label source is confirmed and labels are present:
 python scripts/subtask2_baseline.py train --problem problem1
+# Experimental direct trainer after filename labels are confirmed:
+python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 1
+python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 2
 ```

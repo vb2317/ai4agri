@@ -22,6 +22,11 @@ matplotlib
 seaborn
 Pillow
 
+# Notebook tooling
+jupyterlab
+jupytext
+nbconvert
+
 # Utilities
 tqdm
 einops

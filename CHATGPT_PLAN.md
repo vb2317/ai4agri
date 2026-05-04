@@ -81,25 +81,29 @@ Current strategy:
 ### Codex
 
 - [X] Commit and push the current Subtask 2 inspection JSON and parser update.
-- [X] Implement Subtask 2 TIFF patch dataset discovery:
+- [X] Add canonical Subtask 2 baseline workflow in `scripts/subtask2_baseline.py`:
   - [X] Parse problem, split, date, field/parcel id, and unverified label candidates from file paths/names.
   - [X] Load patch arrays through `rasterio`.
   - [X] Create a CSV manifest under `results/subtask2/`.
-- [X] Implement Subtask 2 feature extraction:
   - [X] Per-band mean, std, min, max.
   - [X] Selected percentiles.
-  - [ ] Simple vegetation indices only after band order is confirmed.
   - [X] Cache features under remote `results/subtask2/features/`.
-- [X] Implement Subtask 2 tabular baseline:
   - [X] ExtraTreesClassifier.
   - [X] HistGradientBoostingClassifier.
   - [X] Overall accuracy, average class accuracy, and `Q = 0.5 * OA + 0.5 * AA`.
   - [X] Save metrics, confusion matrices, predictions, and run metadata.
-  - [ ] Run remotely after DACIA5 label source is confirmed.
+- [X] Keep `scripts/train_subtask2_baseline.py` as a direct experimental trainer; use only after DACIA5 filename label semantics are confirmed.
+- [X] Add exploratory test-bed notebooks for both subtasks:
+  - [X] `notebooks/subtask1_testbed.ipynb`
+  - [X] `notebooks/subtask2_testbed.ipynb`
+- [X] Pair notebooks with `.py:percent` files using `nbpair`; keep them synced with `nbsync`.
+- [ ] Run Subtask 2 manifest and feature extraction on RunPod.
+- [ ] Confirm DACIA5 label source before running training with labels.
+- [ ] Add simple vegetation indices only after band order is confirmed.
 - [ ] Implement a Subtask 1 smoke-read command against local/remote rasters once actual files are available.
 - [X] Implement a Subtask 1 constant-mask ZIP writer for CodaBench packaging smoke tests.
 - [X] Implement a Subtask 1 Hugging Face downloader for CSVs, labels, and image rasters.
-- [X] Keep `README.md`, `REMOTE_PROVIDER.md`, and this plan aligned after latest local tooling changes.
+- [X] Keep `README.md`, `REMOTE_PROVIDER.md`, notebooks, and this plan aligned after latest local tooling changes.
 
 ### Claude
 
@@ -147,8 +151,11 @@ Remaining:
 
 Priority: blocked on DACIA5 label confirmation and RunPod execution access.
 
-- [X] Build manifest from patch TIFF folders.
-- [X] Extract cached tabular features.
+- [X] Build manifest/feature/training scripts for patch TIFF folders.
+- [X] Add notebook cells that showcase data, artifact summaries, visual checks, and feature distributions without running the workflow.
+- [X] Add notebook alias routine: `nbopen`, `nbpair`, `nbsync`, `nbrun` when data is available.
+- [X] Run manifest from patch TIFF folders on RunPod.
+- [ ] Extract cached tabular features on RunPod.
 - [ ] Train baseline models after label source is confirmed.
 - [ ] Save remote validation metrics and confusion matrices.
 - [ ] Generate candidate predictions/artifacts for review.
@@ -213,6 +220,15 @@ python scripts/subtask2_baseline.py manifest --data-dir data/subtask2
 python scripts/subtask2_baseline.py features
 # After the DACIA5 crop-label source is confirmed and labels are present:
 python scripts/subtask2_baseline.py train --problem problem1
+```
+
+Experimental direct Subtask 2 trainer, only after filename labels are confirmed:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 1
+python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 2
 ```
 
 Download/extract Subtask 2 on RunPod:

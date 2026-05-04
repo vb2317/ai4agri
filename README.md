@@ -38,8 +38,8 @@ data/
   subtask1/       # AgriPotential patches (HuggingFace)
   subtask2/       # DACIA5 patches (Zenodo)
 notebooks/
-  subtask1/       # Exploration and experiments
-  subtask2/
+  subtask1_testbed.ipynb  # Exploration/test bed
+  subtask2_testbed.ipynb
 src/
   subtask1/       # Training and inference scripts
   subtask2/
@@ -54,12 +54,15 @@ claude_handoffs/  # Parallel research prompts for Claude
 ## Setup
 
 ```bash
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r requirements.txt
 ```
 
 For Subtask 1 data:
 ```bash
-pip install git+https://github.com/MohammadElSakka/agripotential
+python -m pip install git+https://github.com/MohammadElSakka/agripotential
 ```
 
 `agripotential` is intentionally not listed as an installable package in `requirements.txt` because it is not published on PyPI. Install it from GitHub after the base requirements.
@@ -120,6 +123,23 @@ Blocked or waiting:
 - VB/remote: confirm RunPod global networking status and run data-heavy commands there.
 - Claude/VB: confirm DACIA5 label source and Sentinel-2 band order before training/enhancing Subtask 2.
 - Codex remote run: train Subtask 1 sampled-pixel baseline once actual rasters are available.
+
+## Notebooks
+
+Keep notebooks as exploratory test beds, not workflow runners. Scripts own operational steps such as download, inspection refresh, manifest creation, feature extraction, training, validation, and packaging.
+
+- [`notebooks/subtask1_testbed.ipynb`](notebooks/subtask1_testbed.ipynb): AgriPotential metadata summaries, patch geometry charts, existing inspection artifact review, and optional manual raster smoke view.
+- [`notebooks/subtask2_testbed.ipynb`](notebooks/subtask2_testbed.ipynb): DACIA5 inspection artifact review, manifest/feature table summaries, date distributions, feature histograms, and optional patch visualization.
+
+Notebook sync workflow:
+
+```bash
+source .venv/bin/activate
+nbpair notebooks/subtask1_testbed.ipynb notebooks/subtask2_testbed.ipynb
+nbsync notebooks/subtask1_testbed.ipynb notebooks/subtask2_testbed.ipynb
+```
+
+Use `nbopen` for interactive edits and `nbrun <notebook.ipynb>` for smoke execution when the needed local or RunPod data is available. Commit both the `.ipynb` and paired `.py` files. When a script changes a major artifact shape, update the matching notebook review cell in the same commit.
 
 ## Phase 0 Status
 
@@ -204,6 +224,13 @@ bash scripts/extract_subtask2_zip.sh
 python scripts/inspect_subtask2.py \
   --data-dir data/subtask2 \
   --read-arrays
+```
+
+Train first DACIA5 tabular baselines on RunPod:
+
+```bash
+python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 1
+python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 2
 ```
 
 Validate a candidate Subtask 1 CodaBench ZIP once predictions exist:
