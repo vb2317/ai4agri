@@ -78,7 +78,7 @@ Good candidates: RunPod, Vast.ai, Lambda Labs, Paperspace, AWS, GCP, Azure, Cola
 
 ### Claude / Local Or Remote Research
 
-- [ ] Review official CodaBench instructions and summarize required output file names and ZIP layout.
+- [X] Review official CodaBench instructions and summarize required output file names and ZIP layout.
 - [ ] Review AgriPotential package examples and summarize the fastest way to stream or download data.
 - [ ] Review DACIA5 file structure from Zenodo documentation and summarize labels, splits, and expected prediction format.
 
@@ -326,11 +326,13 @@ Prepare these once scripts exist.
 - Current repo contains scaffolding only.
 - No data, code, notebooks, or results are present yet.
 - Strategy: get valid baselines first; use remote resources for data-heavy work; prioritize Subtask 2 quick iteration and Subtask 1 valid CodaBench upload.
+- VB added logged-in ImageCLEF/CodaBench handoffs under `vb_handoffs/`.
+- Confirmed Subtask 1 CodaBench format: ZIP root contains PNG masks named `<patch_id>.png` for `test.csv`; target count is 800; values are integer classes `0..4`; optional method PDF must be `report.pdf`; extraneous files are ignored by scorer.
 
 ## Open Questions
 
 - [ ] Is ImageCLEF registration complete despite the listed April 23 registration close date?
-- [ ] What is the exact CodaBench ZIP/file format for Subtask 1?
+- [X] What is the exact CodaBench ZIP/file format for Subtask 1?
 - [ ] Are Subtask 2 test labels hidden, or is this primarily notebook/report evaluation?
 - [ ] Which remote provider will be used?
 - [ ] What is the max budget for remote jobs before May 7?

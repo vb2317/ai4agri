@@ -11,4 +11,4 @@ Conventions:
 
 Current scripts:
 
-- `validate_submission_zip.py`: configurable ZIP sanity checker for candidate submissions.
+- `validate_submission_zip.py`: configurable ZIP sanity checker for candidate submissions. Use `--subtask1-codabench` for confirmed AgriPotential rules: root-level `<patch_id>.png` masks, optional `report.pdf`, and class ids `0..4`.
