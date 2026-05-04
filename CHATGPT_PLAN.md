@@ -8,8 +8,8 @@ Produce valid, reproducible AI4Agri 2026 submissions before the May 7, 2026 comp
 
 Current strategy:
 
-1. Focus Subtask 1 first until a CodaBench submission is made and feedback is recorded.
-2. Use the validated constant ZIP as the first submission while remote raster access is prepared for the sampled-pixel baseline.
+1. Focus Subtask 1 first until the sampled-pixel model ZIP is submitted and feedback is recorded.
+2. Use the constant ZIP result as the floor score while the sampled-pixel baseline is trained and validated.
 3. Use RunPod for data, feature extraction, training, inference, and anything that touches the full datasets.
 4. Use local for code edits, review, result sync, documentation, commits, and submission prep.
 
@@ -45,7 +45,30 @@ Current strategy:
   - `800` root-level PNG masks
   - exact `test.csv` patch ids matched
   - grayscale class values checked without requiring Pillow
-- Still needed: VB submits the constant ZIP to CodaBench, then local or remote access to actual image/label rasters for smoke-read, training, validation, and model-based test inference.
+- Constant-mask CodaBench submission completed:
+  - score: `39.52`
+  - daily submissions: `10`
+  - total submissions: `100`
+  - scoring: immediate
+- RunPod Subtask 1 data state:
+  - path: `/workspace/ai4agri/data/subtask1`
+  - CSVs present: `metadata.csv`, `train.csv`, `val.csv`, `test.csv`
+  - label raster present: `viticulture.tif`
+  - Sentinel-2 image rasters downloaded
+  - disk usage reported by VB: `185G`
+  - label smoke-read succeeded for train/val/test samples.
+- Still needed: smoke train sampled-pixel baseline, run full sampled-pixel baseline, infer ZIP, validate ZIP, submit to CodaBench.
+- Latest sampled-pixel smoke run:
+  - model: `hist_gradient_boosting`
+  - train patches: `20`
+  - validation patches: `5`
+  - train pixels: `5000`
+  - validation pixels: `1250`
+  - feature count: `340`
+  - exact accuracy: `0.5648`
+  - Accuracy +/- 1: `0.9136`
+  - MAE: `0.5768`
+  - caveat: validation sample only contains classes `0` and `1`, so this is a pipeline smoke test, not a representative score.
 
 ### Subtask 2: DACIA5
 
@@ -69,22 +92,25 @@ Current strategy:
   - Problem 1, HistGradientBoosting, 2023 holdout: `Q=0.6655`, `OA=0.7442`, `AA=0.5867`.
   - Problem 2, ExtraTrees, 2024 holdout: `Q=0.8102`, `OA=0.8308`, `AA=0.7896`.
 - Tabular baseline implementation is complete locally.
-- Still needed: confirmed DACIA5 label source, confirmed Sentinel-2 band order before vegetation indices, and remote execution on RunPod.
+- Still needed: confirmed Sentinel-2 band order before vegetation indices and confirmed final Subtask 2 notebook/report/submission artifact expectations.
 
 ## Active Assignments
 
 ### VB
 
-- [ ] Submit Subtask 1 constant baseline ZIP to CodaBench and record score/errors:
+- [X] Submit Subtask 1 constant baseline ZIP to CodaBench and record score/errors:
   - `results/subtask1/submissions/constant_class_2.zip`
-- [ ] Confirm Subtask 1 CodaBench submission limits and evaluation timing:
-  - daily/total cap,
-  - immediate vs queued scoring,
-  - whether failed submissions count.
-- [ ] Confirm whether RunPod global networking is enabled in the Pod Connect/details tab before raster downloads.
-- [ ] Keep the RunPod Pod running while Subtask 1 raster download/training is active; stop it when idle.
+- [X] Confirm Subtask 1 CodaBench submission limits and evaluation timing:
+  - daily cap: `10`
+  - total cap: `100`
+  - scoring: immediate
+- [X] Confirm RunPod global networking status:
+  - pod location: `EU-RO-1`
+  - global networking: off
+  - public internet downloads nevertheless succeeded.
+- [ ] Keep the RunPod Pod running while Subtask 1 training/inference is active; stop it when idle.
 - [ ] After sampled-pixel Subtask 1 ZIP validates, submit it to CodaBench and record score/errors.
-- [ ] Defer Subtask 2 review decisions until Subtask 1 first submission is complete.
+- [ ] Defer Subtask 2 review decisions until Subtask 1 sampled-pixel submission is complete.
 
 ### Codex
 
@@ -116,7 +142,22 @@ Current strategy:
 - [ ] Add simple vegetation indices only after band order is confirmed.
 - [X] Add Subtask 1 downloader that includes `test.csv` and optional label/image raster downloads.
 - [X] Download Subtask 1 CSV metadata/test files on RunPod.
-- [ ] Implement a Subtask 1 smoke-read command against local/remote rasters once actual files are available.
+- [X] Implement a Subtask 1 smoke-read command against local/remote rasters once actual files are available.
+- [X] Run Subtask 1 sampled-pixel smoke training on RunPod.
+- [ ] While full Subtask 1 training runs:
+  - [ ] Receive completion output from VB.
+  - [ ] Check whether validation class coverage is representative enough for a first submission decision.
+  - [ ] If full training fails from I/O/runtime, revise `scripts/subtask1_baseline.py` to keep raster datasets open across patches and rerun with bounded samples.
+- [ ] After full Subtask 1 training completes:
+  - [ ] Pull `results/subtask1/baseline/metrics.json` and model metadata locally.
+  - [ ] Summarize exact accuracy, Accuracy +/- 1, MAE, label counts, confusion matrix, train/val pixels, and model type.
+  - [ ] Run model-based inference on RunPod.
+  - [ ] Validate `results/subtask1/submissions/subtask1_baseline.zip`.
+  - [ ] Pull the validated ZIP locally for VB submission.
+- [ ] If sampled-pixel score underperforms constant baseline:
+  - [ ] Add class-balanced pixel sampling.
+  - [ ] Try `--model extra_trees`.
+  - [ ] Consider median/majority post-processing only after a valid model ZIP exists.
 - [X] Implement a Subtask 1 constant-mask ZIP writer for CodaBench packaging smoke tests.
 - [X] Implement a Subtask 1 Hugging Face downloader for CSVs, labels, and image rasters.
 - [X] Keep `README.md`, `REMOTE_PROVIDER.md`, notebooks, and this plan aligned after latest local tooling changes.
@@ -129,8 +170,12 @@ Current strategy:
   - notebook-only evaluation,
   - CSV prediction file,
   - or zipped source plus report.
-- [ ] Provide one compact Subtask 2 neural baseline recommendation only after tabular baseline metrics exist.
-- [ ] For Subtask 1, verify whether official package examples include a direct raster download command that includes `test.csv`.
+- [ ] Review `results/subtask2/inspection/subtask2_baseline_summary.json` and recommend whether the leakage-free tabular baseline is acceptable for the first report/notebook pass.
+- [ ] Provide one compact Subtask 2 neural baseline recommendation only if it can realistically improve on:
+  - Problem 1 HGB `Q=0.6655`
+  - Problem 2 ExtraTrees `Q=0.8102`
+- [X] For Subtask 1, verify whether official package examples include a direct raster download command that includes `test.csv`.
+  - Repo downloader `scripts/download_subtask1_hf.py` is the current canonical path and includes `test.csv`.
 
 ## Phase Tracker
 
@@ -146,8 +191,8 @@ Current strategy:
 
 Remaining:
 
-- [ ] Confirm CodaBench submission limits and evaluation timing.
-- [ ] Confirm RunPod global networking status.
+- [X] Confirm CodaBench submission limits and evaluation timing.
+- [X] Confirm RunPod global networking status.
 
 ### Phase 1: Data Acquisition And Inspection
 
@@ -160,14 +205,15 @@ Remaining:
 
 Remaining:
 
-- [ ] Smoke-read Subtask 1 actual image and label rasters.
-- [ ] Download Subtask 1 label/image rasters on RunPod when VB approves storage/time.
+- [X] Smoke-read Subtask 1 labels from actual label raster.
+- [X] Download Subtask 1 label/image rasters on RunPod.
 - [X] Add reproducible Subtask 1 downloader for remote `data/subtask1`.
-- [ ] Record exact Subtask 1 raster storage path once available on RunPod.
+- [X] Record exact Subtask 1 raster storage path once available on RunPod: `/workspace/ai4agri/data/subtask1`.
+- [ ] Smoke-read one Subtask 1 image raster window together with labels if not already included in the latest inspection.
 
 ### Phase 2: Subtask 2 Fast Baseline
 
-Priority: parked until Subtask 1 has a CodaBench submission.
+Priority: parked until Subtask 1 sampled-pixel CodaBench submission is complete.
 
 - [X] Build manifest/feature/training scripts for patch TIFF folders.
 - [X] Add notebook cells that showcase data, artifact summaries, visual checks, and feature distributions without running the workflow.
@@ -189,17 +235,51 @@ Remaining:
 
 Priority: active now.
 
-- [ ] VB submits validated constant ZIP: `results/subtask1/submissions/constant_class_2.zip`.
-- [ ] Download Subtask 1 CSVs and `viticulture.tif` on RunPod with `scripts/download_subtask1_hf.py --skip-images`.
-- [ ] Smoke-read labels from one patch.
-- [ ] Download full Sentinel-2 image rasters if RunPod disk/time budget allows.
-- [ ] Smoke-read rasters and labels.
+- [X] VB submits validated constant ZIP: `results/subtask1/submissions/constant_class_2.zip`.
+- [X] Record constant baseline CodaBench score: `39.52`.
+- [X] Download Subtask 1 CSVs and `viticulture.tif` on RunPod with `scripts/download_subtask1_hf.py --skip-images`.
+- [X] Smoke-read labels from one patch.
+- [X] Download full Sentinel-2 image rasters if RunPod disk/time budget allows.
+- [ ] Smoke-read image rasters and labels together.
 - [X] Implement sampled-pixel ordinal baseline trainer.
-- [ ] Train sampled-pixel ordinal baseline once rasters are available.
+- [X] Run sampled-pixel smoke training:
+  ```bash
+  python scripts/subtask1_baseline.py train \
+    --data-dir data/subtask1 \
+    --patch-limit 20 \
+    --val-patch-limit 5 \
+    --pixels-per-patch 256 \
+    --max-train-pixels 5000
+  ```
+  - Result: exact `0.5648`, Accuracy +/- 1 `0.9136`, MAE `0.5768`.
+  - Caveat: validation sample covered only classes `0` and `1`.
+- [ ] Full sampled-pixel baseline training:
+  - Status: running on RunPod.
+  ```bash
+  python scripts/subtask1_baseline.py train --data-dir data/subtask1
+  ```
+  - Capture on completion: exact accuracy, Accuracy +/- 1, MAE, label counts, confusion matrix, model path, metrics path.
+- [ ] Review full-run metrics:
+  - [ ] Confirm validation covers more than the smoke-run classes `0` and `1`.
+  - [ ] Compare Accuracy +/- 1 against constant baseline score `39.52`.
+  - [ ] Decide whether to submit immediately or do one quick improvement pass.
 - [X] Implement constant test inference writer for `800` PNG masks.
 - [X] Implement model-based test inference writer for `800` PNG masks.
 - [X] Validate constant candidate ZIP with `scripts/validate_submission_zip.py`.
-- [ ] Submit first valid ZIP through VB.
+- [ ] Infer model-based ZIP:
+  ```bash
+  python scripts/subtask1_baseline.py infer --data-dir data/subtask1
+  ```
+- [ ] Validate model-based ZIP:
+  ```bash
+  python scripts/validate_submission_zip.py \
+    --zip-path results/subtask1/submissions/subtask1_baseline.zip \
+    --subtask1-codabench \
+    --expected-ids-file data/subtask1/test.csv \
+    --check-class-values
+  ```
+- [ ] Pull metrics/submission locally.
+- [ ] VB submits `results/subtask1/submissions/subtask1_baseline.zip` and records score/errors.
 
 ### Phase 4: Model Improvement
 
@@ -242,13 +322,34 @@ Inspect data on RunPod:
 ```bash
 cd /workspace/ai4agri
 source .venv/bin/activate
-python scripts/inspect_subtask1.py --splits train val test
+python scripts/inspect_subtask1.py --data-dir data/subtask1 --splits train val test --limit 1 --read-labels
+python scripts/inspect_subtask1.py --data-dir data/subtask1 --splits train val test --limit 1 --read-pixels --read-labels
 python scripts/create_subtask1_constant_zip.py
 python scripts/inspect_subtask2.py --data-dir data/subtask2 --read-arrays
-python scripts/subtask2_baseline.py manifest --data-dir data/subtask2
+python scripts/subtask2_baseline.py manifest --data-dir data/subtask2 --label-mode apia-code
 python scripts/subtask2_baseline.py features
-# After the DACIA5 crop-label source is confirmed and labels are present:
+python scripts/subtask2_baseline.py label-features
 python scripts/subtask2_baseline.py train --problem problem1
+```
+
+Train and validate the active Subtask 1 sampled-pixel baseline on RunPod:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/subtask1_baseline.py train \
+  --data-dir data/subtask1 \
+  --patch-limit 20 \
+  --val-patch-limit 5 \
+  --pixels-per-patch 256 \
+  --max-train-pixels 5000
+python scripts/subtask1_baseline.py train --data-dir data/subtask1
+python scripts/subtask1_baseline.py infer --data-dir data/subtask1
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/subtask1_baseline.zip \
+  --subtask1-codabench \
+  --expected-ids-file data/subtask1/test.csv \
+  --check-class-values
 ```
 
 Experimental direct Subtask 2 trainer, only after filename labels are confirmed:
@@ -324,14 +425,18 @@ Needed output:
 - Claude completed Phase 0 research on AgriPotential, DACIA5, and fast baseline options.
 - Added validators, inspection scripts, remote sync/exec/bootstrap/status helpers, and Subtask 2 download/extract helpers.
 - Subtask 1 metadata inspection confirmed `6329/781/800` train/val/test patches.
+- Subtask 1 constant class `2` ZIP submitted to CodaBench and scored `39.52`.
+- CodaBench limits confirmed: `10` daily submissions, `100` total submissions, immediate scoring.
+- Subtask 1 full RunPod data downloaded under `/workspace/ai4agri/data/subtask1`; reported disk usage `185G`.
 - Subtask 2 data downloaded, extracted, inspected, and pulled locally.
 - Subtask 2 patch TIFF counts confirmed: problem 1 train/test `5436/1017`; problem 2 train/test `1176/1073`.
+- Subtask 2 APIA-code labels confirmed from `Legend_crops.pdf`; first leakage-free tabular baselines trained.
 
 ## Open Questions
 
-- [ ] What are the Subtask 1 CodaBench submission limits and evaluation timing?
-- [ ] Is RunPod global networking enabled?
+- [X] What are the Subtask 1 CodaBench submission limits and evaluation timing?
+- [X] Is RunPod global networking enabled?
 - [ ] Are Subtask 2 test labels hidden, or is this primarily notebook/report evaluation?
 - [ ] What is the exact Subtask 2 prediction/submission artifact format?
 - [ ] What is the confirmed Sentinel-2 band order for DACIA5 12-band patch TIFFs?
-- [ ] What is the confirmed label token in DACIA5 patch filenames?
+- [X] What is the confirmed label token in DACIA5 patch filenames?
