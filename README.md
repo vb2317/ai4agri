@@ -98,6 +98,32 @@ The remote compute recommendation and VB subscription instructions are in [`REMO
 
 Current RunPod Pod recorded there: ID `vit08hc86csllk`, 1x RTX PRO 4500, 28 vCPU, 62GB RAM, `runpod-torch-v240`, 450GB `/workspace` volume, JupyterLab URL recorded, direct SSH recorded, total listed price $0.71/hr.
 
+## Current Status
+
+Current branch: `codex/phase1-inspection-scripts`.
+
+Ready for VB:
+
+- Submit Subtask 1 constant baseline ZIP: `results/subtask1/submissions/constant_class_2.zip`.
+- This ZIP was generated from `test.csv`, contains `800` root-level PNG masks, matches expected patch ids, and passes class-value validation.
+
+Implemented tooling:
+
+- Subtask 1 CodaBench ZIP validator, including grayscale PNG value checks without requiring Pillow.
+- Subtask 1 constant-mask ZIP writer.
+- Subtask 1 Hugging Face downloader for CSVs, labels, and optional image rasters.
+- Subtask 1 sampled-pixel train/inference baseline script.
+- Subtask 2 data inspection, manifest, feature extraction, and tabular baseline scripts.
+- RunPod sync/exec/bootstrap/status helpers.
+
+Blocked or waiting:
+
+- VB: confirm CodaBench submission limits and evaluation timing.
+- VB: submit `results/subtask1/submissions/constant_class_2.zip` and report score/errors.
+- VB/remote: confirm RunPod global networking status and run data-heavy commands there.
+- Claude/VB: confirm DACIA5 label source and Sentinel-2 band order before training/enhancing Subtask 2.
+- Codex remote run: train Subtask 1 sampled-pixel baseline once actual rasters are available.
+
 ## Notebooks
 
 Keep notebooks as exploratory test beds, not workflow runners. Scripts own operational steps such as download, inspection refresh, manifest creation, feature extraction, training, validation, and packaging.
@@ -177,6 +203,10 @@ Download AgriPotential CSVs, including `test.csv`:
 
 ```bash
 python scripts/download_subtask1_agripotential.py
+Download AgriPotential CSVs and the viticulture label raster:
+
+```bash
+python scripts/download_subtask1_hf.py --out-dir data/subtask1 --skip-images
 ```
 
 On a remote machine with local data, smoke-read one patch:
@@ -216,6 +246,29 @@ Validate a candidate Subtask 1 CodaBench ZIP once predictions exist:
 python scripts/validate_submission_zip.py \
   --zip-path results/subtask1/submissions/example.zip \
   --subtask1-codabench \
+  --check-class-values
+```
+
+Create a packaging-smoke baseline ZIP with constant class masks:
+
+```bash
+python scripts/create_subtask1_constant_zip.py
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/constant_class_2.zip \
+  --subtask1-codabench \
+  --expected-ids-file data/subtask1/test.csv \
+  --check-class-values
+```
+
+Train and run the sampled-pixel Subtask 1 baseline once local rasters are available:
+
+```bash
+python scripts/subtask1_baseline.py train --data-dir data/subtask1
+python scripts/subtask1_baseline.py infer --data-dir data/subtask1
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/subtask1_baseline.zip \
+  --subtask1-codabench \
+  --expected-ids-file data/subtask1/test.csv \
   --check-class-values
 ```
 
