@@ -2,17 +2,18 @@
 
 Last updated: 2026-05-04
 
-## Current RunPod
+## Current State
 
 ```text
 Provider: RunPod
 Pod ID: vit08hc86csllk
 Cloud: Secure cloud
+Location: EU-RO-1
+Global networking: off
 Template: runpod-torch-v240
 GPU: 1x RTX PRO 4500
-VRAM: 32,623 MiB observed
 vCPU: 28
-RAM: 62 GB listed; 251 Gi observed in container
+RAM: 62 GB listed
 Container disk: 20 GB
 Volume: 450 GB mounted at /workspace
 Price: $0.71/hr total
@@ -24,67 +25,38 @@ Data: /workspace/ai4agri/data
 Results: /workspace/ai4agri/results
 ```
 
-Pending:
-
-- Confirm whether RunPod global networking is enabled.
-- Install remaining Python dependencies after `requirements.txt` sync.
-- Start data acquisition/inspection after Claude returns loader/data-format details.
-
 ## Verified
 
-- SSH to RunPod works.
+- SSH from local Mac to RunPod works.
 - JupyterLab URL is available.
 - GitHub SSH auth from the Pod works for `vb2317`.
 - Repo files are present at `/workspace/ai4agri`.
-- PyTorch works with CUDA:
+- PyTorch CUDA works: `torch==2.4.1+cu124`, `torch.cuda.is_available() == True`.
+- Public internet downloads worked even with global networking off.
+- Subtask 1 full data is present at `/workspace/ai4agri/data/subtask1`; reported size is `185G`.
+- Subtask 2 data is downloaded, extracted, inspected, and feature/baseline artifacts exist under `/workspace/ai4agri/results/subtask2`.
 
-```text
-torch==2.4.1+cu124
-torch.cuda.is_available() == True
-```
+## Pending
 
-- Submission validator works:
+- Keep the Pod running only while Subtask 1 training/inference is active.
+- When full Subtask 1 training finishes, run inference, validate the ZIP, and pull results locally.
+- Stop the Pod when idle after metrics and submission candidates have been synced back.
 
-```bash
-python3 scripts/validate_submission_zip.py --help
-```
+## Local Commands
 
-## Next Commands
-
-From local Mac, push current repo scripts/docs to the Pod:
+Push current scripts/docs to RunPod:
 
 ```bash
 scripts/runpod_sync.sh push
 ```
 
-Then bootstrap from local over SSH:
-
-```bash
-scripts/runpod_exec.sh 'bash scripts/runpod_bootstrap.sh'
-```
-
-Or run directly on the Pod:
-
-```bash
-cd /workspace/ai4agri
-bash scripts/runpod_bootstrap.sh
-```
-
-Check Pod/data status any time:
+Run a command on RunPod:
 
 ```bash
 scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'
 ```
 
-## Sync From Mac
-
-Use this when local docs/scripts change:
-
-```bash
-scripts/runpod_sync.sh push
-```
-
-Pull remote results back:
+Pull all remote results:
 
 ```bash
 scripts/runpod_sync.sh pull-results
@@ -96,6 +68,12 @@ Pull only inspection outputs:
 scripts/runpod_sync.sh pull-inspection
 ```
 
+If local macOS lacks `rsync`:
+
+```bash
+brew install rsync
+```
+
 If the Pod lacks `rsync`:
 
 ```bash
@@ -103,32 +81,23 @@ apt-get update
 apt-get install -y rsync
 ```
 
-The sync helper excludes `.git`, `.env`, `.venv`, `.DS_Store`, `data`, and submission ZIP directories by default.
-
-## Data Management
-
-Download Subtask 2 on the Pod:
+## RunPod Commands
 
 ```bash
 cd /workspace/ai4agri
 source .venv/bin/activate
-python scripts/download_subtask2_zenodo.py
-bash scripts/extract_subtask2_zip.sh
-```
-
-Inspect metadata/layout:
-
-```bash
-cd /workspace/ai4agri
-source .venv/bin/activate
-python scripts/inspect_subtask1.py --splits train val test
-python scripts/inspect_subtask2.py --data-dir data/subtask2 --read-arrays
-```
-
-Watch disk and GPU state:
-
-```bash
 bash scripts/runpod_status.sh
+```
+
+Subtask 1 model ZIP path after inference:
+
+```bash
+python scripts/subtask1_baseline.py infer --data-dir data/subtask1
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/subtask1_baseline.zip \
+  --subtask1-codabench \
+  --expected-ids-file data/subtask1/test.csv \
+  --check-class-values
 ```
 
 ## Local `.env`
@@ -146,8 +115,7 @@ RUNPOD_SSH_PORT=34365
 
 ## Rules
 
-- Keep all project/data/results under `/workspace/ai4agri`.
-- Do not use the 20 GB container disk for data.
-- Avoid duplicate Subtask 1 raw-data copies; 450 GB is usable but tight.
-- Stop the Pod when not actively working.
+- Keep all project files, data, and results under `/workspace/ai4agri`.
+- Do not use the 20 GB container disk for raw data or generated features.
+- Avoid duplicate Subtask 1 raw-data copies; the 450 GB volume is usable but tight.
 - Sync results back before deleting the Pod or volume.

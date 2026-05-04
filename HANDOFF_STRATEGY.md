@@ -6,6 +6,8 @@ Last updated: 2026-05-04
 
 Coordinate VB, Codex, and Claude so work moves in parallel without duplicating effort or creating conflicting artifacts.
 
+Current operational state is tracked in `CHATGPT_PLAN.md`. Repository and pipeline architecture is tracked in `ARCHITECTURE.md`. Phase-specific prompts and findings live under `claude_handoffs/` and `vb_handoffs/`.
+
 The core pattern:
 
 1. VB decides and operates external systems.
@@ -125,7 +127,7 @@ Good Codex tasks:
 
 ## Critical Path
 
-The fastest route to useful results is:
+The original route to useful results was:
 
 1. VB confirms exact CodaBench submission format.
 2. VB chooses remote provider and budget.
@@ -136,6 +138,14 @@ The fastest route to useful results is:
 7. VB submits first valid CodaBench ZIP.
 8. Claude helps interpret score/error feedback.
 9. Codex improves and repackages.
+
+Current critical path:
+
+1. Let the active Subtask 1 full sampled-pixel training finish on RunPod.
+2. Pull and review metrics.
+3. Run model inference and validate the CodaBench ZIP.
+4. VB submits the validated ZIP and records score/errors.
+5. Resume parked Subtask 2 packaging/report work.
 
 ## Parallel Work Plan
 
@@ -174,7 +184,9 @@ Owner: Codex structures, Claude drafts, VB approves.
 - Claude: draft report prose and figure captions.
 - VB: review final notebook/report.
 
-## Immediate Handoffs
+## Historical Phase 0 Handoffs
+
+These entries are retained as historical context. Use `CHATGPT_PLAN.md` for current assignments.
 
 ### Handoff 1: VB To Claude
 
@@ -197,7 +209,7 @@ Codex follow-up:
 
 ### Handoff 2: VB To Claude
 
-Status: Ready for Claude.
+Status: Done.
 
 Use `claude_handoffs/phase0.md`, prompt 2.
 
@@ -214,7 +226,7 @@ Codex follow-up:
 
 ### Handoff 3: VB To Claude
 
-Status: Ready for Claude.
+Status: Done.
 
 Use `claude_handoffs/phase0.md`, prompt 3.
 
@@ -232,7 +244,7 @@ Codex follow-up:
 
 ### Handoff 5: VB To Claude
 
-Status: Ready for Claude.
+Status: Done.
 
 Use `claude_handoffs/phase0.md`, prompt 4.
 
@@ -249,15 +261,15 @@ Codex follow-up:
 
 ### Handoff 4: VB To Codex
 
-Status: Mostly done. RunPod Pod launched and connection details recorded; global networking status still needed from VB.
+Status: Done. RunPod Pod launched, connection details recorded, global networking status recorded as off, and public downloads succeeded.
 
 Needed from VB:
 
-- RunPod global networking status.
+- Keep the Pod running only during active training/inference, then stop it when idle.
 
 Codex follow-up:
 
-- Write remote setup commands.
+- Maintain RunPod commands and sync helpers in `REMOTE_PROVIDER.md` and `scripts/`.
 - Add provider-specific notes to `README.md`.
 - Prepare first remote smoke-test command.
 

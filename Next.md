@@ -18,15 +18,15 @@
   - Record whether failed submissions count against the limit.
    > Irrelevant, ignore this
 
-- [ ] VB: confirm RunPod global networking status before downloading AgriPotential rasters.
+- [X] VB: confirm RunPod global networking status before downloading AgriPotential rasters.
    > Pod is located in EU-RO-1, global network is off
   - In RunPod Pod details/connectivity, confirm whether public internet egress is enabled.
   - If disabled, enable it or report the exact limitation.
 
-  > how to do this?
+  > Public internet downloads succeeded with global networking off, so no further action is needed now.
 
 - [X] VB or RunPod operator: sync latest branch to RunPod at `/workspace/ai4agri`.
-  - Branch: `codex/phase1-inspection-scripts`
+  - Branch: `main`
   - Run `git pull` or use the repo sync helper from a machine with RunPod SSH access.
 - [X] VB or RunPod operator: download Subtask 1 CSVs and viticulture label raster first.
   - Run on RunPod:
@@ -59,7 +59,7 @@
   - Record final disk usage with `du -sh data/subtask1`.
   > root@6528cb1710c5:/workspace/ai4agri# du -sh data/subtask1
 185G	data/subtask1
-- [ ] VB or RunPod operator: train the sampled-pixel Subtask 1 baseline after image rasters are present.
+- [ ] VB or RunPod operator: finish the sampled-pixel Subtask 1 baseline after image rasters are present.
   - Start with a smoke run:
     ```bash
     python scripts/subtask1_baseline.py train \
@@ -69,9 +69,9 @@
       --pixels-per-patch 256 \
       --max-train-pixels 5000
     ```
-  - If smoke run works, run the larger baseline:
+  - Smoke run completed and produced exact accuracy `0.5648`, Accuracy +/- 1 `0.9136`, MAE `0.5768`; this was a pipeline check, not a representative score.
+  - Full run has already been triggered on RunPod. On completion, run inference and validation:
     ```bash
-    python scripts/subtask1_baseline.py train --data-dir data/subtask1
     python scripts/subtask1_baseline.py infer --data-dir data/subtask1
     python scripts/validate_submission_zip.py \
       --zip-path results/subtask1/submissions/subtask1_baseline.zip \

@@ -13,6 +13,12 @@ Current strategy:
 3. Use RunPod for data, feature extraction, training, inference, and anything that touches the full datasets.
 4. Use local for code edits, review, result sync, documentation, commits, and submission prep.
 
+Related docs:
+
+- `ARCHITECTURE.md`: local/remote topology, pipeline layout, and artifact policy.
+- `REMOTE_PROVIDER.md`: current RunPod state and pending remote operating steps.
+- `HANDOFF_STRATEGY.md`: ownership rules for VB, Codex, and Claude.
+
 ## Current State
 
 ### Access And Remote
@@ -155,7 +161,7 @@ Current strategy:
   - [ ] Validate `results/subtask1/submissions/subtask1_baseline.zip`.
   - [ ] Pull the validated ZIP locally for VB submission.
 - [ ] If sampled-pixel score underperforms constant baseline:
-  - [ ] Add class-balanced pixel sampling.
+  - [X] Add class-balanced pixel sampling.
   - [ ] Try `--model extra_trees`.
   - [ ] Consider median/majority post-processing only after a valid model ZIP exists.
 - [X] Implement a Subtask 1 constant-mask ZIP writer for CodaBench packaging smoke tests.
@@ -294,7 +300,8 @@ Start only after a valid baseline exists for the relevant subtask.
 
 - [ ] Tune Subtask 2 tabular models.
 - [ ] Add Subtask 2 neural baseline only if tabular results plateau.
-- [ ] Add Subtask 1 class-balanced sampling.
+- [X] Add Subtask 1 class-balanced sampling.
+- [ ] Try Subtask 1 `extra_trees` if the current sampled-pixel model underperforms.
 - [ ] Try Subtask 1 ensemble or lightweight neural model only if the data pipeline is stable.
 
 ### Phase 5: Packaging And Report

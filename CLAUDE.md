@@ -13,12 +13,15 @@ ImageCLEF 2026 AI4Agri — two subtasks using satellite imagery for agricultural
 - Subtask 2 patches: 32×32 pixels, optical (12 bands) and SAR (2 bands) separate
 - Do not commit raw data — use `data/` dirs which are gitignored
 
-## Conventions
+## Current Repo Conventions
 
-- Scripts go in `src/subtask1/` or `src/subtask2/`
-- Notebooks in `notebooks/` — keep Colab-compatible (no local-only paths)
-- Submission artifacts go in `results/subtask1/` or `results/subtask2/`
-- Use `results/subtask1/submissions/` for CodaBench ZIPs with run date in filename
+- Operational scripts live in `scripts/`.
+- Notebooks live in `notebooks/` and are exploratory test beds, not workflow runners.
+- Keep notebooks synced with the configured aliases: `nbpair`, `nbsync`, `nbopen`, `nbrun`.
+- Submission artifacts go under `results/subtask1/` or `results/subtask2/`.
+- Use `results/subtask1/submissions/` for CodaBench ZIPs.
+- Do not commit raw data or bulky generated artifacts; follow `.gitignore`.
+- Use `CHATGPT_PLAN.md` for active task state and `ARCHITECTURE.md` for pipeline layout.
 
 ## Metric Targets
 

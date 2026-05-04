@@ -24,7 +24,6 @@ Current scripts:
 - `inspect_subtask1.py`: inspect AgriPotential CSV metadata and optionally smoke-read Sentinel-2/label windows with `--limit`, `--read-pixels`, and `--read-labels`.
 - `inspect_subtask2.py`: inspect extracted DACIA5 file layout, labels, years, and optional TIFF array shapes.
 - `inspect_subtask2_labels.py`: inspect DACIA5 full-year label masks, per-patch RGB masks, and patch-to-mask matching.
-- `subtask1_baseline.py`: train a sampled-pixel AgriPotential baseline from local rasters and write test PNG masks in a CodaBench ZIP.
 - `subtask2_baseline.py`: build a DACIA5 patch TIFF manifest, cache tabular per-band features, and train ExtraTrees/HistGradientBoosting baselines once labels are confirmed.
 - `summarize_subtask2_features.py`: summarize the generated Subtask 2 manifest/features into a small tracked inspection JSON.
 - `subtask1_baseline.py`: train/infer the sampled-pixel AgriPotential baseline. It keeps rasters open across patches, shuffles split rows, defaults to class-balanced pixel sampling, and uses raw plus temporal-summary pixel features.
@@ -48,8 +47,7 @@ source .venv/bin/activate
 python scripts/download_subtask1_hf.py --skip-images
 python scripts/download_subtask2_zenodo.py
 bash scripts/extract_subtask2_zip.sh
-python scripts/download_subtask1_agripotential.py
-# Add --labels --images only when ready to spend the disk/time for full Subtask 1 rasters.
+python scripts/download_subtask1_hf.py --out-dir data/subtask1
 python scripts/inspect_subtask1.py --splits train val test
 python scripts/create_subtask1_constant_zip.py
 python scripts/subtask1_baseline.py train --data-dir data/subtask1
