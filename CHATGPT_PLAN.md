@@ -39,8 +39,13 @@ Current strategy:
 - Patch size: `128 x 128`.
 - Input metadata: `34` Sentinel-2 image rows.
 - Confirmed CodaBench format: ZIP root contains PNG masks named `<patch_id>.png`; values are class ids `0..4`; optional method PDF must be named `report.pdf`.
-- Still needed: local or remote access to actual image/label rasters for smoke-read, training, validation, and test inference.
 - Added downloader can fetch CSVs, label rasters, and optional Sentinel-2 image rasters into `data/subtask1`.
+- Constant-mask CodaBench ZIP has been generated and validated locally:
+  - `results/subtask1/submissions/constant_class_2.zip`
+  - `800` root-level PNG masks
+  - exact `test.csv` patch ids matched
+  - grayscale class values checked without requiring Pillow
+- Still needed: VB submits the constant ZIP to CodaBench, then local or remote access to actual image/label rasters for smoke-read, training, validation, and model-based test inference.
 
 ### Subtask 2: DACIA5
 
@@ -59,7 +64,8 @@ Current strategy:
   - problem 2 test: `1073`
 - Patch array smoke-read: `12 x 32 x 32`, `uint16`.
 - Full Sentinel-2 GeoTIFF smoke-read: `12 x 800 x 450`, `uint16`.
-- Next implementation target: tabular baseline from patch TIFFs.
+- Tabular baseline implementation is complete locally.
+- Still needed: confirmed DACIA5 label source, confirmed Sentinel-2 band order before vegetation indices, and remote execution on RunPod.
 
 ## Active Assignments
 
@@ -70,20 +76,21 @@ Current strategy:
 - [ ] Keep the RunPod Pod running while Codex builds/runs Subtask 2 baseline; stop it when idle.
 - [ ] After Codex produces first Subtask 2 metrics, review confusion matrices and decide whether to freeze tabular baseline or allow one neural attempt.
 - [ ] Once Codex produces first Subtask 1 ZIP, submit to CodaBench and report score/errors.
+  - Current ZIP ready for submission: `results/subtask1/submissions/constant_class_2.zip`.
 
 ### Codex
 
-- [ ] Commit and push the current Subtask 2 inspection JSON and parser update.
-- [ ] Implement Subtask 2 TIFF patch dataset discovery:
+- [X] Commit and push the current Subtask 2 inspection JSON and parser update.
+- [X] Implement Subtask 2 TIFF patch dataset discovery:
   - [X] Parse problem, split, date, field/parcel id, and unverified label candidates from file paths/names.
   - [X] Load patch arrays through `rasterio`.
   - [X] Create a CSV manifest under `results/subtask2/`.
-- [ ] Implement Subtask 2 feature extraction:
+- [X] Implement Subtask 2 feature extraction:
   - [X] Per-band mean, std, min, max.
   - [X] Selected percentiles.
   - [ ] Simple vegetation indices only after band order is confirmed.
   - [X] Cache features under remote `results/subtask2/features/`.
-- [ ] Implement Subtask 2 tabular baseline:
+- [X] Implement Subtask 2 tabular baseline:
   - [X] ExtraTreesClassifier.
   - [X] HistGradientBoostingClassifier.
   - [X] Overall accuracy, average class accuracy, and `Q = 0.5 * OA + 0.5 * AA`.
@@ -92,7 +99,7 @@ Current strategy:
 - [ ] Implement a Subtask 1 smoke-read command against local/remote rasters once actual files are available.
 - [X] Implement a Subtask 1 constant-mask ZIP writer for CodaBench packaging smoke tests.
 - [X] Implement a Subtask 1 Hugging Face downloader for CSVs, labels, and image rasters.
-- [ ] Keep `README.md`, `REMOTE_PROVIDER.md`, and this plan aligned after each material change.
+- [X] Keep `README.md`, `REMOTE_PROVIDER.md`, and this plan aligned after latest local tooling changes.
 
 ### Claude
 
@@ -138,17 +145,17 @@ Remaining:
 
 ### Phase 2: Subtask 2 Fast Baseline
 
-Priority: active now.
+Priority: blocked on DACIA5 label confirmation and RunPod execution access.
 
-- [ ] Build manifest from patch TIFF folders.
-- [ ] Extract cached tabular features.
+- [X] Build manifest from patch TIFF folders.
+- [X] Extract cached tabular features.
 - [ ] Train baseline models after label source is confirmed.
 - [ ] Save remote validation metrics and confusion matrices.
 - [ ] Generate candidate predictions/artifacts for review.
 
 ### Phase 3: Subtask 1 Valid Baseline
 
-Priority: parallel but behind Subtask 2 until raster access is confirmed.
+Priority: VB submission of constant ZIP is next; model baseline waits for raster access.
 
 - [ ] Smoke-read rasters and labels.
 - [X] Implement sampled-pixel ordinal baseline trainer.

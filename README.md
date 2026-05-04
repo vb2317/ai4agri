@@ -95,6 +95,32 @@ The remote compute recommendation and VB subscription instructions are in [`REMO
 
 Current RunPod Pod recorded there: ID `vit08hc86csllk`, 1x RTX PRO 4500, 28 vCPU, 62GB RAM, `runpod-torch-v240`, 450GB `/workspace` volume, JupyterLab URL recorded, direct SSH recorded, total listed price $0.71/hr.
 
+## Current Status
+
+Current branch: `codex/phase1-inspection-scripts`.
+
+Ready for VB:
+
+- Submit Subtask 1 constant baseline ZIP: `results/subtask1/submissions/constant_class_2.zip`.
+- This ZIP was generated from `test.csv`, contains `800` root-level PNG masks, matches expected patch ids, and passes class-value validation.
+
+Implemented tooling:
+
+- Subtask 1 CodaBench ZIP validator, including grayscale PNG value checks without requiring Pillow.
+- Subtask 1 constant-mask ZIP writer.
+- Subtask 1 Hugging Face downloader for CSVs, labels, and optional image rasters.
+- Subtask 1 sampled-pixel train/inference baseline script.
+- Subtask 2 data inspection, manifest, feature extraction, and tabular baseline scripts.
+- RunPod sync/exec/bootstrap/status helpers.
+
+Blocked or waiting:
+
+- VB: confirm CodaBench submission limits and evaluation timing.
+- VB: submit `results/subtask1/submissions/constant_class_2.zip` and report score/errors.
+- VB/remote: confirm RunPod global networking status and run data-heavy commands there.
+- Claude/VB: confirm DACIA5 label source and Sentinel-2 band order before training/enhancing Subtask 2.
+- Codex remote run: train Subtask 1 sampled-pixel baseline once actual rasters are available.
+
 ## Phase 0 Status
 
 Phase 0 is about access and environment setup.
