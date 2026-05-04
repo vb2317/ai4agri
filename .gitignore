@@ -1,9 +1,14 @@
 data/
 results/subtask1/submissions/
 results/subtask2/submissions/
+results/subtask1/baseline/
+results/subtask1/features/
+results/subtask2/baseline/
+results/subtask2/features/
 __pycache__/
 *.pyc
 .env
+.venv/
 *.egg-info/
 .DS_Store
 *.ipynb_checkpoints/

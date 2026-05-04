@@ -54,12 +54,15 @@ claude_handoffs/  # Parallel research prompts for Claude
 ## Setup
 
 ```bash
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install -r requirements.txt
 ```
 
 For Subtask 1 data:
 ```bash
-pip install git+https://github.com/MohammadElSakka/agripotential
+python -m pip install git+https://github.com/MohammadElSakka/agripotential
 ```
 
 `agripotential` is intentionally not listed as an installable package in `requirements.txt` because it is not published on PyPI. Install it from GitHub after the base requirements.
@@ -172,6 +175,13 @@ bash scripts/extract_subtask2_zip.sh
 python scripts/inspect_subtask2.py \
   --data-dir data/subtask2 \
   --read-arrays
+```
+
+Train first DACIA5 tabular baselines on RunPod:
+
+```bash
+python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 1
+python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 2
 ```
 
 Validate a candidate Subtask 1 CodaBench ZIP once predictions exist:
