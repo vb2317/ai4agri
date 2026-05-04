@@ -6,13 +6,14 @@
 - [X] VB: launch RunPod On-Demand GPU Pod.
 - [X] VB: confirm remote budget ceiling.
 - [ ] VB: confirm RunPod global networking status.
-- [ ] Download Subtask 1 data via Hugging Face (`m-sakka/agripotential`) on remote.
+- [ ] Download Subtask 1 data via Hugging Face (`m-sakka/agripotential`) on remote using `scripts/download_subtask1_hf.py`.
 - [X] Download Subtask 2 data from Zenodo on remote.
 - [X] Run `scripts/inspect_subtask1.py` and `scripts/inspect_subtask2.py` on actual data.
 - [ ] Confirm DACIA5 patch label source before training Subtask 2 baseline.
-- [ ] Baseline: Subtask 2 — tabular patch features + ExtraTrees/HistGradientBoosting.
-- [ ] Baseline: Subtask 1 — sampled-pixel ordinal model.
-- [ ] Submit baseline predictions to CodaBench (Subtask 1)
+- [ ] Baseline: Subtask 2 — run tabular script on RunPod after label source is confirmed.
+- [ ] Baseline: Subtask 1 — VB submit validated constant-mask ZIP: `results/subtask1/submissions/constant_class_2.zip`.
+- [ ] Baseline: Subtask 1 — train sampled-pixel ordinal model after raster access.
+- [ ] Submit baseline predictions to CodaBench (Subtask 1) and record score/errors.
 
 ## Before May 28 (Notebook submission)
 
@@ -35,6 +36,10 @@
 - [X] Add Subtask 1 CodaBench validator mode.
 - [X] Research AgriPotential loader and DACIA5 data format.
 - [X] Add data inspection scripts for both subtasks.
+- [X] Add Subtask 1 constant-mask CodaBench ZIP writer.
+- [X] Add Subtask 1 Hugging Face downloader.
+- [X] Add Subtask 1 sampled-pixel train/inference baseline script.
 - [X] Add Subtask 2 manifest, feature extraction, and tabular baseline script.
+- [X] Generate and locally validate Subtask 1 constant-mask ZIP with `800` PNG masks.
 - [X] Sync repo files to RunPod at `/workspace/ai4agri`.
 - [X] Verify RunPod Python/PyTorch/CUDA environment.

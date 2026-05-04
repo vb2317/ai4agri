@@ -11,8 +11,10 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import struct
 import sys
 import zipfile
+import zlib
 from io import BytesIO
 from pathlib import Path
 from typing import Iterable
@@ -188,18 +190,93 @@ def iter_png_ints(payload: bytes) -> Iterable[int]:
     try:
         from PIL import Image
     except ImportError:
-        print("WARN: Pillow is not installed; skipping PNG class-value checks.")
+        yield from iter_grayscale_png_ints(payload)
         return
 
     try:
         import numpy as np
     except ImportError:
-        print("WARN: numpy is not installed; skipping PNG class-value checks.")
+        yield from iter_grayscale_png_ints(payload)
         return
 
     with Image.open(BytesIO(payload)) as image:
         array = np.asarray(image)
     for value in np.unique(array):
+        yield int(value)
+
+
+def paeth_predictor(left: int, above: int, upper_left: int) -> int:
+    estimate = left + above - upper_left
+    left_distance = abs(estimate - left)
+    above_distance = abs(estimate - above)
+    upper_left_distance = abs(estimate - upper_left)
+    if left_distance <= above_distance and left_distance <= upper_left_distance:
+        return left
+    if above_distance <= upper_left_distance:
+        return above
+    return upper_left
+
+
+def unfilter_scanlines(raw: bytes, width: int, height: int) -> bytes:
+    stride = width
+    rows = []
+    offset = 0
+    previous = bytes(stride)
+    for _ in range(height):
+        filter_type = raw[offset]
+        offset += 1
+        current = bytearray(raw[offset : offset + stride])
+        offset += stride
+        for index, value in enumerate(current):
+            left = current[index - 1] if index > 0 else 0
+            above = previous[index]
+            upper_left = previous[index - 1] if index > 0 else 0
+            if filter_type == 0:
+                reconstructed = value
+            elif filter_type == 1:
+                reconstructed = value + left
+            elif filter_type == 2:
+                reconstructed = value + above
+            elif filter_type == 3:
+                reconstructed = value + ((left + above) // 2)
+            elif filter_type == 4:
+                reconstructed = value + paeth_predictor(left, above, upper_left)
+            else:
+                raise ValueError(f"unsupported PNG filter type: {filter_type}")
+            current[index] = reconstructed & 0xFF
+        rows.append(bytes(current))
+        previous = rows[-1]
+    return b"".join(rows)
+
+
+def iter_grayscale_png_ints(payload: bytes) -> Iterable[int]:
+    if not payload.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise ValueError("invalid PNG signature")
+
+    offset = 8
+    width = height = bit_depth = color_type = interlace = None
+    idat_parts: list[bytes] = []
+    while offset < len(payload):
+        length = struct.unpack(">I", payload[offset : offset + 4])[0]
+        offset += 4
+        chunk_type = payload[offset : offset + 4]
+        offset += 4
+        chunk_payload = payload[offset : offset + length]
+        offset += length + 4
+        if chunk_type == b"IHDR":
+            width, height, bit_depth, color_type, _, _, interlace = struct.unpack(">IIBBBBB", chunk_payload)
+        elif chunk_type == b"IDAT":
+            idat_parts.append(chunk_payload)
+        elif chunk_type == b"IEND":
+            break
+
+    if width is None or height is None or bit_depth is None or color_type is None or interlace is None:
+        raise ValueError("PNG missing IHDR")
+    if bit_depth != 8 or color_type != 0 or interlace != 0:
+        raise ValueError("Pillow or numpy is required for non-8-bit-grayscale PNG checks")
+
+    raw = zlib.decompress(b"".join(idat_parts))
+    for value in sorted(set(unfilter_scanlines(raw, width, height))):
         yield int(value)
 
 
