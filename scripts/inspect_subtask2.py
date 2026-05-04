@@ -76,10 +76,17 @@ def read_tiff_shape(path: Path) -> dict[str, object]:
     import rasterio
 
     with rasterio.open(path) as src:
+        band_descriptions = [description or "" for description in src.descriptions]
+        band_tags = [src.tags(index) for index in src.indexes]
         return {
             "shape": [src.count, src.height, src.width],
             "dtype": src.dtypes[0] if src.dtypes else None,
+            "dtypes": list(src.dtypes),
             "crs": str(src.crs) if src.crs else None,
+            "descriptions": band_descriptions,
+            "band_tags": band_tags,
+            "dataset_tags": src.tags(),
+            "colorinterp": [interp.name for interp in src.colorinterp],
         }
 
 
