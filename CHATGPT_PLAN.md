@@ -27,7 +27,11 @@ Related docs:
 - ImageCLEF/CLEF registration: confirmed by VB.
 - Subtask 1 CodaBench access: confirmed by VB.
 - Remote provider: RunPod.
-- RunPod Pod ID: `vit08hc86csllk`.
+- Last known RunPod Pod ID: `vit08hc86csllk`.
+- New pods must be recorded locally with `scripts/configure_runpod_env.sh`; sync/exec scripts read `.env` and should not hardcode pod-specific host/port values.
+- Replacement pod migration has two supported modes:
+  - Mode A: attach existing `/workspace` volume and verify `data/subtask1` before running.
+  - Mode B: start without data, redownload Subtask 1, then smoke-read images/labels before running.
 - Remote project path: `/workspace/ai4agri`.
 - Remote data path: `/workspace/ai4agri/data`.
 - Remote results path: `/workspace/ai4agri/results`.

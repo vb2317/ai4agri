@@ -38,7 +38,7 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 
 - [`CHATGPT_PLAN.md`](CHATGPT_PLAN.md): active task tracker, phase plan, and decision log.
 - [`ARCHITECTURE.md`](ARCHITECTURE.md): repository, pipeline, local/remote, and artifact architecture.
-- [`REMOTE_PROVIDER.md`](REMOTE_PROVIDER.md): current RunPod details and minimal operating commands.
+- [`REMOTE_PROVIDER.md`](REMOTE_PROVIDER.md): RunPod migration plan, current pod template, and operating commands.
 - [`HANDOFF_STRATEGY.md`](HANDOFF_STRATEGY.md): ownership rules for VB, Codex, and Claude.
 - [`Next.md`](Next.md): lightweight working checklist and VB-facing notes.
 
@@ -94,6 +94,7 @@ nbrun notebooks/subtask1_testbed.ipynb
 Push local scripts/docs to RunPod:
 
 ```bash
+scripts/configure_runpod_env.sh --host NEW_HOST --port NEW_PORT --pod-id NEW_POD_ID
 scripts/runpod_sync.sh push
 ```
 

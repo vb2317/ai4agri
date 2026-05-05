@@ -14,6 +14,7 @@ Current scripts:
 
 - `runpod_sync.sh`: local Mac helper for pushing repo changes to RunPod and pulling results or inspection outputs back.
 - `runpod_exec.sh`: local Mac helper for running one command on the current RunPod over SSH.
+- `configure_runpod_env.sh`: update local `.env` when a new RunPod host, port, pod id, or Jupyter URL is assigned.
 - `runpod_bootstrap.sh`: run on RunPod to install `rsync`, create `.venv`, install dependencies, install `agripotential`, and verify CUDA.
 - `runpod_status.sh`: run on RunPod to print host, GPU, disk, project size, key paths, and Python/CUDA status.
 - `download_subtask1_agripotential.py`: download AgriPotential CSVs, including `test.csv`; optional label and image GeoTIFF downloads.
@@ -34,6 +35,7 @@ Current scripts:
 Common local commands:
 
 ```bash
+scripts/configure_runpod_env.sh --host NEW_HOST --port NEW_PORT --pod-id NEW_POD_ID
 scripts/runpod_sync.sh push
 scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'
 scripts/runpod_sync.sh pull-results

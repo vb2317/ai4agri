@@ -10,9 +10,9 @@ Usage:
   scripts/runpod_sync.sh pull PATH_ON_REMOTE PATH_ON_LOCAL
 
 Environment overrides, usually from .env:
-  AI4AGRI_REMOTE_HOST          default: 213.173.107.6
+  AI4AGRI_REMOTE_HOST          required
   AI4AGRI_REMOTE_USER          default: root
-  RUNPOD_SSH_PORT              default: 34365
+  RUNPOD_SSH_PORT              required
   RUNPOD_SSH_KEY               default: ~/.ssh/id_ed25519
   AI4AGRI_REMOTE_PROJECT_DIR   default: /workspace/ai4agri
 
@@ -39,6 +39,15 @@ require_rsync() {
   fi
 }
 
+require_env() {
+  local name="$1"
+  local value="$2"
+  if [[ -z "$value" ]]; then
+    echo "Missing $name. Run scripts/configure_runpod_env.sh or set it in .env." >&2
+    exit 2
+  fi
+}
+
 main() {
   if [[ $# -lt 1 ]]; then
     usage
@@ -49,11 +58,15 @@ main() {
   require_rsync
 
   local action="$1"
-  local host="${AI4AGRI_REMOTE_HOST:-213.173.107.6}"
+  local host="${AI4AGRI_REMOTE_HOST:-}"
   local user="${AI4AGRI_REMOTE_USER:-root}"
-  local port="${RUNPOD_SSH_PORT:-34365}"
+  local port="${RUNPOD_SSH_PORT:-}"
   local key="${RUNPOD_SSH_KEY:-$HOME/.ssh/id_ed25519}"
   local remote_project="${AI4AGRI_REMOTE_PROJECT_DIR:-/workspace/ai4agri}"
+
+  require_env AI4AGRI_REMOTE_HOST "$host"
+  require_env RUNPOD_SSH_PORT "$port"
+
   local ssh_cmd="ssh -p ${port} -i ${key}"
   local remote="${user}@${host}"
 

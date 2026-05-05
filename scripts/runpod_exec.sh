@@ -29,6 +29,15 @@ quote_for_remote() {
   printf "%q" "$1"
 }
 
+require_env() {
+  local name="$1"
+  local value="$2"
+  if [[ -z "$value" ]]; then
+    echo "Missing $name. Run scripts/configure_runpod_env.sh or set it in .env." >&2
+    exit 2
+  fi
+}
+
 main() {
   if [[ $# -lt 1 ]]; then
     usage
@@ -47,13 +56,16 @@ main() {
 
   load_env
 
-  local host="${AI4AGRI_REMOTE_HOST:-213.173.107.6}"
+  local host="${AI4AGRI_REMOTE_HOST:-}"
   local user="${AI4AGRI_REMOTE_USER:-root}"
-  local port="${RUNPOD_SSH_PORT:-34365}"
+  local port="${RUNPOD_SSH_PORT:-}"
   local key="${RUNPOD_SSH_KEY:-$HOME/.ssh/id_ed25519}"
   local remote_project="${AI4AGRI_REMOTE_PROJECT_DIR:-/workspace/ai4agri}"
   local command="$1"
   local remote_command
+
+  require_env AI4AGRI_REMOTE_HOST "$host"
+  require_env RUNPOD_SSH_PORT "$port"
 
   if [[ "$use_cd" -eq 1 ]]; then
     remote_command="cd $(quote_for_remote "$remote_project") && $command"
