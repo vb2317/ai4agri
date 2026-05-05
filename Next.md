@@ -38,6 +38,85 @@ Validation for that run:
 4. If trying one more Subtask 1 candidate, prefer inference-only postprocessing from the existing ResNet/FPN checkpoint before retraining.
 5. After every CodaBench upload, immediately record the score in this file and in `CHATGPT_PLAN.md`.
 
+## Overnight Run Plan
+
+Armed on the existing RTX PRO 4500 RunPod at `2026-05-05T18:20:36Z`.
+
+Queue PID:
+
+```text
+17121
+```
+
+Queue script:
+
+```text
+results/subtask1/vision_runs/overnight_existing_gpu_20260505.sh
+```
+
+Queue log:
+
+```text
+results/subtask1/vision_runs/overnight_existing_gpu_20260505.log
+```
+
+The queue waits for the active full-data PM1 U-Net run to finish before starting additional training. Do not start another foreground training process on the existing pod unless this queue has been stopped or has finished.
+
+Currently active lead run:
+
+```text
+existing_unet_pm1bce_nsum_summary_full_e30_m5
+```
+
+Visible full-val metrics so far:
+
+- Epoch 1: Accuracy +/- 1 `0.76439`, exact `0.20574`, MAE `1.12860`.
+- Epoch 2: Accuracy +/- 1 `0.78693`, exact `0.21172`, MAE `1.07214`.
+- Epoch 3: Accuracy +/- 1 `0.73572`, exact `0.15946`, MAE `1.20105`.
+- Epoch 4: Accuracy +/- 1 `0.73960`, exact `0.16077`, MAE `1.18835`.
+
+Queued experiments, in order:
+
+1. `existing_unet_softce_expected_summary_full_e18_m3_s61`
+   - U-Net, summary features, `soft_ce`, expected-value decode, median `3`.
+   - Purpose: non-PM1 ordinal baseline with smoother decoding.
+2. `existing_unet_ce_wmild_argmax_summary_full_e18_m5_s62`
+   - U-Net, summary features, weighted CE, argmax decode, median `5`.
+   - Purpose: class-recall diversity and a conventional segmentation baseline.
+3. `existing_resnet_fpn_softce_expected_summary_full_e18_m3_s63`
+   - ResNet/FPN, summary features, `soft_ce`, expected-value decode, median `3`, batch size `4`.
+   - Purpose: different encoder/decoder family on the existing pod.
+4. `existing_tiny_vit_softce_expected_summary_full_e12_m3_s64`
+   - TinyViT, summary features, `soft_ce`, expected-value decode, median `3`, batch size `4`.
+   - Purpose: transformer sanity/diversity run if the pod remains available overnight.
+
+Monitor queue:
+
+```bash
+scripts/runpod_exec.sh 'tail -n 80 results/subtask1/vision_runs/overnight_existing_gpu_20260505.log'
+```
+
+Monitor active training:
+
+```bash
+scripts/runpod_exec.sh 'ps -eo pid,etime,cmd | grep -E "run_subtask1_vision.py train|overnight_existing_gpu" | grep -v grep'
+```
+
+Pull results in the morning:
+
+```bash
+scripts/runpod_sync.sh pull-results
+```
+
+Morning decision gates for VB:
+
+- Keep `50.63` as the submission floor unless a new candidate has a credible reason to beat it.
+- First inspect `metrics.json`, `train.log`, and visual panels for the active PM1 full run.
+- Use `notebooks/12_accuracy_pm1_review.ipynb` for PM1-specific good/failure examples.
+- Use `notebooks/11_subtask1_visual_review.ipynb` for GT/prediction/error/Accuracy +/- 1 panel review.
+- Submit only if ZIP validation passes, visuals are coherent, predictions are not collapsed, and the candidate is plausibly stronger than the submitted TinyViT.
+- If L40S access is available in the morning, prioritize Claude exporting L40S artifacts and postprocessing/ensembling there; it remains the better pod for TinyViT and ResNet exploration.
+
 ## Best Next Candidate
 
 Two lanes are active:
