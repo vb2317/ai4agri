@@ -85,9 +85,28 @@
 
 ## Now (After First Subtask 1 Model Submission)
 
-- [ ] Decide whether to rerun Subtask 1 with the optimized baseline settings before spending more CodaBench submissions.
+- [X] Decide whether to rerun Subtask 1 with the optimized baseline settings before spending more CodaBench submissions.
+  - Recommendation: run exactly one optimized retry if RunPod is already available; the first sampled-pixel score `39.74` is only `+0.22` above the constant baseline `39.52`.
+  - Stop after one retry unless validation or CodaBench score improves materially.
 - [ ] Confirm whether the submitted `39.74` ZIP came from the older script version or the optimized version.
-- [ ] Resume Subtask 2 packaging/report work while any Subtask 1 rerun is active.
+  - Blocked locally: requires RunPod command history, model metadata, or VB confirmation.
+- [X] Resume Subtask 2 packaging/report work while any Subtask 1 rerun is active.
+
+RunPod-only optimized retry commands:
+
+```bash
+cd /workspace/ai4agri
+git pull
+source .venv/bin/activate
+git rev-parse --short HEAD
+python scripts/subtask1_baseline.py train --data-dir data/subtask1
+python scripts/subtask1_baseline.py infer --data-dir data/subtask1
+python scripts/validate_submission_zip.py \
+  --zip-path results/subtask1/submissions/subtask1_baseline.zip \
+  --subtask1-codabench \
+  --expected-ids-file data/subtask1/test.csv \
+  --check-class-values
+```
 
 ## Before May 28 (Notebook submission)
 
@@ -95,11 +114,15 @@
 - [X] Baseline: Subtask 2 — run tabular script on RunPod after label source is confirmed.
 - [X] Confirm Subtask 2 deliverable format: Colab notebook or zipped source folder with README, plus max 3-page report, submitted by email.
 - [ ] Confirm DACIA5 Sentinel-2 12-band order before adding vegetation-index features.
+- [X] Draft Subtask 2 technical report: `reports/subtask2_technical_report.md`.
+- [X] Add clean Subtask 2 submission notebook: `notebooks/subtask2_submission.ipynb`.
+- [X] Add Subtask 2 source bundle README: `submissions/subtask2/README.md`.
+- [X] Add Subtask 2 source/report package command: `python scripts/package_subtask2_submission.py`.
 - [ ] Subtask 1: improve model — U-Net or ViT on multi-temporal stack
 - [ ] Subtask 2 Challenge 1: temporal model (LSTM / Transformer) on patch sequences
 - [ ] Subtask 2 Challenge 2: early detection with March-only features
-- [ ] Write 3-page technical report for Subtask 2
-- [ ] Clean notebook for Subtask 2 Colab submission
+- [ ] VB/Codex review and tighten Subtask 2 report for final 3-page limit.
+- [ ] VB/Codex review Subtask 2 notebook/source bundle before email submission.
 
 ## Later
 

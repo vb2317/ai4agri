@@ -26,12 +26,12 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 
 ## Current Status
 
-- Branch: `main`
+- Current local PR branch: `codex/phase1-inspection-scripts`; upstream target branch: `main`
 - Subtask 1 constant baseline was submitted to CodaBench and scored `39.52`.
 - Subtask 1 full data is on RunPod under `/workspace/ai4agri/data/subtask1` and uses about `185G`.
 - Subtask 1 sampled-pixel baseline ZIP was submitted to CodaBench and scored `39.74`.
 - Subtask 1 next step is a quick improvement decision: rerun with the optimized baseline settings or move attention to Subtask 2 packaging/report work.
-- Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete, deliverable format is confirmed, and vegetation indices remain blocked on confirmed Sentinel-2 band order.
+- Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete, deliverable format is confirmed, source/report package scaffolding is in place, and vegetation indices remain blocked on confirmed Sentinel-2 band order.
 
 ## Operating Docs
 
@@ -40,6 +40,9 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 - [`REMOTE_PROVIDER.md`](REMOTE_PROVIDER.md): current RunPod details and minimal operating commands.
 - [`HANDOFF_STRATEGY.md`](HANDOFF_STRATEGY.md): ownership rules for VB, Codex, and Claude.
 - [`Next.md`](Next.md): lightweight working checklist and VB-facing notes.
+- [`reports/subtask2_technical_report.md`](reports/subtask2_technical_report.md): current DACIA5 technical report draft.
+- [`submissions/subtask2/README.md`](submissions/subtask2/README.md): DACIA5 source bundle contents and reproduction instructions.
+- [`notebooks/subtask2_submission.ipynb`](notebooks/subtask2_submission.ipynb): lightweight DACIA5 submission notebook for artifact review.
 
 ## Repository Map
 
@@ -137,6 +140,12 @@ python scripts/subtask2_baseline.py features
 python scripts/subtask2_baseline.py label-features
 python scripts/subtask2_baseline.py train --problem problem1
 python scripts/subtask2_baseline.py train --problem problem2
+```
+
+Package the Subtask 2 source/report bundle for review:
+
+```bash
+python scripts/package_subtask2_submission.py
 ```
 
 ## Claude Handoffs

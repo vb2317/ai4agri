@@ -1,6 +1,6 @@
 # Architecture
 
-Last updated: 2026-05-04
+Last updated: 2026-05-05
 
 ## Purpose
 
@@ -57,9 +57,9 @@ Current model baseline: histogram gradient boosting over sampled pixels. The cur
 5. Cache tabular features with `scripts/subtask2_baseline.py features`.
 6. Join labels with `scripts/subtask2_baseline.py label-features`.
 7. Train leakage-free baselines with `scripts/subtask2_baseline.py train`.
-8. Use notebook/report work only after final deliverable format is confirmed.
+8. Package the notebook/source README and report draft with `scripts/package_subtask2_submission.py`.
 
-Current label interpretation: the DACIA5 patch filename middle token is the APIA crop code; the final token is the patch index. Vegetation-index features are blocked until Sentinel-2 band order is confirmed.
+Current label interpretation: the DACIA5 patch filename middle token is the APIA crop code; the final token is the patch index. Final deliverable format is confirmed as notebook or zipped source folder with README, plus a max 3-page report. Vegetation-index features are blocked until Sentinel-2 band order is confirmed.
 
 ## Notebook Policy
 
@@ -89,4 +89,4 @@ Claude owns bounded research: official format checks, band order, final Subtask 
 - Subtask 1 sampled-pixel baseline scored `39.74`, only slightly above the constant baseline score `39.52`.
 - Decide whether to spend one quick RunPod pass on the optimized baseline settings or shift to Subtask 2 packaging/report work.
 - Subtask 2 needs confirmed Sentinel-2 band order before vegetation-index features.
-- Subtask 2 needs final notebook/report/prediction artifact rules before packaging.
+- Subtask 2 has a source/report package scaffold; VB/Codex should review it before May 28 submission.

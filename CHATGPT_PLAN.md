@@ -1,6 +1,6 @@
 # AI4Agri Competition Execution Plan
 
-Last updated: 2026-05-04
+Last updated: 2026-05-05
 
 ## Goal
 
@@ -105,6 +105,11 @@ Related docs:
   - Problem 2, ExtraTrees, 2024 holdout: `Q=0.8102`, `OA=0.8308`, `AA=0.7896`.
 - Tabular baseline implementation is complete locally.
 - Confirmed Subtask 2 final deliverable format: Google Colab notebook or zipped source folder with README, plus a max 3-page technical report, submitted by email.
+- Source/report package scaffold is in place:
+  - `submissions/subtask2/README.md`
+  - `reports/subtask2_technical_report.md`
+  - `notebooks/subtask2_submission.ipynb`
+  - `scripts/package_subtask2_submission.py`
 - Still needed: confirmed Sentinel-2 band order before vegetation indices.
 
 ## Active Assignments
@@ -124,8 +129,9 @@ Related docs:
 - [ ] Keep the RunPod Pod running while Subtask 1 training/inference is active; stop it when idle.
 - [X] After sampled-pixel Subtask 1 ZIP validates, submit it to CodaBench and record score/errors:
   - score: `39.74`
-- [ ] Decide whether to run one optimized Subtask 1 retry before spending more CodaBench submissions.
-- [ ] Resume Subtask 2 review decisions now that the first Subtask 1 model ZIP has been submitted.
+- [X] Decide whether to run one optimized Subtask 1 retry before spending more CodaBench submissions:
+  - recommendation: run exactly one optimized retry if RunPod is already active, then stop unless score improves materially.
+- [X] Resume Subtask 2 review decisions now that the first Subtask 1 model ZIP has been submitted.
 
 ### Codex
 
@@ -166,6 +172,7 @@ Related docs:
   - [ ] Confirm RunPod has commit `5bb8c08` or newer.
   - [ ] Rerun train with current defaults: class-balanced sampling and `raw_temporal` features.
   - [ ] Run inference, validate ZIP, pull locally, and submit only if local validation passes.
+  - Status: blocked on RunPod operator; this Mac should not run RunPod commands.
 - [ ] If sampled-pixel score underperforms constant baseline:
   - [X] Add class-balanced pixel sampling.
   - [ ] Try `--model extra_trees`.
@@ -173,6 +180,7 @@ Related docs:
 - [X] Implement a Subtask 1 constant-mask ZIP writer for CodaBench packaging smoke tests.
 - [X] Implement a Subtask 1 Hugging Face downloader for CSVs, labels, and image rasters.
 - [X] Keep `README.md`, `REMOTE_PROVIDER.md`, notebooks, and this plan aligned after latest local tooling changes.
+- [X] Add Subtask 2 source/report package scaffold for final deliverable review.
 
 ### Claude
 
@@ -243,6 +251,8 @@ Remaining:
 - [X] Confirm Subtask 2 submission artifact expectations.
 - [ ] Confirm Sentinel-2 band order before vegetation indices.
 - [X] Decide whether current tabular baseline is enough for the first notebook/report pass or whether to run a neural attempt.
+- [X] Add first Subtask 2 technical report draft and source bundle instructions.
+- [X] Add clean Subtask 2 submission notebook scaffold.
 
 ### Phase 3: Subtask 1 Valid Baseline
 
@@ -302,6 +312,7 @@ Priority: first model submission complete; optional quick improvement pass.
 - [X] VB submits `results/subtask1/submissions/subtask1_baseline.zip` and records score/errors:
   - score: `39.74`
 - [ ] Pull metrics/submission locally if not already synced.
+  - Status: blocked on RunPod/VB result sync.
 
 ### Phase 4: Model Improvement
 
@@ -315,9 +326,10 @@ Start only after a valid baseline exists for the relevant subtask.
 
 ### Phase 5: Packaging And Report
 
-- [ ] Create final reproducible notebook for Subtask 2.
-- [ ] Draft 3-page technical report.
-- [ ] Add commands to reproduce final predictions.
+- [X] Create final reproducible notebook scaffold for Subtask 2.
+- [X] Draft 3-page technical report.
+- [X] Add commands to reproduce final baseline artifacts.
+- [X] Add commands and package script for the Subtask 2 source/report bundle.
 - [ ] VB reviews and submits by May 28, 2026.
 
 ## Remote Commands
@@ -400,6 +412,12 @@ scripts/runpod_sync.sh pull-results
 scripts/runpod_sync.sh pull-inspection
 ```
 
+Package the Subtask 2 source/report bundle:
+
+```bash
+python scripts/package_subtask2_submission.py
+```
+
 Validate a Subtask 1 CodaBench ZIP:
 
 ```bash
@@ -460,7 +478,8 @@ Needed output:
 
 - [X] What are the Subtask 1 CodaBench submission limits and evaluation timing?
 - [X] Is RunPod global networking enabled?
-- [ ] Are Subtask 2 test labels hidden, or is this primarily notebook/report evaluation?
+- [X] Are Subtask 2 test labels hidden, or is this primarily notebook/report evaluation?
+  - Current interpretation: primarily notebook/source plus report submission; generated predictions remain reproducibility artifacts unless organizers request a separate prediction file.
 - [X] What is the exact Subtask 2 prediction/submission artifact format?
 - [ ] What is the confirmed Sentinel-2 band order for DACIA5 12-band patch TIFFs?
 - [X] What is the confirmed label token in DACIA5 patch filenames?
