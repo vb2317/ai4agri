@@ -82,6 +82,24 @@ Started on the L40S at `2026-05-05T17:35:00Z`.
 - Smoke tests passed for `sam_decoder`, `pm1_ce`, and batch size `16`.
 - Initial GPU allocation is about `8GB` on L40S, with `396` train batches per epoch.
 
+### Pooling And Hidden-Window Follow-Up
+
+Clarification: hidden-layer windowing/downsampling is not only in U-Net.
+
+- `unet` uses explicit `2x2` max-pool operations three times (`128 -> 64 -> 32 -> 16`).
+- `resnet_fpn` uses the ResNet18 stem: `7x7 stride-2` conv, then `3x3 stride-2` max pool, then additional stage downsampling. This may be too aggressive for dense mask boundaries.
+- `tiny_vit` uses `8x8` stride-8 patch embedding, not max pooling.
+- `sam_decoder` uses `4x4` stride-4 patch embedding, not max pooling.
+
+Train+val label cluster heuristic:
+
+- Median connected component area is about `736` px, roughly `27x27`.
+- 75th percentile is about `2746` px, roughly `52x52`.
+- 90th percentile is about `7906` px, roughly `89x89`.
+- Class-level 90th percentile equivalent square sizes are class 0 `116x116`, class 1 `77x77`, class 2 `67x67`, class 3 `68x68`, class 4 `78x78`.
+
+Next architecture candidate: add `resnet_fpn_dense`, replacing the ResNet stem with `3x3 stride-1` and removing the early max pool while keeping FPN laterals. Consider later-stage dilation if memory permits. Goal is to preserve field boundaries and avoid early `4x` spatial loss before layer1.
+
 ## Current State
 
 ### Access And Remote

@@ -145,6 +145,32 @@ Use these only after the postprocess check:
 - Ensemble ResNet/FPN with TinyViT or HGB only if the second model is genuinely different and passes audit.
 - Subtask 2 notebook/report cleanup after Subtask 1 submissions stop improving.
 
+## Pooling And Hidden-Window Notes
+
+Current model downsampling behavior:
+
+- `unet`: explicit `2x2` max pooling three times, so hidden resolution goes `128 -> 64 -> 32 -> 16`.
+- `resnet_fpn`: ImageNet-style ResNet stem, with `7x7 stride-2` conv followed by ResNet's `3x3 stride-2` max pool, then more downsampling in later ResNet stages. This is more aggressive early downsampling than the U-Net.
+- `tiny_vit`: no max pool; patch embedding is an `8x8` stride-8 convolution.
+- `sam_decoder`: no max pool; patch embedding is a `4x4` stride-4 convolution.
+
+Heuristic from train+val label clusters:
+
+- Median connected cluster area is about `736` pixels, roughly `27x27`.
+- 75th percentile is about `2746` pixels, roughly `52x52`.
+- 90th percentile is about `7906` pixels, roughly `89x89`.
+- Class-level 90th percentile equivalent square sizes are approximately class 0 `116x116`, class 1 `77x77`, class 2 `67x67`, class 3 `68x68`, class 4 `78x78`.
+
+Proposed ResNet variant:
+
+- Add `resnet_fpn_dense`.
+- Change first conv from `7x7 stride=2` to `3x3 stride=1`.
+- Remove/disable the early ResNet max pool.
+- Keep the FPN lateral decoder.
+- Optionally add dilation in later stages if memory permits.
+
+Purpose: preserve small and medium field boundaries longer in the hidden layers. This is different from changing the CSV/input patch window, which remains `128x128`.
+
 ## Active Bigger Model Run
 
 Started on L40S at `2026-05-05T17:35:00Z`:
