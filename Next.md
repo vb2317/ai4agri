@@ -189,6 +189,63 @@ scripts/runpod_exec.sh --env-file .env.l40s.claude \
   'tail -n 80 results/subtask1/vision_runs/l40s_sam_decoder_summary_pm1_full_b16_e24_s64/nohup.log'
 ```
 
+## Overnight Plan
+
+Started a remote overnight queue at `2026-05-05T18:29:25Z` (`2026-05-05 23:59 IST`). It waits for the active SAM-style run to finish, then keeps the L40S busy with sequential experiments.
+
+Queue log:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'tail -n 120 results/subtask1/vision_runs/overnight_queue_20260505.log'
+```
+
+Sequence:
+
+1. Finish active `l40s_sam_decoder_summary_pm1_full_b16_e24_s64`.
+   - Current best at planning time: Accuracy +/- 1 `0.74070` at epoch `4`; below the `50.63` submitted TinyViT floor, but useful exploration for pm1-aware loss and SAM-style decoder behavior.
+2. Run `l40s_resnet_fpn_dense_summary_soft_full_b8_e24_s70`.
+   - Purpose: test the hidden-window hypothesis by using a dense ResNet/FPN stem: `3x3 stride=1`, no early maxpool, FPN decoder preserved.
+   - This is the highest-priority overnight candidate because the submitted TinyViT still has weak class 4 recall and dense ResNet may preserve field boundaries better.
+3. If time remains, run `l40s_tiny_vit_seasonal_soft_full_b8_e20_s65`.
+   - Purpose: full-data seasonal TinyViT to test temporal-view diversity beyond the small 1536-patch seasonal probe.
+
+VB morning checklist for `2026-05-06 08:00 IST`:
+
+1. Check GPU/process status:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'nvidia-smi && ps -eo pid,etime,stat,cmd | grep run_subtask1_vision | grep -v grep || true'
+```
+
+2. Check queue and latest metrics:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'tail -n 160 results/subtask1/vision_runs/overnight_queue_20260505.log; for r in l40s_sam_decoder_summary_pm1_full_b16_e24_s64 l40s_resnet_fpn_dense_summary_soft_full_b8_e24_s70 l40s_tiny_vit_seasonal_soft_full_b8_e20_s65; do echo --- $r; cat results/subtask1/vision_runs/$r/metrics.json 2>/dev/null || true; done'
+```
+
+3. Pull only completed candidate artifacts:
+
+```bash
+scripts/runpod_sync.sh --env-file .env.l40s.claude pull \
+  /workspace/ai4agri/results/subtask1/vision_runs/<run_id>/ \
+  ./results/subtask1/vision_runs/<run_id>/
+scripts/runpod_sync.sh --env-file .env.l40s.claude pull \
+  /workspace/ai4agri/results/subtask1/visuals/<run_id>/ \
+  ./results/subtask1/visuals/<run_id>/
+scripts/runpod_sync.sh --env-file .env.l40s.claude pull \
+  /workspace/ai4agri/results/subtask1/val_preds/<run_id>_val_probs.npz \
+  ./results/subtask1/val_preds/
+```
+
+4. Candidate decision rule:
+
+- Do not submit anything below the `50.63` floor unless it is part of an ensemble/postprocess plan.
+- Consider ZIP generation and audit only if full-val Accuracy +/- 1 is at least near TinyViT (`>= 0.76`) or the class recalls show clear complementary value, especially class 4.
+- If all queued jobs are done and no candidate is compelling, stop the L40S pod to avoid spend.
+
 ## RunPod Commands
 
 Status:

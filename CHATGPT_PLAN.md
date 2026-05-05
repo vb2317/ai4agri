@@ -100,6 +100,38 @@ Train+val label cluster heuristic:
 
 Next architecture candidate: add `resnet_fpn_dense`, replacing the ResNet stem with `3x3 stride-1` and removing the early max pool while keeping FPN laterals. Consider later-stage dilation if memory permits. Goal is to preserve field boundaries and avoid early `4x` spatial loss before layer1.
 
+### Overnight Queue: 2026-05-05 To 2026-05-06
+
+Remote queue started at `2026-05-05T18:29:25Z` (`2026-05-05 23:59 IST`) to keep the L40S busy for the next roughly 8 hours.
+
+Queue log:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'tail -n 120 results/subtask1/vision_runs/overnight_queue_20260505.log'
+```
+
+Run order:
+
+1. Finish `l40s_sam_decoder_summary_pm1_full_b16_e24_s64`.
+   - Planning-time best: Accuracy +/- 1 `0.74070` at epoch `4`, below the `50.63` submitted floor.
+   - Still useful for testing whether pm1-aware soft labels and SAM-style custom decoder produce complementary errors.
+2. Run `l40s_resnet_fpn_dense_summary_soft_full_b8_e24_s70`.
+   - Implements the hidden-window follow-up: dense ResNet/FPN stem with `3x3 stride=1` and no early max pool.
+   - Priority: high. It directly tests whether avoiding early `4x` spatial loss improves segmentation boundary quality and class recall.
+3. Run `l40s_tiny_vit_seasonal_soft_full_b8_e20_s65` if time remains.
+   - Full-data seasonal TinyViT; priority is ensemble diversity because the 1536-patch seasonal probe had a class-3-heavy profile.
+
+VB morning checklist for `2026-05-06 08:00 IST`:
+
+- Check active process/GPU:
+  `scripts/runpod_exec.sh --env-file .env.l40s.claude 'nvidia-smi && ps -eo pid,etime,stat,cmd | grep run_subtask1_vision | grep -v grep || true'`
+- Check queue and metrics:
+  `scripts/runpod_exec.sh --env-file .env.l40s.claude 'tail -n 160 results/subtask1/vision_runs/overnight_queue_20260505.log; for r in l40s_sam_decoder_summary_pm1_full_b16_e24_s64 l40s_resnet_fpn_dense_summary_soft_full_b8_e24_s70 l40s_tiny_vit_seasonal_soft_full_b8_e20_s65; do echo --- $r; cat results/subtask1/vision_runs/$r/metrics.json 2>/dev/null || true; done'`
+- Pull targeted artifacts for completed runs only: run dir, visuals dir, and `<run_id>_val_probs.npz`.
+- Generate a submission ZIP and run candidate audit only if validation is near the TinyViT full-data run (`accuracy_pm1 >= 0.76`) or class recalls show clear complementary value, especially class 4.
+- Stop the L40S pod if the queue is complete and there is no active training/inference.
+
 ## Current State
 
 ### Access And Remote

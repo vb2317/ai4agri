@@ -54,12 +54,16 @@ class SmallUNet(nn.Module):
 
 
 class ResNetFPN(nn.Module):
-    def __init__(self, in_channels: int, num_classes: int = 5) -> None:
+    def __init__(self, in_channels: int, num_classes: int = 5, dense_stem: bool = False) -> None:
         super().__init__()
         from torchvision.models import resnet18
 
         backbone = resnet18(weights=None)
-        backbone.conv1 = nn.Conv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        if dense_stem:
+            backbone.conv1 = nn.Conv2d(in_channels, 64, kernel_size=3, stride=1, padding=1, bias=False)
+            backbone.maxpool = nn.Identity()
+        else:
+            backbone.conv1 = nn.Conv2d(in_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.stem = nn.Sequential(backbone.conv1, backbone.bn1, backbone.relu)
         self.pool = backbone.maxpool
         self.layer1 = backbone.layer1
@@ -224,6 +228,8 @@ def build_model(name: str, in_channels: int, num_classes: int = 5, base_channels
         return SmallUNet(in_channels, num_classes=num_classes, base_channels=base_channels)
     if name == "resnet_fpn":
         return ResNetFPN(in_channels, num_classes=num_classes)
+    if name == "resnet_fpn_dense":
+        return ResNetFPN(in_channels, num_classes=num_classes, dense_stem=True)
     if name in {"tiny_vit", "patch_transformer"}:
         return TinyPatchTransformerSeg(in_channels, num_classes=num_classes)
     if name in {"sam_decoder", "sam_style"}:

@@ -65,7 +65,7 @@ def parse_args() -> argparse.Namespace:
     infer.set_defaults(decode=None, median_size=None)
 
     smoke = subparsers.add_parser("self-test", help="Run a synthetic forward/metric smoke check without data files.")
-    smoke.add_argument("--model", choices=["unet", "resnet_fpn", "tiny_vit", "sam_decoder"], default="unet")
+    smoke.add_argument("--model", choices=["unet", "resnet_fpn", "resnet_fpn_dense", "tiny_vit", "sam_decoder"], default="unet")
     smoke.add_argument("--channels", type=int, default=40)
 
     return parser.parse_args()
@@ -74,7 +74,7 @@ def parse_args() -> argparse.Namespace:
 def add_common_model_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--data-dir", required=True, type=Path)
     parser.add_argument("--run-id", default=None)
-    parser.add_argument("--model", choices=["unet", "resnet_fpn", "tiny_vit", "sam_decoder"], default="unet")
+    parser.add_argument("--model", choices=["unet", "resnet_fpn", "resnet_fpn_dense", "tiny_vit", "sam_decoder"], default="unet")
     parser.add_argument("--temporal-mode", choices=["summary", "seasonal", "concat"], default="summary")
     parser.add_argument("--label-name", choices=["viticulture", "market", "field"], default="viticulture")
     parser.add_argument("--out-root", type=Path, default=Path("results/subtask1"))
