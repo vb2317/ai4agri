@@ -28,6 +28,7 @@ Current scripts:
 - `run_subtask1_experiments.py`: run smoke, quick, or overnight Subtask 1 experiment suites; rank metrics; optionally infer and validate the best ZIP.
 - `subtask2_baseline.py`: build a DACIA5 patch TIFF manifest, cache tabular per-band features, and train ExtraTrees/HistGradientBoosting baselines once labels are confirmed.
 - `summarize_subtask2_features.py`: summarize the generated Subtask 2 manifest/features into a small tracked inspection JSON.
+- `package_subtask2_submission.py`: create a reviewable DACIA5 source/report ZIP without raw data, model binaries, or feature caches.
 - `subtask1_baseline.py`: train/infer the sampled-pixel AgriPotential baseline. It keeps rasters open across patches, shuffles split rows, defaults to class-balanced pixel sampling, and uses raw plus temporal-summary pixel features.
 - `train_subtask2_baseline.py`: direct experimental DACIA5 trainer that assumes the last filename token is the crop label; use only after label semantics are confirmed.
 - `validate_submission_zip.py`: configurable ZIP sanity checker for candidate submissions. Use `--subtask1-codabench` for confirmed AgriPotential rules: root-level `<patch_id>.png` masks, optional `report.pdf`, and class ids `0..4`.
@@ -63,6 +64,7 @@ python scripts/subtask2_baseline.py features
 python scripts/subtask2_baseline.py label-features
 python scripts/summarize_subtask2_features.py
 python scripts/subtask2_baseline.py train --problem problem1
+python scripts/package_subtask2_submission.py
 # Experimental direct trainer after filename labels are confirmed; do not use for primary metrics:
 python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 1
 python scripts/train_subtask2_baseline.py --data-dir data/subtask2 --problem 2
