@@ -59,6 +59,18 @@ Do not submit a new Subtask 1 ZIP unless:
 4. If the pod is idle, stop it.
 5. Record each new score immediately.
 
+### Transformer Information Runs
+
+Started on the L40S at `2026-05-05T12:07:21Z` and finished at `2026-05-05T12:32:32Z`.
+
+Goal: collect transformer validation probabilities and visuals for ensemble analysis while VB reviews existing artifacts. These are not submission candidates until metrics, visuals, and audit evidence say otherwise.
+
+- `l40s_tiny_vit_summary_soft_p1536_v256_s52`: TinyViT, summary features, soft ordinal CE, seed `52`, validation Accuracy +/- 1 `0.75066`.
+- `l40s_tiny_vit_seasonal_soft_p1536_v256_s53`: TinyViT, seasonal features, soft ordinal CE, seed `53`, validation Accuracy +/- 1 `0.74500`.
+- `l40s_tiny_vit_summary_wce_p1536_v256_s54`: TinyViT, summary features, weighted CE, seed `54`, validation Accuracy +/- 1 `0.72038`.
+
+Interpretation: none is a standalone submit candidate against the `47.6` floor. The weighted-CE TinyViT is the most useful ensemble-diversity probe because it recovers class 4 recall `0.5405` and class 2 recall `0.0782`, while the soft-CE variants mostly miss class 2.
+
 ## Current State
 
 ### Access And Remote
@@ -551,6 +563,11 @@ Needed output:
 
 ### 2026-05-05
 
+- Full TinyViT run started on L40S:
+  - Run id: `l40s_tiny_vit_summary_soft_full_e30_s52`.
+  - Command: `source .venv/bin/activate && python scripts/run_subtask1_vision.py train --data-dir data/subtask1 --run-id l40s_tiny_vit_summary_soft_full_e30_s52 --model tiny_vit --temporal-mode summary --epochs 30 --batch-size 8 --patience 6 --visual-limit 20 --loss soft_ce --median-size 3 --seed 52 --num-workers 4 --write-test-visuals --test-visual-limit 20`.
+  - Scope: full `train.csv` and full `val.csv`; no train or validation patch limit.
+  - Purpose: promote the best TinyViT probe to a full-data transformer candidate and produce full validation probabilities for ensemble comparison.
 - Subtask 1 declared active priority because CodaBench leaderboard feedback is immediate and current model score `39.74` only slightly improves on constant baseline `39.52`.
 - Replacement RunPod strategy documented with two migration modes:
   - Mode A: reuse existing `/workspace` volume and verify `data/subtask1`.
