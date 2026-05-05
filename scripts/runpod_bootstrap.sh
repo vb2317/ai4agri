@@ -17,6 +17,33 @@ source "${VENV_DIR}/bin/activate"
 
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+python - <<'PY'
+import subprocess
+import sys
+
+import torch
+
+if torch.cuda.is_available():
+    raise SystemExit(0)
+
+print(
+    f"torch {torch.__version__} cannot see CUDA; reinstalling PyTorch CUDA 12.8 wheels for L40S images.",
+    file=sys.stderr,
+)
+subprocess.check_call(
+    [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "--force-reinstall",
+        "--index-url",
+        "https://download.pytorch.org/whl/cu128",
+        "torch==2.11.0+cu128",
+        "torchvision==0.26.0+cu128",
+    ]
+)
+PY
 python -m pip install git+https://github.com/MohammadElSakka/agripotential
 
 python - <<'PY'

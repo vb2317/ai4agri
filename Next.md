@@ -7,6 +7,7 @@ Subtask 1 is the priority because it has immediate leaderboard feedback. Current
 - Constant class baseline: `39.52`
 - First sampled-pixel baseline: `39.74`
 - Overnight uniform raw-temporal HGB: `40.16`
+- L40S ResNet/FPN vision model: `47.6`
 
 Goal today: split ownership cleanly. Claude owns the new L40S 48 GB RunPod vision run end to end; Codex focuses on improving the existing RunPod setup and preserving common analysis artifacts for VB review.
 
@@ -32,7 +33,7 @@ Submitted to CodaBench and scored `40.16`.
 
 Next move:
 
-- [X] Treat `40.16` as the new floor.
+- [X] Treat `47.6` as the new floor after L40S ResNet/FPN CodaBench submission.
 - [X] Add a targeted follow-up suite near the winning setup: HGB + uniform sampling + raw-temporal features.
 - [ ] Keep the targeted HGB suite as fallback/ensemble evidence:
   ```bash
@@ -46,6 +47,35 @@ Next move:
 - [X] Assign the L40S 48 GB pod entirely to Claude; see `claude_handoffs/phase1.md`.
 - [ ] Codex: improve existing RunPod helpers, common notebooks, validators, and result sync.
 - [ ] VB: review Claude-produced visual artifacts before any submission.
+- [X] Codex: add a local Subtask 1 candidate audit gate for L40S vision artifacts and ZIPs.
+- [X] Codex: verify L40S SSH/GPU/venv and repair PyTorch CUDA wheel mismatch.
+- [X] Confirm L40S `data/subtask1` is present: `185G`.
+- [X] Run L40S ResNet/FPN smoke after shared loader hardening:
+  - run id: `l40s_smoke_resnet_fpn_summary_random`
+  - best smoke Accuracy +/- 1: `0.61258`
+  - artifacts: metrics, checkpoint, val probabilities, train/val/test visuals.
+- [X] Run L40S TinyViT smoke after retrying transient raster reads:
+  - run id: `l40s_smoke_tiny_vit_summary_retry`
+  - best smoke Accuracy +/- 1: `0.71635`
+  - artifacts: metrics, checkpoint, val probabilities, train/val/test visuals.
+- [X] Full L40S ResNet/FPN run completed:
+  - run id: `l40s_resnet_fpn_summary_e30`
+  - best epoch: `10`
+  - validation Accuracy +/- 1: `0.78984`
+  - exact accuracy: `0.45868`
+  - MAE: `0.86056`
+  - log: `results/subtask1/vision_runs/l40s_resnet_fpn_summary_e30/nohup.log`
+  - early stopped after epoch `18`.
+- [X] Run full L40S inference, ZIP validation, pull artifacts, and local candidate audit:
+  - ZIP: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`
+  - audit: `results/subtask1/vision_runs/l40s_resnet_fpn_summary_e30/local_candidate_review.json`
+  - class pixel fractions: class 0 `0.38625`, class 1 `0.23099`, class 2 `0.11646`, class 3 `0.25395`, class 4 `0.01236`.
+  - flat PNGs: `28/800`.
+  - candidate audit status: pass.
+- [X] VB: visually review `results/subtask1/visuals/l40s_resnet_fpn_summary_e30/` before upload.
+- [X] VB: submit `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip` to CodaBench and record score:
+  - score: `47.6`
+  - improvement over previous floor `40.16`: `+7.44`
 
 ## RunPod Assignment
 
@@ -123,7 +153,17 @@ Artifacts to review in `notebooks/subtask1_testbed.ipynb`:
 - [X] Add multi-env RunPod helper support for `.env` plus `.env.l40s.claude`.
 - [X] Keep Claude L40S execution handoff current.
 - [ ] Improve existing RunPod setup and shared artifact review workflow.
-- [ ] Preserve the submission gate: visual review, validate ZIP, expected ids, and class values before upload.
+- [X] Fix `runpod_sync.sh push` so `.env.*` and scratch `temp` are not synced to RunPod.
+- [X] Harden Subtask 1 vision loading for L40S:
+  - cache raster handles per DataLoader worker instead of reopening all rasters per patch.
+  - use reproducible random train/val smoke subsets when `--patch-limit` is set.
+  - retry raster reads once after reopening handles to survive transient remote filesystem/TIFF read failures.
+- [X] Preserve the submission gate: visual review, validate ZIP, expected ids, class values, class pixel fractions, and flat-mask count before upload.
+  ```bash
+  python scripts/review_subtask1_candidate.py \
+    --run-id l40s_resnet_fpn_summary_e30 \
+    --data-dir data/subtask1
+  ```
 
 ### Claude
 

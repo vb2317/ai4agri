@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import csv
-from contextlib import ExitStack
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 import numpy as np
 import torch
@@ -134,11 +133,17 @@ class AgriPotentialVisionDataset(Dataset):
         split_path = data_dir / f"{split}.csv"
         self.rows = read_csv_rows(split_path)
         require_split_columns(self.rows, split_path)
-        if patch_limit:
-            self.rows = self.rows[:patch_limit]
+        if patch_limit and patch_limit < len(self.rows):
+            if split == "test":
+                self.rows = self.rows[:patch_limit]
+            else:
+                indices = sorted(self.rng.choice(len(self.rows), size=patch_limit, replace=False).tolist())
+                self.rows = [self.rows[index] for index in indices]
 
         label_path = data_dir / f"{label_name}.tif"
         self.label_path = label_path if label_path.exists() and split != "test" else None
+        self._sources: list[Any] | None = None
+        self._label_source: Any | None = None
 
     @property
     def input_channels(self) -> int:
@@ -147,24 +152,66 @@ class AgriPotentialVisionDataset(Dataset):
     def __len__(self) -> int:
         return len(self.rows)
 
-    def __getitem__(self, index: int) -> dict[str, object]:
+    def __getstate__(self) -> dict[str, object]:
+        state = self.__dict__.copy()
+        state["_sources"] = None
+        state["_label_source"] = None
+        return state
+
+    def close(self) -> None:
+        for source in getattr(self, "_sources", None) or []:
+            source.close()
+        label_source = getattr(self, "_label_source", None)
+        if label_source is not None:
+            label_source.close()
+        self._sources = None
+        self._label_source = None
+
+    def __del__(self) -> None:
+        self.close()
+
+    def sources(self) -> list[Any]:
         import rasterio
 
+        if self._sources is None:
+            self._sources = [rasterio.open(scene.path) for scene in self.scenes]
+        return self._sources
+
+    def label_source(self) -> Any | None:
+        import rasterio
+
+        if self.label_path is None:
+            return None
+        if self._label_source is None:
+            self._label_source = rasterio.open(self.label_path)
+        return self._label_source
+
+    def __getitem__(self, index: int) -> dict[str, object]:
         patch = self.rows[index]
         row = int(patch["row"])
         col = int(patch["col"])
         patch_size = int(patch["patch_size"])
-        with ExitStack() as stack:
-            sources = [stack.enter_context(rasterio.open(scene.path)) for scene in self.scenes]
-            arrays = [read_window(source, row, col, patch_size) for source in sources]
-            raw = normalize_reflectance(np.stack(arrays, axis=0))
-            x = temporal_features(raw, self.scenes, self.temporal_mode)
+        try:
+            arrays = [read_window(source, row, col, patch_size) for source in self.sources()]
+        except Exception:
+            self.close()
+            arrays = [read_window(source, row, col, patch_size) for source in self.sources()]
+        raw = normalize_reflectance(np.stack(arrays, axis=0))
+        x = temporal_features(raw, self.scenes, self.temporal_mode)
 
-            y = None
-            if self.label_path is not None:
-                label_source = stack.enter_context(rasterio.open(self.label_path))
+        y = None
+        label_source = self.label_source()
+        if label_source is not None:
+            try:
                 y = read_window(label_source, row, col, patch_size)[0].astype("int64")
-                y[(y < 0) | (y > 4)] = 255
+            except Exception:
+                self._label_source = None
+                label_source.close()
+                reopened_label_source = self.label_source()
+                if reopened_label_source is None:
+                    raise
+                y = read_window(reopened_label_source, row, col, patch_size)[0].astype("int64")
+            y[(y < 0) | (y > 4)] = 255
 
         if self.augment:
             x, y = self.apply_augmentation(x, y)

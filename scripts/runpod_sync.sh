@@ -93,22 +93,24 @@ main() {
   case "$action" in
     push)
       rsync -rtv --no-owner --no-group --no-perms \
-        --exclude .git \
-        --exclude .DS_Store \
-        --exclude .env \
-        --exclude .venv \
-        --exclude __pycache__ \
-        --exclude data \
-        --exclude results/subtask1/baseline \
-        --exclude results/subtask1/features \
-        --exclude results/subtask1/val_preds \
-        --exclude results/subtask1/vision_runs \
-        --exclude results/subtask1/visuals \
-        --exclude results/subtask1/submissions \
-        --exclude results/subtask2/baseline \
-        --exclude results/subtask2/features \
-        --exclude results/subtask2/manifest.csv \
-        --exclude results/subtask2/submissions \
+        --exclude='.git' \
+        --exclude='.DS_Store' \
+        --exclude='.env' \
+        --exclude='.env.*' \
+        --exclude='temp' \
+        --exclude='.venv' \
+        --exclude='__pycache__' \
+        --exclude='data' \
+        --exclude='results/subtask1/baseline' \
+        --exclude='results/subtask1/features' \
+        --exclude='results/subtask1/val_preds' \
+        --exclude='results/subtask1/vision_runs' \
+        --exclude='results/subtask1/visuals' \
+        --exclude='results/subtask1/submissions' \
+        --exclude='results/subtask2/baseline' \
+        --exclude='results/subtask2/features' \
+        --exclude='results/subtask2/manifest.csv' \
+        --exclude='results/subtask2/submissions' \
         -e "$ssh_cmd" \
         ./ "${remote}:${remote_project}/"
       ;;

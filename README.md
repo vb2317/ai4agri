@@ -30,8 +30,9 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 - Subtask 1 constant baseline was submitted to CodaBench and scored `39.52`.
 - Subtask 1 full data is on RunPod under `/workspace/ai4agri/data/subtask1` and uses about `185G`.
 - Subtask 1 sampled-pixel baseline ZIP was submitted to CodaBench and scored `39.74`.
-- Subtask 1 remains the active priority because it has leaderboard feedback.
-- Subtask 1 next step is to run an optimized leaderboard-improvement pass, then submit only validated candidates with a plausible score gain.
+- Subtask 1 overnight uniform raw-temporal HGB ZIP was submitted to CodaBench and scored `40.16`.
+- Subtask 1 L40S ResNet/FPN ZIP was submitted to CodaBench and scored `47.6`; this is the current floor.
+- Subtask 1 remains the active priority because it has leaderboard feedback. The current plan is an L40S RunPod vision lane, with HGB retained as fallback/ensemble evidence.
 - Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete but parked while Subtask 1 leaderboard work is active.
 
 ## Operating Docs
@@ -133,6 +134,9 @@ python scripts/validate_submission_zip.py \
   --subtask1-codabench \
   --expected-ids-file data/subtask1/test.csv \
   --check-class-values
+python scripts/review_subtask1_candidate.py \
+  --run-id l40s_resnet_fpn_summary_e30 \
+  --data-dir data/subtask1
 ```
 
 Run the Subtask 2 tabular baseline workflow:

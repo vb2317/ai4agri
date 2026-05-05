@@ -28,6 +28,7 @@ Current scripts:
 - `inspect_subtask2.py`: inspect extracted DACIA5 file layout, labels, years, and optional TIFF array shapes.
 - `inspect_subtask2_labels.py`: inspect DACIA5 full-year label masks, per-patch RGB masks, and patch-to-mask matching.
 - `run_subtask1_experiments.py`: run smoke, quick, overnight, or targeted Subtask 1 experiment suites; rank metrics; optionally infer and validate the best ZIP.
+- `review_subtask1_candidate.py`: audit a Subtask 1 vision run before submission; checks required run artifacts, visuals, ZIP validation, and non-collapsed class presence.
 - `subtask2_baseline.py`: build a DACIA5 patch TIFF manifest, cache tabular per-band features, and train ExtraTrees/HistGradientBoosting baselines once labels are confirmed.
 - `summarize_subtask2_features.py`: summarize the generated Subtask 2 manifest/features into a small tracked inspection JSON.
 - `package_subtask2_submission.py`: create a reviewable DACIA5 source/report ZIP without raw data, model binaries, or feature caches.
@@ -76,6 +77,7 @@ python scripts/inspect_subtask1.py --splits train val test
 python scripts/create_subtask1_constant_zip.py
 python scripts/run_subtask1_experiments.py --data-dir data/subtask1 --suite overnight --infer-best --validate-best
 python scripts/run_subtask1_experiments.py --data-dir data/subtask1 --suite targeted --infer-best --validate-best
+python scripts/review_subtask1_candidate.py --run-id l40s_resnet_fpn_summary_e30
 python scripts/subtask1_baseline.py train --data-dir data/subtask1
 python scripts/subtask1_baseline.py infer --data-dir data/subtask1
 python scripts/inspect_subtask2.py --data-dir data/subtask2 --read-arrays

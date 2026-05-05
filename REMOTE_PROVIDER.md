@@ -28,6 +28,7 @@ scripts/configure_runpod_env.sh \
 ```
 
 Then every L40S helper command must include `--env-file .env.l40s.claude`.
+If a pod was started before this Mac's SSH key was added in RunPod settings, add the Mac public key to `/root/.ssh/authorized_keys` from the Jupyter terminal or recreate the pod after saving the key.
 
 Then test connectivity:
 
@@ -155,6 +156,9 @@ Results: /workspace/ai4agri/results
 ## Verified
 
 - SSH from local Mac to RunPod works.
+- L40S pod `qoiknlr20b7f4m` is reachable at the configured `.env.l40s.claude` endpoint.
+- L40S GPU is visible to `nvidia-smi`: `NVIDIA L40S`, `46068 MiB`.
+- Fresh L40S venv required PyTorch CUDA 12.8 wheels; `torch==2.11.0+cu128`, CUDA `12.8`, `torch.cuda.is_available() == True`, device `NVIDIA L40S`.
 - JupyterLab URL is available.
 - GitHub SSH auth from the Pod works for `vb2317`.
 - Repo files are present at `/workspace/ai4agri`.
@@ -167,6 +171,7 @@ Results: /workspace/ai4agri/results
 
 - Existing pod: keep improving the shared setup, validators, notebooks, artifact sync, and review workflow.
 - L40S 48 GB pod: Claude owns the full Subtask 1 vision execution lane. See `claude_handoffs/phase1.md`.
+- L40S Subtask 1 data download is in progress manually with `python scripts/download_subtask1_hf.py --out-dir data/subtask1`.
 - Today priority: Subtask 1 vision loop. Do not spend time on Subtask 2 until the next candidate has been trained, validated, and either submitted or rejected.
 - Keep the Pod running only while Subtask 1 training/inference is active.
 - When overnight experiments finish, inspect `summary.csv`, validate the best ZIP, and pull results locally.

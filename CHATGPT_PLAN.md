@@ -8,7 +8,7 @@ Produce valid, reproducible AI4Agri 2026 submissions before the May 7, 2026 comp
 
 Current strategy:
 
-1. Treat Subtask 1 score `40.16` as the current submitted floor.
+1. Treat Subtask 1 score `47.6` as the current submitted floor.
 2. Assign the new L40S 48 GB RunPod entirely to Claude for the Subtask 1 ResNet/FPN and TinyViT vision lane.
 3. Keep the existing RunPod setup in `.env` for VB/Codex setup hardening, shared scripts, validators, and common artifact review.
 4. Keep HGB as fallback and possible ensemble member, not as the main optimization path.
@@ -57,7 +57,8 @@ Do not submit a new Subtask 1 ZIP unless:
 - ZIP validation passes with `--subtask1-codabench`, expected ids, and class-value checks.
 - The producing run has saved metrics and a reproducible config under `results/subtask1/vision_runs/`.
 - Visual panels exist for training samples, validation predictions/error maps, and test predictions.
-- The candidate is not just a duplicate of the already-submitted `40.16` baseline.
+- The candidate is not just a duplicate of the already-submitted `47.6` L40S ResNet/FPN baseline.
+- `scripts/review_subtask1_candidate.py --run-id <run_id> --data-dir data/subtask1` passes, or any failure is explicitly accepted by VB.
 - VB records the CodaBench score immediately after submission.
 
 ## Current State
@@ -120,7 +121,19 @@ Do not submit a new Subtask 1 ZIP unless:
   - Sentinel-2 image rasters downloaded
   - disk usage reported by VB: `185G`
   - label smoke-read succeeded for train/val/test samples.
-- Still needed: use the `40.16` result as the new floor, then try one targeted improvement around uniform raw-temporal HGB before escalating to neural work.
+- L40S vision lane status:
+  - GPU: `NVIDIA L40S`, CUDA PyTorch available.
+  - `data/subtask1` present, reported size `185G`.
+  - ResNet/FPN smoke completed with run id `l40s_smoke_resnet_fpn_summary_random`.
+  - TinyViT smoke completed with run id `l40s_smoke_tiny_vit_summary_retry`.
+  - Full ResNet/FPN run `l40s_resnet_fpn_summary_e30` completed with best validation Accuracy +/- 1 `0.78984`.
+  - ZIP generated and validated: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`.
+  - Candidate audit passed with all classes present, class 4 pixel fraction `0.01236`, and `28/800` flat PNGs.
+- L40S ResNet/FPN CodaBench submission completed:
+  - file: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`
+  - score: `47.6`
+  - improvement over previous `40.16` floor: `+7.44`
+- Still needed: decide whether to spend remaining Subtask 1 submissions on ensemble/postprocess attempts above the `47.6` floor.
 - Overnight experiment suite completed on RunPod:
   - run root: `results/subtask1/experiments/20260504T180650Z/overnight`
   - best validation run by Accuracy +/- 1: `hgb_uniform_temporal_200k_s43`
