@@ -1,51 +1,87 @@
-# VB Handoffs: Phase 1
+# VB Handoffs: 2026-05-05
 
-## Subtask 2 Baseline Review
+## Priority
 
-Codex produced the first leakage-free DACIA5 tabular baselines on RunPod.
+Subtask 1 leaderboard work is the priority today.
 
-Tracked local summaries:
+Current submitted scores:
 
-- `results/subtask2/inspection/subtask2_baseline_summary.json`
-- `results/subtask2/inspection/subtask2_feature_summary.json`
-- `results/subtask2/inspection/subtask2_label_inspection.json`
+- Constant class baseline: `39.52`
+- First sampled-pixel baseline: `39.74`
 
-Current metrics:
+Goal: start the replacement RunPod, run the Subtask 1 experiment suite, and submit only one validated candidate if it is plausibly better.
 
-- Problem 1, HistGradientBoosting, 2023 holdout: `Q=0.6655`, `OA=0.7442`, `AA=0.5867`.
-- Problem 2, ExtraTrees, 2024 holdout: `Q=0.8102`, `OA=0.8308`, `AA=0.7896`.
+## VB Tasks
 
-Notes:
+### 1. Configure The New Pod
 
-- APIA crop code is used only to derive labels.
-- APIA code and patch index are excluded from model features.
-- Subtask 2 final packaging is still pending Claude/VB confirmation.
-
-## Subtask 1 Data Decision
-
-Small CSV files are already downloaded on RunPod:
+Run locally after the pod exposes SSH:
 
 ```bash
-/workspace/ai4agri/data/subtask1/agripotential
+scripts/configure_runpod_env.sh \
+  --host NEW_PUBLIC_SSH_HOST_OR_IP \
+  --port NEW_PUBLIC_SSH_PORT \
+  --pod-id NEW_POD_ID \
+  --jupyter-url NEW_JUPYTER_LAB_URL \
+  --test
 ```
 
-This includes `train.csv`, `val.csv`, `test.csv`, and `metadata.csv`.
+Then push current code:
 
-Full raster download is still pending because it is large. When ready, run on RunPod:
+```bash
+scripts/runpod_sync.sh push
+```
+
+### 2. Choose Migration Mode
+
+Use `REMOTE_PROVIDER.md`.
+
+Mode A: existing `/workspace` volume is present.
+
+- Verify `data/subtask1` is about `185G`.
+- Verify `test.csv` and `viticulture.tif` exist.
+- Verify there are enough `.tif` rasters for the 34 Sentinel-2 frames plus labels.
+
+Mode B: data is missing.
+
+- Run `scripts/download_subtask1_hf.py --out-dir data/subtask1`.
+- Smoke-read pixels and labels.
+- Start experiments only after the smoke-read succeeds.
+
+### 3. Start The Experiment Suite
+
+Run on RunPod:
 
 ```bash
 cd /workspace/ai4agri
 source .venv/bin/activate
-python scripts/download_subtask1_agripotential.py --out-dir data/subtask1/agripotential --labels --images
+mkdir -p results/subtask1/experiments
+nohup python scripts/run_subtask1_experiments.py \
+  --data-dir data/subtask1 \
+  --suite overnight \
+  --infer-best \
+  --validate-best \
+  > results/subtask1/experiments/overnight.log 2>&1 &
 ```
 
-After it finishes, tell Codex to run:
+Check progress:
 
 ```bash
-python scripts/inspect_subtask1.py \
-  --data-dir data/subtask1/agripotential \
-  --splits train val test \
-  --limit 1 \
-  --read-pixels \
-  --read-labels
+tail -f results/subtask1/experiments/overnight.log
 ```
+
+### 4. Submission Gate
+
+Submit only if:
+
+- `best_inference.json` exists.
+- The validation return code is `0`.
+- The ZIP is not a duplicate of the previous `39.74` baseline.
+- Codex has reviewed the summary or the metrics clearly beat the previous candidate.
+
+Record the CodaBench score immediately in `Next.md` or chat.
+
+## Do Not Spend Time On
+
+- Subtask 2 packaging today unless Subtask 1 experiments are running and blocked.
+- U-Net/ViT pod upgrade until we have the tabular/pixel experiment signal.

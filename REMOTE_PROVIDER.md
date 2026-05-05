@@ -1,6 +1,6 @@
 # Remote Provider
 
-Last updated: 2026-05-04
+Last updated: 2026-05-05
 
 ## RunPod Config Template
 
@@ -18,6 +18,12 @@ Then test connectivity:
 
 ```bash
 scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'
+```
+
+Install `rsync` on a fresh pod before using sync/pull helpers:
+
+```bash
+scripts/runpod_install_rsync.sh
 ```
 
 Push current code/docs to the new pod:
@@ -145,6 +151,7 @@ Results: /workspace/ai4agri/results
 ## Pending
 
 - Start a replacement pod and choose Mode A if the old volume is available; otherwise use Mode B and redownload Subtask 1.
+- Today priority: Subtask 1 leaderboard loop. Do not spend time on Subtask 2 until the next candidate has been trained, validated, and either submitted or rejected.
 - Keep the Pod running only while Subtask 1 training/inference is active.
 - When overnight experiments finish, inspect `summary.csv`, validate the best ZIP, and pull results locally.
 - Stop the Pod when idle after metrics and submission candidates have been synced back.
@@ -184,8 +191,7 @@ brew install rsync
 If the Pod lacks `rsync`:
 
 ```bash
-apt-get update
-apt-get install -y rsync
+scripts/runpod_install_rsync.sh
 ```
 
 ## RunPod Commands

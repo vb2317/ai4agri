@@ -1,6 +1,6 @@
 # AI4Agri Handoff Strategy
 
-Last updated: 2026-05-04
+Last updated: 2026-05-05
 
 ## Purpose
 
@@ -139,50 +139,48 @@ The original route to useful results was:
 8. Claude helps interpret score/error feedback.
 9. Codex improves and repackages.
 
-Current critical path:
+Current critical path for 2026-05-05:
 
-1. Let the active Subtask 1 full sampled-pixel training finish on RunPod.
-2. Pull and review metrics.
-3. Run model inference and validate the CodaBench ZIP.
-4. VB submits the validated ZIP and records score/errors.
-5. Resume parked Subtask 2 packaging/report work.
+1. VB starts the replacement RunPod and chooses migration Mode A or Mode B.
+2. VB/Codex verifies Subtask 1 data availability or redownloads it.
+3. Codex experiment runner explores multiple Subtask 1 candidates and validates the best ZIP.
+4. VB submits one validated, plausibly improved ZIP and records leaderboard score.
+5. Claude provides a bounded Subtask 1 improvement memo while experiments run.
+6. Codex implements one targeted improvement only after experiment results identify the failure mode.
 
 ## Parallel Work Plan
 
-### Track A: Access And Format
+### Track A: Remote And Submission
 
 Owner: VB with Claude support.
 
-- VB: log into CodaBench and confirm competition access.
-- Claude: summarize exact CodaBench submission rules from page text or screenshots.
-- VB: choose remote provider and budget.
-- Codex: update validator options and packaging script after rules are known.
+- VB: keep RunPod funded only for active work.
+- VB: update `.env` for each new pod and choose Mode A or Mode B.
+- VB: submit only validated ZIPs and record scores.
+- Codex: keep remote scripts pod-agnostic and validation strict.
 
-### Track B: Data Loading
+### Track B: Subtask 1 Experiments
 
-Owner: Claude researches, Codex implements, VB runs external downloads.
+Owner: Codex implements, VB runs remote commands.
 
-- Claude: summarize AgriPotential loader and DACIA5 file layout.
-- Codex: implement inspection scripts with `--limit`.
-- VB: provide remote path and start downloads.
-- Codex: run smoke tests remotely once data exists.
+- Codex: maintain `scripts/run_subtask1_experiments.py`.
+- VB: start the overnight suite when the pod/data are ready.
+- Codex: review summary and logs after completion.
+- VB: submit the selected candidate only after validation.
 
-### Track C: Baselines
+### Track C: Research Support
 
-Owner: Codex implements, Claude advises.
+Owner: Claude advises, Codex converts to code.
 
-- Codex: implement Subtask 2 tabular baseline first.
-- Codex: implement Subtask 1 sampled ordinal baseline second.
-- Claude: propose low-risk feature/model additions while Codex builds the baseline.
-- VB: pick submission candidates based on validation and leaderboard feedback.
+- Claude: focus on AgriPotential/Subtask 1 today.
+- Claude: recommend low-risk moves implementable in under 2 hours.
+- Codex: implement at most one targeted improvement at a time.
 
-### Track D: Reporting
+### Track D: Parked Reporting
 
 Owner: Codex structures, Claude drafts, VB approves.
 
-- Codex: generate metrics tables and reproducibility commands.
-- Claude: draft report prose and figure captions.
-- VB: review final notebook/report.
+- Subtask 2 reporting remains parked until the next Subtask 1 leaderboard pass is complete.
 
 ## Historical Phase 0 Handoffs
 

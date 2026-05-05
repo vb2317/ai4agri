@@ -1,6 +1,6 @@
 # AI4Agri Competition Execution Plan
 
-Last updated: 2026-05-04
+Last updated: 2026-05-05
 
 ## Goal
 
@@ -19,6 +19,36 @@ Related docs:
 - `ARCHITECTURE.md`: local/remote topology, pipeline layout, and artifact policy.
 - `REMOTE_PROVIDER.md`: current RunPod state and pending remote operating steps.
 - `HANDOFF_STRATEGY.md`: ownership rules for VB, Codex, and Claude.
+
+## Today Strategy: 2026-05-05
+
+Winning move: use the new RunPod as soon as it is ready to generate leaderboard-relevant Subtask 1 signals, while keeping submissions disciplined. The immediate goal is not a large neural rewrite; it is to find a materially better validated tabular/pixel candidate, submit only if plausible, and use the result to decide whether to escalate to U-Net/ViT.
+
+### Priority Order
+
+1. Bring the replacement pod online and select the correct migration mode:
+   - Mode A: existing `/workspace` volume is attached; verify `data/subtask1` and start experiments.
+   - Mode B: no data volume; redownload Subtask 1, smoke-read pixels/labels, then start experiments.
+2. Run the overnight/long Subtask 1 experiment suite:
+   ```bash
+   python scripts/run_subtask1_experiments.py \
+     --data-dir data/subtask1 \
+     --suite overnight \
+     --infer-best \
+     --validate-best
+   ```
+3. Review `summary.csv`, `summary.json`, and `best_inference.json`.
+4. Submit at most one clearly valid/improved candidate first; keep remaining daily submissions for genuinely different candidates.
+5. The suite produced a validated `40.16` submission; Codex should now stay near the winning configuration and try a targeted HGB uniform/raw-temporal follow-up before neural work.
+
+### Submission Gate
+
+Do not submit a new Subtask 1 ZIP unless:
+
+- ZIP validation passes with `--subtask1-codabench`, expected ids, and class-value checks.
+- The producing run has saved metrics and a reproducible config under `results/subtask1/experiments/`.
+- The candidate is not just a duplicate of the already-submitted `40.16` baseline.
+- VB records the CodaBench score immediately after submission.
 
 ## Current State
 
@@ -66,6 +96,12 @@ Related docs:
   - score: `39.74`
   - improvement over constant baseline: `+0.22`
   - note: confirm whether this ZIP was produced by the older script version or the optimized class-balanced/raw-temporal version.
+- Overnight uniform raw-temporal HGB CodaBench submission completed:
+  - file: `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip`
+  - score: `40.16`
+  - improvement over previous sampled-pixel baseline: `+0.42`
+  - improvement over constant baseline: `+0.64`
+  - conclusion: validation signal was directionally useful; uniform sampling is currently preferred over class-balanced sampling for this baseline family.
 - RunPod Subtask 1 data state:
   - path: `/workspace/ai4agri/data/subtask1`
   - CSVs present: `metadata.csv`, `train.csv`, `val.csv`, `test.csv`
@@ -73,7 +109,17 @@ Related docs:
   - Sentinel-2 image rasters downloaded
   - disk usage reported by VB: `185G`
   - label smoke-read succeeded for train/val/test samples.
-- Still needed: rerun optimized sampled-pixel baseline, compare validation behavior, infer/validate/submit if plausible, and record leaderboard score.
+- Still needed: use the `40.16` result as the new floor, then try one targeted improvement around uniform raw-temporal HGB before escalating to neural work.
+- Overnight experiment suite completed on RunPod:
+  - run root: `results/subtask1/experiments/20260504T180650Z/overnight`
+  - best validation run by Accuracy +/- 1: `hgb_uniform_temporal_200k_s43`
+  - best validation metrics: Accuracy +/- 1 `0.72604`, exact accuracy `0.5524`, MAE `0.97296`
+  - best ZIP: `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip`
+  - inference return code: `0`
+  - validation return code: `0`
+  - interpretation: uniform sampling beat class-balanced sampling on validation; raw-temporal features beat raw for comparable HGB runs.
+  - CodaBench score: `40.16`.
+  - next action: plan a targeted follow-up around the winning configuration.
 - Latest sampled-pixel smoke run:
   - model: `hist_gradient_boosting`
   - train patches: `20`
@@ -129,6 +175,9 @@ Related docs:
 - [X] After sampled-pixel Subtask 1 ZIP validates, submit it to CodaBench and record score/errors:
   - score: `39.74`
 - [ ] Keep Subtask 1 leaderboard work as the active priority.
+- [ ] When new RunPod is ready, update `.env` with `scripts/configure_runpod_env.sh --test`.
+- [ ] Choose migration Mode A or Mode B from `REMOTE_PROVIDER.md` based on whether `data/subtask1` exists on the attached volume.
+- [ ] Start the overnight Subtask 1 suite after data checks pass.
 - [ ] Submit the next Subtask 1 candidate only after validation passes and metrics suggest a plausible improvement.
 - [ ] Resume Subtask 2 review decisions after the next Subtask 1 leaderboard-improvement pass.
 
@@ -168,10 +217,16 @@ Related docs:
   - [X] Model-based ZIP submitted to CodaBench.
   - [X] CodaBench score recorded: `39.74`.
 - [ ] Run the next Subtask 1 leaderboard candidate:
-  - [ ] Confirm RunPod has commit `5bb8c08` or newer.
-  - [ ] Run `scripts/run_subtask1_experiments.py --data-dir data/subtask1 --suite overnight --infer-best --validate-best`.
-  - [ ] Review `results/subtask1/experiments/<timestamp>/overnight/summary.csv`.
-  - [ ] Submit the best inferred ZIP only if validation passes and metrics are plausible.
+  - [X] Confirm RunPod has current experiment runner.
+  - [X] Run `scripts/run_subtask1_experiments.py --data-dir data/subtask1 --suite overnight --infer-best --validate-best`.
+  - [X] Review log output from `results/subtask1/experiments/20260504T180650Z/overnight/summary.csv`.
+  - [X] Inspect `results/subtask1/experiments/20260504T180650Z/overnight/best_inference.json`.
+  - [ ] Pull `summary.csv`, `summary.json`, `best_inference.json`, and the best candidate ZIP locally.
+  - [X] Submit `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip` to CodaBench:
+    - score: `40.16`
+- [ ] While RunPod is starting/running, prepare the next code improvement candidate:
+  - [ ] Add a postprocessing or calibration path only after the experiment summary identifies the failure mode.
+  - [ ] Keep changes compatible with `scripts/run_subtask1_experiments.py`.
 - [ ] If sampled-pixel score underperforms constant baseline:
   - [X] Add class-balanced pixel sampling.
   - [ ] Try `--model extra_trees`.
@@ -182,6 +237,11 @@ Related docs:
 
 ### Claude
 
+- [ ] Subtask 1 today: provide one concise leaderboard-improvement memo focused on AgriPotential:
+  - [ ] Which low-risk non-neural moves are most likely to improve Accuracy +/- 1 today?
+  - [ ] Whether ordinal rounding/calibration or spatial smoothing is defensible for suitability masks.
+  - [ ] Whether the official AgriPotential examples imply any preprocessing, normalization, nodata handling, or band/time ordering we are missing.
+  - [ ] Keep recommendations implementable by Codex in under 2 hours.
 - [X] Verify DACIA5 file-name label interpretation from examples like `patch_20240716_9748_3.tif`; confirm which token is crop label and whether `9748`/`3017` are field or parcel ids.
 - [ ] Confirm Sentinel-2 band order for the 12-band patch TIFFs so Codex can safely add NDVI/NDWI/red-edge features.
 - [X] Find or infer expected Subtask 2 prediction artifact format from ImageCLEF/DACIA5 materials:
@@ -315,8 +375,13 @@ Active for Subtask 1 because it has leaderboard feedback.
 
 - [X] Add Subtask 1 class-balanced sampling.
 - [X] Add overnight Subtask 1 experiment runner for HGB/ExtraTrees, uniform/class-balanced sampling, raw/raw-temporal features, and larger pixel budgets.
-- [ ] Run overnight Subtask 1 experiment suite on RunPod and inspect ranked validation summary.
-- [ ] Submit the best validated ZIP only if the overnight suite gives a plausible improvement signal.
+- [X] Run overnight Subtask 1 experiment suite on RunPod and inspect ranked validation log.
+- [X] Submit `hgb_uniform_temporal_200k_s43` candidate:
+  - ZIP: `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip`
+  - validation return code: `0`
+- [ ] Next targeted candidate:
+  - [ ] Stay near the winning setup: HGB, uniform sampling, raw-temporal features.
+  - [ ] Try larger pixel budget and/or multiple seeds before switching model family.
 - [ ] Add simple spatial smoothing or class-prior calibration only after a valid optimized ZIP exists.
 - [ ] Try Subtask 1 ensemble or lightweight neural model only if the pixel baseline pipeline is stable.
 - [ ] Tune Subtask 2 tabular models after Subtask 1 leaderboard loop has a stronger candidate or stalls.
@@ -447,6 +512,25 @@ Needed output:
 
 ## Decision Log
 
+### 2026-05-05
+
+- Subtask 1 declared active priority because CodaBench leaderboard feedback is immediate and current model score `39.74` only slightly improves on constant baseline `39.52`.
+- Replacement RunPod strategy documented with two migration modes:
+  - Mode A: reuse existing `/workspace` volume and verify `data/subtask1`.
+  - Mode B: redownload Subtask 1 and smoke-read images/labels before training.
+- Today strategy set: run the overnight Subtask 1 experiment suite, validate the best inferred ZIP, and submit only one plausible improvement candidate first.
+- VB handoff updated for pod setup, migration-mode choice, experiment start, and submission gate.
+- Claude handoff updated to focus on Subtask 1 low-risk leaderboard improvements implementable by Codex in under 2 hours.
+- Subtask 2 remains parked except for background research because it lacks immediate leaderboard feedback.
+- Overnight Subtask 1 experiment suite finished successfully:
+  - `hgb_uniform_temporal_200k_s43`: Accuracy +/- 1 `0.72604`, exact `0.5524`, MAE `0.97296`.
+  - `extra_cb_temporal_150k_s46`: Accuracy +/- 1 `0.68595`, exact `0.40253`, MAE `1.09979`.
+  - `hgb_cb_temporal_400k_s45`: Accuracy +/- 1 `0.68396`, exact `0.38606`, MAE `1.13622`.
+  - uniform sampling was the strongest validation signal.
+- Best overnight ZIP generated and validated successfully:
+  - `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip`
+  - inference return code `0`, validation return code `0`.
+
 ### 2026-05-04
 
 - Strategy set: valid baselines first; use RunPod for data-heavy work; prioritize Subtask 2 fast iteration while keeping Subtask 1 packaging path open.
@@ -468,6 +552,7 @@ Needed output:
 
 - [X] What are the Subtask 1 CodaBench submission limits and evaluation timing?
 - [X] Is RunPod global networking enabled?
+- [ ] Did the replacement RunPod attach the existing `/workspace` volume, or do we need Mode B redownload?
 - [ ] Are Subtask 2 test labels hidden, or is this primarily notebook/report evaluation?
 - [X] What is the exact Subtask 2 prediction/submission artifact format?
 - [ ] What is the confirmed Sentinel-2 band order for DACIA5 12-band patch TIFFs?

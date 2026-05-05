@@ -95,6 +95,7 @@ Push local scripts/docs to RunPod:
 
 ```bash
 scripts/configure_runpod_env.sh --host NEW_HOST --port NEW_PORT --pod-id NEW_POD_ID
+scripts/runpod_install_rsync.sh
 scripts/runpod_sync.sh push
 ```
 

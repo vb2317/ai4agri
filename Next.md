@@ -1,5 +1,126 @@
 # Next
 
+## Today: 2026-05-05 Winning Move
+
+Subtask 1 is the priority because it has immediate leaderboard feedback. Current submitted scores:
+
+- Constant class baseline: `39.52`
+- First sampled-pixel baseline: `39.74`
+- Overnight uniform raw-temporal HGB: `40.16`
+
+Goal today: use the replacement RunPod to produce one stronger, validated Subtask 1 candidate and submit only if it is plausibly different/better.
+
+Latest overnight result:
+
+- Best validation run: `hgb_uniform_temporal_200k_s43`
+- Accuracy +/- 1: `0.72604`
+- Exact accuracy: `0.5524`
+- MAE: `0.97296`
+- Validated ZIP: `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip`
+- CodaBench score: `40.16`
+- Signal: uniform sampling + raw-temporal features beat class-balanced variants in this suite.
+
+Immediate next local pull command:
+
+```bash
+scripts/runpod_sync.sh pull \
+  /workspace/ai4agri/results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip \
+  ./results/subtask1/submissions/
+```
+
+Submitted to CodaBench and scored `40.16`.
+
+Next move:
+
+- [ ] Treat `40.16` as the new floor.
+- [ ] Run one follow-up near the winning setup: HGB + uniform sampling + raw-temporal features.
+- [ ] Prefer larger pixel budget or multiple seeds before switching to U-Net/ViT.
+
+### VB
+
+- [ ] Wait for replacement RunPod to become ready.
+- [ ] Configure local `.env`:
+  ```bash
+  scripts/configure_runpod_env.sh \
+    --host NEW_PUBLIC_SSH_HOST_OR_IP \
+    --port NEW_PUBLIC_SSH_PORT \
+    --pod-id NEW_POD_ID \
+    --jupyter-url NEW_JUPYTER_LAB_URL \
+    --test
+  ```
+- [ ] Push current repo files:
+  ```bash
+  scripts/runpod_sync.sh push
+  ```
+- [ ] Choose migration mode:
+  - Mode A: existing volume present, verify `data/subtask1`.
+  - Mode B: data missing, redownload Subtask 1 and smoke-read images/labels.
+- [ ] Start the overnight Subtask 1 experiment suite after data checks pass.
+- [ ] Submit only the best validated candidate ZIP, and record CodaBench score immediately.
+
+### Codex
+
+- [ ] Keep docs/scripts aligned with the replacement pod workflow.
+- [ ] After experiments finish, review `summary.csv`, `summary.json`, logs, and `best_inference.json`.
+- [ ] If the best candidate is weak, implement one targeted improvement: ExtraTrees tuning, class-prior calibration, or simple spatial smoothing.
+- [ ] Preserve the submission gate: validate ZIP, expected ids, and class values before upload.
+
+### Claude
+
+- [ ] Focus on Subtask 1 only today.
+- [ ] Return a compact memo on low-risk AgriPotential improvements implementable in under 2 hours:
+  - ordinal calibration/rounding
+  - class-prior correction
+  - spatial smoothing for suitability masks
+  - preprocessing/nodata/band-order issues from official examples
+
+## RunPod Start Commands
+
+Mode A data check:
+
+```bash
+cd /workspace/ai4agri
+du -sh data/subtask1
+test -f data/subtask1/test.csv
+test -f data/subtask1/viticulture.tif
+find data/subtask1 -maxdepth 1 -name "*.tif" | wc -l
+```
+
+Mode B redownload:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/download_subtask1_hf.py --out-dir data/subtask1
+python scripts/inspect_subtask1.py \
+  --data-dir data/subtask1 \
+  --splits train val test \
+  --limit 1 \
+  --read-pixels \
+  --read-labels
+du -sh data/subtask1
+```
+
+Start experiments:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+mkdir -p results/subtask1/experiments
+nohup python scripts/run_subtask1_experiments.py \
+  --data-dir data/subtask1 \
+  --suite overnight \
+  --infer-best \
+  --validate-best \
+  > results/subtask1/experiments/overnight.log 2>&1 &
+```
+
+Check progress:
+
+```bash
+tail -f results/subtask1/experiments/overnight.log
+```
+
 ## Now (Subtask 1 First)
 
 - [X] VB: submit the validated constant baseline ZIP to Subtask 1 CodaBench.
@@ -96,7 +217,8 @@
     --validate-best
   ```
 - [ ] Review `results/subtask1/experiments/<timestamp>/overnight/summary.csv`.
-- [ ] If validation metrics are plausible, pull and submit the best validated candidate ZIP.
+- [X] Inspect `results/subtask1/experiments/20260504T180650Z/overnight/best_inference.json`.
+- [ ] Pull and submit `20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip`.
 - [ ] Record every CodaBench score and avoid spending submissions on unvalidated ZIPs.
 
 ## Before May 28 (Notebook submission)

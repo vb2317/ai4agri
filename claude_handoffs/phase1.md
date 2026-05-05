@@ -1,62 +1,53 @@
-# Claude Handoffs: Phase 1
+# Claude Handoffs: 2026-05-05
 
-Use this while Codex continues implementation and packaging.
+## Priority
 
-## Current Codex Findings
+Focus on Subtask 1 AgriPotential today. It has immediate leaderboard feedback.
 
-- DACIA5 patch filenames are `patch_YYYYMMDD_<APIA code>_<patch index>.tif`.
-- The included `Dataset/Masks_and_legend/Legend_crops.pdf` confirms the middle token is the APIA crop code.
-- The final filename token ranges from `1` to `52`; it is a patch index, not a crop label.
-- All multispectral patch TIFFs have matching per-patch RGB masks:
-  - Problem 1 test: `1017 / 1017`
-  - Problem 1 training: `5436 / 5436`
-  - Problem 2 test: `1073 / 1073`
-  - Problem 2 training: `1176 / 1176`
-- Current leakage-free tabular metrics:
-  - Problem 1, HistGradientBoosting, 2023 holdout: `Q=0.6655`, `OA=0.7442`, `AA=0.5867`.
-  - Problem 2, ExtraTrees, 2024 holdout: `Q=0.8102`, `OA=0.8308`, `AA=0.7896`.
-- Leakage control: APIA code is used only to derive labels and is excluded from model features along with patch index.
+Current submitted scores:
 
-Tracked evidence:
+- Constant class baseline: `39.52`
+- First sampled-pixel baseline: `39.74`
 
-- `results/subtask2/inspection/subtask2_label_inspection.json`
-- `results/subtask2/inspection/subtask2_feature_summary.json`
-- `results/subtask2/inspection/subtask2_baseline_summary.json`
+Codex has an experiment runner that will compare:
 
-## Findings Status
-
-Detailed findings are tracked in [`findings_phase1.md`](findings_phase1.md).
-
-- [X] Confirm expected Subtask 2 final deliverable format for ImageCLEF 2026.
-- [ ] Confirm Sentinel-2 12-band order for the patch TIFFs.
-  - Public docs confirm 12 bands but do not name/order them.
-  - `scripts/inspect_subtask2.py` now records TIFF descriptions, band tags, dataset tags, and color interpretation when re-run on RunPod.
-- [X] Review whether grouping APIA codes as implemented is defensible.
-- [X] Review whether the leakage-free tabular baseline is acceptable for the first report/notebook pass.
-- [X] Recommend a compact neural baseline only if realistic within the remaining time.
+- HistGradientBoosting vs ExtraTrees
+- uniform vs class-balanced sampling
+- raw vs raw-temporal features
+- larger pixel budgets
 
 ## Needed From Claude
 
 ```text
-Project: AI4Agri 2026 Subtask 2 DACIA5.
+Project: AI4Agri 2026 Subtask 1 AgriPotential.
 
 Task:
-Now that Codex has a leakage-free tabular baseline, verify the remaining report/submission and feature-improvement assumptions.
+Return a concise leaderboard-improvement memo for the current sampled-pixel baseline.
+
+Current baseline:
+- Input: 34 Sentinel-2 timeframes x 10 bands.
+- Output: 5-class ordinal suitability mask.
+- Metric: Accuracy +/- 1.
+- Current CodaBench score: 39.74.
+- Current code samples labeled pixels, trains scikit-learn HGB or ExtraTrees, and writes PNG masks.
+- Current optimized code can use class-balanced sampling and raw_temporal features.
 
 Needed output:
-- Confirm expected Subtask 2 final deliverable format for ImageCLEF 2026: notebook-only, ZIP/source, CSV predictions, report, or a combination.
-- Confirm Sentinel-2 12-band order for the patch TIFFs so Codex can safely add NDVI, NDWI, red-edge, and SWIR indices.
-- Review whether grouping APIA codes as implemented is defensible:
-  - 101 and 1010 -> Wheat
-  - 108 and 131 -> Corn
-  - 151 -> Peas
-  - 202 -> Rapeseed
-  - 253/254/255/2557 -> Potato
-  - 3017 -> Sugarbeet
-  - 9747/9748 -> Alfalfa
-- Recommend one compact neural baseline only if it is likely to improve beyond the current tabular metrics within the remaining time.
+- Top 3 low-risk improvements Codex can implement in under 2 hours.
+- Whether ordinal calibration, class-prior correction, or spatial smoothing is likely to help Accuracy +/- 1.
+- Any official AgriPotential preprocessing details we might be missing:
+  nodata handling, band order, temporal order, normalization/scaling, label semantics, or patch geometry.
+- Any warning signs that validation Accuracy +/- 1 may not correlate with CodaBench leaderboard.
 
 Constraints:
-- Do not ask Codex to train anything until band order and deliverable format are confirmed.
-- Keep answer concise and cite the exact source or file used.
+- Do not propose U-Net/ViT as the immediate next step unless the tabular/pixel path is exhausted.
+- Keep the answer implementation-oriented and cite exact source/file names if used.
 ```
+
+## Parked Claude Items
+
+These remain useful but are lower priority today:
+
+- DACIA5 Sentinel-2 12-band order.
+- Subtask 2 report prose.
+- Subtask 2 neural baseline recommendations.
