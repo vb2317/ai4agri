@@ -145,6 +145,24 @@ Use these only after the postprocess check:
 - Ensemble ResNet/FPN with TinyViT or HGB only if the second model is genuinely different and passes audit.
 - Subtask 2 notebook/report cleanup after Subtask 1 submissions stop improving.
 
+## Active Bigger Model Run
+
+Started on L40S at `2026-05-05T17:35:00Z`:
+
+- Run id: `l40s_sam_decoder_summary_pm1_full_b16_e24_s64`
+- Remote Python PID at launch: `9766`.
+- Model: `sam_decoder`, a promptless SAM-style ViT encoder with a custom dense decoder that accepts the existing Sentinel summary tensor channels.
+- Loss: `pm1_ce`, which spreads target probability mass over labels within +/-1 so the objective matches the leaderboard tolerance where, for example, `0` predicted as `1` still counts.
+- Config: summary temporal features, full `train.csv` and `val.csv`, batch size `16`, max `24` epochs, patience `5`, `--base-channels 64`, seed `64`, median smoothing `3`.
+- GPU check after launch: about `8GB` allocated on the L40S; `396` train batches per epoch.
+
+Monitor:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'tail -n 80 results/subtask1/vision_runs/l40s_sam_decoder_summary_pm1_full_b16_e24_s64/nohup.log'
+```
+
 ## RunPod Commands
 
 Status:

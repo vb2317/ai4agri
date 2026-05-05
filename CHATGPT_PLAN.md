@@ -71,6 +71,17 @@ Goal: collect transformer validation probabilities and visuals for ensemble anal
 
 Interpretation: none is a standalone submit candidate against the `50.63` floor. The weighted-CE TinyViT is the most useful ensemble-diversity probe because it recovers class 4 recall `0.5405` and class 2 recall `0.0782`, while the soft-CE variants mostly miss class 2.
 
+### Active SAM-Style Bigger Model
+
+Started on the L40S at `2026-05-05T17:35:00Z`.
+
+- Run id: `l40s_sam_decoder_summary_pm1_full_b16_e24_s64`.
+- Code adds `sam_decoder`: a promptless SAM-style ViT encoder plus custom dense decoder for multispectral summary tensors, not pretrained RGB SAM.
+- Code adds `pm1_ce`: a metric-aware loss that assigns target probability mass to labels within +/-1, matching the leaderboard tolerance.
+- Command: `python scripts/run_subtask1_vision.py train --data-dir data/subtask1 --run-id l40s_sam_decoder_summary_pm1_full_b16_e24_s64 --model sam_decoder --temporal-mode summary --epochs 24 --batch-size 16 --patience 5 --visual-limit 20 --loss pm1_ce --median-size 3 --base-channels 64 --seed 64 --num-workers 8 --write-test-visuals --test-visual-limit 20`.
+- Smoke tests passed for `sam_decoder`, `pm1_ce`, and batch size `16`.
+- Initial GPU allocation is about `8GB` on L40S, with `396` train batches per epoch.
+
 ## Current State
 
 ### Access And Remote

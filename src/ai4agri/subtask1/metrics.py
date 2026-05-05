@@ -18,6 +18,22 @@ def soft_ordinal_cross_entropy(logits: torch.Tensor, target: torch.Tensor, sigma
     return loss[valid].mean()
 
 
+def pm1_tolerant_cross_entropy(logits: torch.Tensor, target: torch.Tensor, center_weight: float = 0.5) -> torch.Tensor:
+    """Cross entropy with label mass over classes that score as correct under Accuracy +/- 1."""
+
+    valid = (target >= 0) & (target <= 4)
+    safe_target = target.clamp(0, 4)
+    classes = torch.arange(logits.shape[1], device=logits.device).view(1, -1, 1, 1)
+    distances = (classes - safe_target.unsqueeze(1)).abs()
+    soft = (distances <= 1).to(logits.dtype)
+    exact = (distances == 0).to(logits.dtype)
+    soft = soft + exact * center_weight
+    soft = soft / soft.sum(dim=1, keepdim=True).clamp_min(1e-6)
+    log_prob = torch.log_softmax(logits, dim=1)
+    loss = -(soft * log_prob).sum(dim=1)
+    return loss[valid].mean()
+
+
 def decode_logits(logits: torch.Tensor, mode: str = "argmax") -> torch.Tensor:
     if mode == "expected":
         prob = torch.softmax(logits, dim=1)

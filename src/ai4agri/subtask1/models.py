@@ -133,6 +133,92 @@ class TinyPatchTransformerSeg(nn.Module):
         return F.interpolate(out, size=x.shape[-2:], mode="bilinear", align_corners=False)
 
 
+class SamStyleOrdinalSeg(nn.Module):
+    """Promptless SAM-style ViT encoder with a dense custom decoder for multispectral patches."""
+
+    def __init__(
+        self,
+        in_channels: int,
+        num_classes: int = 5,
+        embed_dim: int = 384,
+        patch_size: int = 4,
+        depth: int = 8,
+        heads: int = 8,
+    ) -> None:
+        super().__init__()
+        self.patch_size = patch_size
+        self.embed_dim = embed_dim
+        self.low_level = nn.Sequential(
+            nn.Conv2d(in_channels, 96, 3, padding=1, bias=False),
+            nn.BatchNorm2d(96),
+            nn.GELU(),
+            nn.Conv2d(96, 96, 3, padding=1, bias=False),
+            nn.BatchNorm2d(96),
+            nn.GELU(),
+        )
+        self.patch_embed = nn.Conv2d(96, embed_dim, patch_size, stride=patch_size)
+        grid = 128 // patch_size
+        self.pos_embed = nn.Parameter(torch.zeros(1, grid * grid, embed_dim))
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embed_dim,
+            nhead=heads,
+            dim_feedforward=embed_dim * 4,
+            dropout=0.1,
+            batch_first=True,
+            activation="gelu",
+            norm_first=True,
+        )
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=depth)
+        self.neck = nn.Sequential(
+            nn.Conv2d(embed_dim, 256, 1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.GELU(),
+            nn.Conv2d(256, 256, 3, padding=1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.GELU(),
+        )
+        self.class_queries = nn.Parameter(torch.randn(num_classes, 256) * 0.02)
+        self.mask_embed = nn.Sequential(
+            nn.Linear(256, 256),
+            nn.GELU(),
+            nn.Linear(256, 256),
+        )
+        self.up = nn.Sequential(
+            nn.ConvTranspose2d(256, 160, 2, stride=2),
+            nn.BatchNorm2d(160),
+            nn.GELU(),
+            nn.ConvTranspose2d(160, 96, 2, stride=2),
+            nn.BatchNorm2d(96),
+            nn.GELU(),
+        )
+        self.refine = nn.Sequential(
+            nn.Conv2d(192, 128, 3, padding=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.GELU(),
+            nn.Conv2d(128, 128, 3, padding=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.GELU(),
+        )
+        self.pixel_head = nn.Conv2d(128, 256, 1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        input_size = x.shape[-2:]
+        low = self.low_level(x)
+        patches = self.patch_embed(low)
+        height, width = patches.shape[-2:]
+        tokens = patches.flatten(2).transpose(1, 2)
+        if tokens.shape[1] == self.pos_embed.shape[1]:
+            tokens = tokens + self.pos_embed
+        encoded = self.encoder(tokens).transpose(1, 2).reshape(x.shape[0], self.embed_dim, height, width)
+        features = self.neck(encoded)
+        up = self.up(features)
+        up = F.interpolate(up, size=input_size, mode="bilinear", align_corners=False)
+        refined = self.refine(torch.cat([up, low], dim=1))
+        pixel_embed = self.pixel_head(refined)
+        class_embed = self.mask_embed(self.class_queries)
+        return torch.einsum("bchw,kc->bkhw", pixel_embed, class_embed)
+
+
 def build_model(name: str, in_channels: int, num_classes: int = 5, base_channels: int = 32) -> nn.Module:
     if name == "unet":
         return SmallUNet(in_channels, num_classes=num_classes, base_channels=base_channels)
@@ -140,4 +226,8 @@ def build_model(name: str, in_channels: int, num_classes: int = 5, base_channels
         return ResNetFPN(in_channels, num_classes=num_classes)
     if name in {"tiny_vit", "patch_transformer"}:
         return TinyPatchTransformerSeg(in_channels, num_classes=num_classes)
+    if name in {"sam_decoder", "sam_style"}:
+        embed_dim = max(256, base_channels * 6)
+        heads = 8 if embed_dim % 8 == 0 else 6
+        return SamStyleOrdinalSeg(in_channels, num_classes=num_classes, embed_dim=embed_dim, heads=heads)
     raise ValueError(f"unknown model: {name}")

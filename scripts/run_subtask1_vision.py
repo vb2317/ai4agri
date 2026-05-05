@@ -23,7 +23,13 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from ai4agri.subtask1.data import AgriPotentialVisionDataset, collate_patches
-from ai4agri.subtask1.metrics import decode_logits, median_smooth, segmentation_metrics, soft_ordinal_cross_entropy
+from ai4agri.subtask1.metrics import (
+    decode_logits,
+    median_smooth,
+    pm1_tolerant_cross_entropy,
+    segmentation_metrics,
+    soft_ordinal_cross_entropy,
+)
 from ai4agri.subtask1.models import build_model
 from ai4agri.subtask1.png import grayscale_png
 
@@ -42,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     train.add_argument("--patch-limit", type=int, default=0)
     train.add_argument("--val-patch-limit", type=int, default=0)
     train.add_argument("--visual-limit", type=int, default=20)
-    train.add_argument("--loss", choices=["soft_ce", "ce"], default="soft_ce")
+    train.add_argument("--loss", choices=["soft_ce", "pm1_ce", "ce"], default="soft_ce")
     train.add_argument("--class-weights", default="", help="Optional comma-separated CE weights for classes 0..4.")
     train.add_argument("--patience", type=int, default=8)
     train.add_argument("--write-test-visuals", action="store_true")
@@ -59,7 +65,7 @@ def parse_args() -> argparse.Namespace:
     infer.set_defaults(decode=None, median_size=None)
 
     smoke = subparsers.add_parser("self-test", help="Run a synthetic forward/metric smoke check without data files.")
-    smoke.add_argument("--model", choices=["unet", "resnet_fpn", "tiny_vit"], default="unet")
+    smoke.add_argument("--model", choices=["unet", "resnet_fpn", "tiny_vit", "sam_decoder"], default="unet")
     smoke.add_argument("--channels", type=int, default=40)
 
     return parser.parse_args()
@@ -68,7 +74,7 @@ def parse_args() -> argparse.Namespace:
 def add_common_model_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--data-dir", required=True, type=Path)
     parser.add_argument("--run-id", default=None)
-    parser.add_argument("--model", choices=["unet", "resnet_fpn", "tiny_vit"], default="unet")
+    parser.add_argument("--model", choices=["unet", "resnet_fpn", "tiny_vit", "sam_decoder"], default="unet")
     parser.add_argument("--temporal-mode", choices=["summary", "seasonal", "concat"], default="summary")
     parser.add_argument("--label-name", choices=["viticulture", "market", "field"], default="viticulture")
     parser.add_argument("--out-root", type=Path, default=Path("results/subtask1"))
@@ -118,6 +124,8 @@ def parse_class_weights(value: str, device: str) -> torch.Tensor | None:
 def compute_loss(logits: torch.Tensor, target: torch.Tensor, loss_name: str, class_weights: torch.Tensor | None) -> torch.Tensor:
     if loss_name == "soft_ce":
         return soft_ordinal_cross_entropy(logits, target)
+    if loss_name == "pm1_ce":
+        return pm1_tolerant_cross_entropy(logits, target)
     return F.cross_entropy(logits, target.clamp(0, 4), weight=class_weights, ignore_index=255)
 
 
