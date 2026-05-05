@@ -115,7 +115,7 @@ class AgriPotentialVisionDataset(Dataset):
 
     def __init__(
         self,
-        data_dir: Path,
+        data_dir: Path | str,
         split: str,
         temporal_mode: str,
         label_name: str = "viticulture",
@@ -124,15 +124,15 @@ class AgriPotentialVisionDataset(Dataset):
         random_state: int = 42,
         shuffle_rows: bool = False,
     ) -> None:
-        self.data_dir = data_dir
+        self.data_dir = Path(data_dir)
         self.split = split
         self.temporal_mode = temporal_mode
         self.label_name = label_name
         self.augment = augment
         self.rng = np.random.default_rng(random_state)
 
-        self.scenes = read_scenes(data_dir)
-        split_path = data_dir / f"{split}.csv"
+        self.scenes = read_scenes(self.data_dir)
+        split_path = self.data_dir / f"{split}.csv"
         self.rows = read_csv_rows(split_path)
         require_split_columns(self.rows, split_path)
         if shuffle_rows:
@@ -141,7 +141,7 @@ class AgriPotentialVisionDataset(Dataset):
         if patch_limit:
             self.rows = self.rows[:patch_limit]
 
-        label_path = data_dir / f"{label_name}.tif"
+        label_path = self.data_dir / f"{label_name}.tif"
         self.label_path = label_path if label_path.exists() and split != "test" else None
 
     @property
