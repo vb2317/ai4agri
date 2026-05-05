@@ -563,11 +563,14 @@ Needed output:
 
 ### 2026-05-05
 
-- Full TinyViT run started on L40S:
+- Full TinyViT run completed on L40S:
   - Run id: `l40s_tiny_vit_summary_soft_full_e30_s52`.
   - Command: `source .venv/bin/activate && python scripts/run_subtask1_vision.py train --data-dir data/subtask1 --run-id l40s_tiny_vit_summary_soft_full_e30_s52 --model tiny_vit --temporal-mode summary --epochs 30 --batch-size 8 --patience 6 --visual-limit 20 --loss soft_ce --median-size 3 --seed 52 --num-workers 4 --write-test-visuals --test-visual-limit 20`.
   - Scope: full `train.csv` and full `val.csv`; no train or validation patch limit.
-  - Purpose: promote the best TinyViT probe to a full-data transformer candidate and produce full validation probabilities for ensemble comparison.
+  - Best epoch `6`; full-val Accuracy +/- 1 `0.76609`, exact `0.46752`, MAE `0.93469`.
+  - Per-class recall: class 0 `0.7391`, class 1 `0.2301`, class 2 `0.0438`, class 3 `0.5843`, class 4 `0.0245`.
+  - Pulled local artifacts include checkpoint/metrics, validation probabilities, visual panels, and `results/subtask1/submissions/l40s_tiny_vit_summary_soft_full_e30_s52.zip`.
+  - Interpretation: useful class-3-heavy transformer ensemble member, but class 4 recall is too weak to treat as an automatic standalone submission.
 - Subtask 1 declared active priority because CodaBench leaderboard feedback is immediate and current model score `39.74` only slightly improves on constant baseline `39.52`.
 - Replacement RunPod strategy documented with two migration modes:
   - Mode A: reuse existing `/workspace` volume and verify `data/subtask1`.

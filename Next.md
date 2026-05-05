@@ -112,13 +112,16 @@ Do not submit these directly. Use them to test ensemble weights against `l40s_re
 
 ## Full TinyViT Run
 
-Started on L40S at `2026-05-05T15:41:00Z`:
+Started on L40S at `2026-05-05T15:41:00Z`; finished with early stopping after epoch `12`.
 
 - Run id: `l40s_tiny_vit_summary_soft_full_e30_s52`
-- Remote Python PID at launch: `7627`
 - Config: TinyViT, summary temporal features, soft ordinal CE, seed `52`, median smoothing `3`, batch size `8`, max `30` epochs, patience `6`.
 - Dataset scope: full `train.csv` and full `val.csv`; no `--patch-limit` or `--val-patch-limit`.
-- Purpose: train the best transformer probe on all available training patches and produce full validation probabilities for ensemble weighting.
+- Best epoch: `6`.
+- Full-val Accuracy +/- 1: `0.76609`; exact `0.46752`; MAE `0.93469`.
+- Per-class recall at best epoch: class 0 `0.7391`, class 1 `0.2301`, class 2 `0.0438`, class 3 `0.5843`, class 4 `0.0245`.
+- Local artifacts: checkpoint/metrics under `results/subtask1/vision_runs/l40s_tiny_vit_summary_soft_full_e30_s52/`, val probabilities at `results/subtask1/val_preds/l40s_tiny_vit_summary_soft_full_e30_s52_val_probs.npz`, visuals under `results/subtask1/visuals/l40s_tiny_vit_summary_soft_full_e30_s52/`, ZIP at `results/subtask1/submissions/l40s_tiny_vit_summary_soft_full_e30_s52.zip`.
+- Use as an ensemble candidate, not an automatic submission: class 3 is strong, but class 4 recall is weak.
 
 Monitor:
 
