@@ -8,7 +8,7 @@ Subtask 1 is the priority because it has immediate leaderboard feedback. Current
 - First sampled-pixel baseline: `39.74`
 - Overnight uniform raw-temporal HGB: `40.16`
 
-Goal today: use the replacement RunPod to produce one stronger, validated Subtask 1 candidate and submit only if it is plausibly different/better.
+Goal today: split ownership cleanly. Claude owns the new L40S 48 GB RunPod vision run end to end; Codex focuses on improving the existing RunPod setup and preserving common analysis artifacts for VB review.
 
 Latest overnight result:
 
@@ -34,7 +34,7 @@ Next move:
 
 - [X] Treat `40.16` as the new floor.
 - [X] Add a targeted follow-up suite near the winning setup: HGB + uniform sampling + raw-temporal features.
-- [ ] Run the targeted suite before switching to U-Net/ViT:
+- [ ] Keep the targeted HGB suite as fallback/ensemble evidence:
   ```bash
   python scripts/run_subtask1_experiments.py \
     --data-dir data/subtask1 \
@@ -42,35 +42,88 @@ Next move:
     --infer-best \
     --validate-best
   ```
+- [X] Pivot Subtask 1 to a vision-model campaign; keep HGB only as fallback/ensemble floor.
+- [X] Assign the L40S 48 GB pod entirely to Claude; see `claude_handoffs/phase1.md`.
+- [ ] Codex: improve existing RunPod helpers, common notebooks, validators, and result sync.
+- [ ] VB: review Claude-produced visual artifacts before any submission.
+
+## RunPod Assignment
+
+- Existing pod / `.env`: VB + Codex, for setup hardening, shared scripts, validators, and common analysis.
+- L40S pod / `.env.l40s.claude`: Claude, for the complete ResNet/FPN and TinyViT vision run.
+- Shared analysis remains in this repo:
+  - `notebooks/subtask1_testbed.ipynb`
+  - `notebooks/10_final_stack.ipynb`
+  - `results/subtask1/vision_runs/`
+  - `results/subtask1/val_preds/`
+  - `results/subtask1/visuals/`
+  - `results/subtask1/submissions/`
+
+Configure Claude's L40S pod:
+
+```bash
+scripts/configure_runpod_env.sh \
+  --env-file .env.l40s.claude \
+  --host L40S_PUBLIC_SSH_HOST_OR_IP \
+  --port L40S_PUBLIC_SSH_PORT \
+  --pod-id L40S_POD_ID \
+  --pod-name claude-l40s \
+  --jupyter-url L40S_JUPYTER_URL \
+  --test
+```
+
+Push shared code to Claude's pod:
+
+```bash
+scripts/runpod_install_rsync.sh --env-file .env.l40s.claude
+scripts/runpod_sync.sh --env-file .env.l40s.claude push
+scripts/runpod_exec.sh --env-file .env.l40s.claude 'bash scripts/runpod_status.sh'
+```
+
+Pull Claude's completed run artifacts:
+
+```bash
+scripts/runpod_sync.sh --env-file .env.l40s.claude pull-results
+```
+
+Existing pod smoke/status:
+
+```bash
+scripts/runpod_sync.sh push
+scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'
+```
+
+Artifacts to review in `notebooks/subtask1_testbed.ipynb`:
+
+- `results/subtask1/vision_runs/<run_id>/config.json`, `metrics.json`, `train.log`
+- `results/subtask1/val_preds/<run_id>_val_probs.npz`
+- `results/subtask1/visuals/<run_id>/`
+- `results/subtask1/submissions/<run_id>.zip`
 
 ### VB
 
-- [ ] Wait for replacement RunPod to become ready.
-- [ ] Configure local `.env`:
+- [ ] Keep existing RunPod configured in `.env`.
+- [ ] Configure Claude L40S pod in `.env.l40s.claude`:
   ```bash
   scripts/configure_runpod_env.sh \
-    --host NEW_PUBLIC_SSH_HOST_OR_IP \
-    --port NEW_PUBLIC_SSH_PORT \
-    --pod-id NEW_POD_ID \
-    --jupyter-url NEW_JUPYTER_LAB_URL \
+    --env-file .env.l40s.claude \
+    --host L40S_PUBLIC_SSH_HOST_OR_IP \
+    --port L40S_PUBLIC_SSH_PORT \
+    --pod-id L40S_POD_ID \
+    --pod-name claude-l40s \
+    --jupyter-url L40S_JUPYTER_URL \
     --test
   ```
-- [ ] Push current repo files:
-  ```bash
-  scripts/runpod_sync.sh push
-  ```
-- [ ] Choose migration mode:
-  - Mode A: existing volume present, verify `data/subtask1`.
-  - Mode B: data missing, redownload Subtask 1 and smoke-read images/labels.
-- [ ] Start the targeted Subtask 1 experiment suite after data checks pass.
+- [ ] Hand Claude `claude_handoffs/phase1.md`.
+- [ ] Review Claude's visual artifacts in `notebooks/subtask1_testbed.ipynb`.
 - [ ] Submit only the best validated candidate ZIP, and record CodaBench score immediately.
 
 ### Codex
 
-- [ ] Keep docs/scripts aligned with the replacement pod workflow.
-- [ ] After experiments finish, review `summary.csv`, `summary.json`, logs, and `best_inference.json`.
-- [ ] If the best candidate is weak, implement one targeted improvement: ExtraTrees tuning, class-prior calibration, or simple spatial smoothing.
-- [ ] Preserve the submission gate: validate ZIP, expected ids, and class values before upload.
+- [X] Add multi-env RunPod helper support for `.env` plus `.env.l40s.claude`.
+- [X] Keep Claude L40S execution handoff current.
+- [ ] Improve existing RunPod setup and shared artifact review workflow.
+- [ ] Preserve the submission gate: visual review, validate ZIP, expected ids, and class values before upload.
 
 ### Claude
 
@@ -81,6 +134,9 @@ Next move:
   - spatial smoothing for suitability masks
   - preprocessing/nodata/band-order issues from official examples
   - Memo: `claude_handoffs/subtask1_leaderboard_memo_20260505.md`.
+- [ ] Own the L40S 48 GB RunPod lane end to end.
+- [ ] Run `claude_handoffs/phase1.md`.
+- [ ] Return metrics, logs, visual artifact paths, ZIP validation status, and submit/reject recommendation.
 
 ## RunPod Start Commands
 

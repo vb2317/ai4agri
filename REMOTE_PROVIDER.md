@@ -14,6 +14,21 @@ scripts/configure_runpod_env.sh \
   --jupyter-url NEW_JUPYTER_LAB_URL
 ```
 
+For multiple pods, keep the existing VB/Codex pod in `.env` and put Claude's L40S pod in `.env.l40s.claude`:
+
+```bash
+scripts/configure_runpod_env.sh \
+  --env-file .env.l40s.claude \
+  --host L40S_PUBLIC_SSH_HOST_OR_IP \
+  --port L40S_PUBLIC_SSH_PORT \
+  --pod-id L40S_POD_ID \
+  --pod-name claude-l40s \
+  --jupyter-url L40S_JUPYTER_LAB_URL \
+  --test
+```
+
+Then every L40S helper command must include `--env-file .env.l40s.claude`.
+
 Then test connectivity:
 
 ```bash
@@ -150,8 +165,9 @@ Results: /workspace/ai4agri/results
 
 ## Pending
 
-- Start a replacement pod and choose Mode A if the old volume is available; otherwise use Mode B and redownload Subtask 1.
-- Today priority: Subtask 1 leaderboard loop. Do not spend time on Subtask 2 until the next candidate has been trained, validated, and either submitted or rejected.
+- Existing pod: keep improving the shared setup, validators, notebooks, artifact sync, and review workflow.
+- L40S 48 GB pod: Claude owns the full Subtask 1 vision execution lane. See `claude_handoffs/phase1.md`.
+- Today priority: Subtask 1 vision loop. Do not spend time on Subtask 2 until the next candidate has been trained, validated, and either submitted or rejected.
 - Keep the Pod running only while Subtask 1 training/inference is active.
 - When overnight experiments finish, inspect `summary.csv`, validate the best ZIP, and pull results locally.
 - Stop the Pod when idle after metrics and submission candidates have been synced back.

@@ -4,10 +4,10 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/runpod_sync.sh push
-  scripts/runpod_sync.sh pull-results
-  scripts/runpod_sync.sh pull-inspection
-  scripts/runpod_sync.sh pull PATH_ON_REMOTE PATH_ON_LOCAL
+  scripts/runpod_sync.sh [--env-file PATH] push
+  scripts/runpod_sync.sh [--env-file PATH] pull-results
+  scripts/runpod_sync.sh [--env-file PATH] pull-inspection
+  scripts/runpod_sync.sh [--env-file PATH] pull PATH_ON_REMOTE PATH_ON_LOCAL
 
 Environment overrides, usually from .env:
   AI4AGRI_REMOTE_HOST          required
@@ -24,10 +24,11 @@ USAGE
 }
 
 load_env() {
-  if [[ -f .env ]]; then
+  local env_file="${1:-.env}"
+  if [[ -f "$env_file" ]]; then
     set -a
     # shellcheck disable=SC1091
-    source .env
+    source "$env_file"
     set +a
   fi
 }
@@ -53,8 +54,27 @@ main() {
     usage
     exit 2
   fi
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    usage
+    exit 0
+  fi
 
-  load_env
+  local env_file=".env"
+  if [[ "${1:-}" == "--env-file" ]]; then
+    if [[ $# -lt 2 ]]; then
+      usage
+      exit 2
+    fi
+    env_file="$2"
+    shift 2
+  fi
+
+  if [[ $# -lt 1 ]]; then
+    usage
+    exit 2
+  fi
+
+  load_env "$env_file"
   require_rsync
 
   local action="$1"
@@ -81,6 +101,9 @@ main() {
         --exclude data \
         --exclude results/subtask1/baseline \
         --exclude results/subtask1/features \
+        --exclude results/subtask1/val_preds \
+        --exclude results/subtask1/vision_runs \
+        --exclude results/subtask1/visuals \
         --exclude results/subtask1/submissions \
         --exclude results/subtask2/baseline \
         --exclude results/subtask2/features \

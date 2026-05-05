@@ -9,6 +9,7 @@ Conventions:
 - Important experiments should be logged in `results/runs.csv`.
 - Smoke-test options should use `--limit` where applicable.
 - Notebooks under `notebooks/` should review and visualize script-produced artifacts; do not move operational script commands into notebooks.
+- `runpod_sync.sh push` sends code/docs only; generated Subtask 1 model artifacts are pulled back with `pull-results`.
 
 Current scripts:
 
@@ -42,6 +43,23 @@ scripts/runpod_install_rsync.sh
 scripts/runpod_sync.sh push
 scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'
 scripts/runpod_sync.sh pull-results
+```
+
+Multiple RunPods:
+
+Use `.env` for the active VB/Codex pod and a separate ignored env file for Claude's L40S lane.
+
+```bash
+scripts/configure_runpod_env.sh \
+  --env-file .env.l40s.claude \
+  --host L40S_HOST \
+  --port L40S_PORT \
+  --pod-id L40S_POD_ID \
+  --pod-name claude-l40s \
+  --test
+scripts/runpod_sync.sh --env-file .env.l40s.claude push
+scripts/runpod_exec.sh --env-file .env.l40s.claude 'bash scripts/runpod_status.sh'
+scripts/runpod_sync.sh --env-file .env.l40s.claude pull-results
 ```
 
 Common RunPod commands:
