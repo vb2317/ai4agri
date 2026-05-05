@@ -12,27 +12,26 @@ Submitted scores:
 - Sampled-pixel baseline: `39.74`
 - Overnight uniform raw-temporal HGB: `40.16`
 - L40S ResNet/FPN vision model: `47.6`
+- Full-data TinyViT summary-soft model: `50.63`
 
-Current floor: `47.6` from:
+Current floor: `50.63` from:
 
 ```text
-results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip
+results/subtask1/submissions/l40s_tiny_vit_summary_soft_full_e30_s52.zip
 ```
 
 Validation for that run:
 
-- Run ID: `l40s_resnet_fpn_summary_e30`
-- Best epoch: `10`
-- Validation Accuracy +/- 1: `0.78984`
-- Exact accuracy: `0.45868`
-- MAE: `0.86056`
-- Audit: `results/subtask1/vision_runs/l40s_resnet_fpn_summary_e30/local_candidate_review.json`
-- Test class pixel fractions: class 0 `0.38625`, class 1 `0.23099`, class 2 `0.11646`, class 3 `0.25395`, class 4 `0.01236`
-- Flat PNGs: `28/800`
+- Run ID: `l40s_tiny_vit_summary_soft_full_e30_s52`
+- Best epoch: `6`
+- Validation Accuracy +/- 1: `0.76609`
+- Exact accuracy: `0.46752`
+- MAE: `0.93469`
+- CodaBench score: `50.63`
 
 ## VB Instructions
 
-1. Keep `47.6` as the floor. Do not submit anything unless the expected improvement is credible.
+1. Keep `50.63` as the floor. Do not submit anything unless the expected improvement is credible.
 2. Check CodaBench submission limits before spending more attempts.
 3. If the L40S or existing RunPod pod is idle, stop it to avoid unnecessary cost.
 4. If trying one more Subtask 1 candidate, prefer inference-only postprocessing from the existing ResNet/FPN checkpoint before retraining.
@@ -119,6 +118,7 @@ Started on L40S at `2026-05-05T15:41:00Z`; finished with early stopping after ep
 - Dataset scope: full `train.csv` and full `val.csv`; no `--patch-limit` or `--val-patch-limit`.
 - Best epoch: `6`.
 - Full-val Accuracy +/- 1: `0.76609`; exact `0.46752`; MAE `0.93469`.
+- CodaBench score: `50.63`, which is the current submitted floor.
 - Per-class recall at best epoch: class 0 `0.7391`, class 1 `0.2301`, class 2 `0.0438`, class 3 `0.5843`, class 4 `0.0245`.
 - Local artifacts: checkpoint/metrics under `results/subtask1/vision_runs/l40s_tiny_vit_summary_soft_full_e30_s52/`, val probabilities at `results/subtask1/val_preds/l40s_tiny_vit_summary_soft_full_e30_s52_val_probs.npz`, visuals under `results/subtask1/visuals/l40s_tiny_vit_summary_soft_full_e30_s52/`, ZIP at `results/subtask1/submissions/l40s_tiny_vit_summary_soft_full_e30_s52.zip`.
 - Use as an ensemble candidate, not an automatic submission: class 3 is strong, but class 4 recall is weak.
@@ -179,7 +179,7 @@ Before any new Subtask 1 upload:
 
 - `scripts/review_subtask1_candidate.py` passes.
 - `results/subtask1/visuals/<run_id>/` has been visually reviewed.
-- The candidate is not just a duplicate of the submitted `47.6` ZIP.
+- The candidate is not just a duplicate of the submitted `50.63` ZIP.
 - VB is ready to record the CodaBench score immediately.
 
 ## Parking Lot

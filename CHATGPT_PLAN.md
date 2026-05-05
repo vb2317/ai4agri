@@ -8,8 +8,8 @@ Produce valid, reproducible AI4Agri 2026 submissions before the May 7, 2026 comp
 
 Current strategy:
 
-1. Treat Subtask 1 score `47.6` as the current submitted floor.
-2. Spend remaining Subtask 1 submissions only on candidates with a credible path above `47.6`.
+1. Treat Subtask 1 score `50.63` as the current submitted floor.
+2. Spend remaining Subtask 1 submissions only on candidates with a credible path above `50.63`.
 3. Prefer inference-only postprocessing of the submitted ResNet/FPN checkpoint before more retraining.
 4. Keep HGB and smaller U-Net runs as fallback/ensemble evidence, not as the main optimization path.
 5. Submit only after ZIP validation, candidate audit, visual review, and non-collapsed prediction checks pass.
@@ -22,7 +22,7 @@ Related docs:
 
 ## Today Strategy: 2026-05-05
 
-The L40S ResNet/FPN lane produced the new submitted floor `47.6`. The immediate goal is now disciplined submission management: keep the floor, try only low-risk improvements, and stop idle RunPod spend when no training or inference is active.
+The full-data TinyViT lane produced the new submitted floor `50.63`. The immediate goal is now disciplined submission management: keep the floor, try only low-risk improvements, and stop idle RunPod spend when no training or inference is active.
 
 ### Priority Order
 
@@ -47,14 +47,14 @@ Do not submit a new Subtask 1 ZIP unless:
 - ZIP validation passes with `--subtask1-codabench`, expected ids, and class-value checks.
 - The producing run has saved metrics and a reproducible config under `results/subtask1/vision_runs/`.
 - Visual panels exist for training samples, validation predictions/error maps, and test predictions.
-- The candidate is not just a duplicate of the already-submitted `47.6` L40S ResNet/FPN baseline.
+- The candidate is not just a duplicate of the already-submitted `50.63` full-data TinyViT baseline.
 - `scripts/review_subtask1_candidate.py --run-id <run_id> --data-dir data/subtask1` passes, or any failure is explicitly accepted by VB.
 - VB records the CodaBench score immediately after submission.
 
 ### VB Quick Instructions
 
 1. Use `Next.md` as the short operating checklist.
-2. Keep `47.6` as the floor.
+2. Keep `50.63` as the floor.
 3. Before any upload, run or request the candidate audit and visually review `results/subtask1/visuals/<run_id>/`.
 4. If the pod is idle, stop it.
 5. Record each new score immediately.
@@ -69,7 +69,7 @@ Goal: collect transformer validation probabilities and visuals for ensemble anal
 - `l40s_tiny_vit_seasonal_soft_p1536_v256_s53`: TinyViT, seasonal features, soft ordinal CE, seed `53`, validation Accuracy +/- 1 `0.74500`.
 - `l40s_tiny_vit_summary_wce_p1536_v256_s54`: TinyViT, summary features, weighted CE, seed `54`, validation Accuracy +/- 1 `0.72038`.
 
-Interpretation: none is a standalone submit candidate against the `47.6` floor. The weighted-CE TinyViT is the most useful ensemble-diversity probe because it recovers class 4 recall `0.5405` and class 2 recall `0.0782`, while the soft-CE variants mostly miss class 2.
+Interpretation: none is a standalone submit candidate against the `50.63` floor. The weighted-CE TinyViT is the most useful ensemble-diversity probe because it recovers class 4 recall `0.5405` and class 2 recall `0.0782`, while the soft-CE variants mostly miss class 2.
 
 ## Current State
 
@@ -143,7 +143,11 @@ Interpretation: none is a standalone submit candidate against the `47.6` floor. 
   - file: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`
   - score: `47.6`
   - improvement over previous `40.16` floor: `+7.44`
-- Still needed: decide whether to spend remaining Subtask 1 submissions on ensemble/postprocess attempts above the `47.6` floor.
+- Full-data TinyViT CodaBench submission completed:
+  - file: `results/subtask1/submissions/l40s_tiny_vit_summary_soft_full_e30_s52.zip`
+  - score: `50.63`
+  - improvement over previous `47.6` floor: `+3.03`
+- Still needed: decide whether to spend remaining Subtask 1 submissions on ensemble/postprocess attempts above the `50.63` floor.
 - Overnight experiment suite completed on RunPod:
   - run root: `results/subtask1/experiments/20260504T180650Z/overnight`
   - best validation run by Accuracy +/- 1: `hgb_uniform_temporal_200k_s43`
@@ -568,6 +572,7 @@ Needed output:
   - Command: `source .venv/bin/activate && python scripts/run_subtask1_vision.py train --data-dir data/subtask1 --run-id l40s_tiny_vit_summary_soft_full_e30_s52 --model tiny_vit --temporal-mode summary --epochs 30 --batch-size 8 --patience 6 --visual-limit 20 --loss soft_ce --median-size 3 --seed 52 --num-workers 4 --write-test-visuals --test-visual-limit 20`.
   - Scope: full `train.csv` and full `val.csv`; no train or validation patch limit.
   - Best epoch `6`; full-val Accuracy +/- 1 `0.76609`, exact `0.46752`, MAE `0.93469`.
+  - CodaBench score: `50.63`, current submitted floor.
   - Per-class recall: class 0 `0.7391`, class 1 `0.2301`, class 2 `0.0438`, class 3 `0.5843`, class 4 `0.0245`.
   - Pulled local artifacts include checkpoint/metrics, validation probabilities, visual panels, and `results/subtask1/submissions/l40s_tiny_vit_summary_soft_full_e30_s52.zip`.
   - Interpretation: useful class-3-heavy transformer ensemble member, but class 4 recall is too weak to treat as an automatic standalone submission.
