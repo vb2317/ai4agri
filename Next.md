@@ -119,6 +119,19 @@ Artifacts to review in `notebooks/subtask1_testbed.ipynb`:
 - Visuals: `results/subtask1/visuals/existing_unet_wce_summary_rand_e6_p512_v128_m5/`
 - Gate: useful for VB side-by-side review because it recovers class 3 and improves +/-1 on a smaller randomized slice, but it collapses classes 1 and 4 and should not be submitted as-is.
 
+## Latest Mild Weighted Vision Smoke
+
+- Run ID: `existing_unet_wce_mild_summary_rand_e6_p512_v128_m5`
+- Model: U-Net, `summary` temporal mode, mild weighted CE, randomized limited rows, median `5`
+- Train/val subset: 512 train patches, 128 validation patches
+- Best epoch: `1`
+- Validation Accuracy +/- 1: `0.6864033804447921`
+- Exact accuracy: `0.4203288665223243`
+- MAE: `1.1186445985054507`
+- Per-class recall: class 0 `0.7029`, class 1 `0.0062`, class 2 `0.1784`, class 3 `0.3463`, class 4 `0.2048`
+- Visuals: `results/subtask1/visuals/existing_unet_wce_mild_summary_rand_e6_p512_v128_m5/`
+- Gate: better class spread than aggressive weights, but materially worse +/-1 than the unweighted candidate and still weak on class 1; keep for visual comparison only.
+
 ### VB
 
 - [ ] Keep existing RunPod configured in `.env`.
