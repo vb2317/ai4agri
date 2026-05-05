@@ -32,9 +32,16 @@ Submitted to CodaBench and scored `40.16`.
 
 Next move:
 
-- [ ] Treat `40.16` as the new floor.
-- [ ] Run one follow-up near the winning setup: HGB + uniform sampling + raw-temporal features.
-- [ ] Prefer larger pixel budget or multiple seeds before switching to U-Net/ViT.
+- [X] Treat `40.16` as the new floor.
+- [X] Add a targeted follow-up suite near the winning setup: HGB + uniform sampling + raw-temporal features.
+- [ ] Run the targeted suite before switching to U-Net/ViT:
+  ```bash
+  python scripts/run_subtask1_experiments.py \
+    --data-dir data/subtask1 \
+    --suite targeted \
+    --infer-best \
+    --validate-best
+  ```
 
 ### VB
 
@@ -55,7 +62,7 @@ Next move:
 - [ ] Choose migration mode:
   - Mode A: existing volume present, verify `data/subtask1`.
   - Mode B: data missing, redownload Subtask 1 and smoke-read images/labels.
-- [ ] Start the overnight Subtask 1 experiment suite after data checks pass.
+- [ ] Start the targeted Subtask 1 experiment suite after data checks pass.
 - [ ] Submit only the best validated candidate ZIP, and record CodaBench score immediately.
 
 ### Codex
@@ -67,12 +74,13 @@ Next move:
 
 ### Claude
 
-- [ ] Focus on Subtask 1 only today.
-- [ ] Return a compact memo on low-risk AgriPotential improvements implementable in under 2 hours:
+- [X] Focus on Subtask 1 only today.
+- [X] Return a compact memo on low-risk AgriPotential improvements implementable in under 2 hours:
   - ordinal calibration/rounding
   - class-prior correction
   - spatial smoothing for suitability masks
   - preprocessing/nodata/band-order issues from official examples
+  - Memo: `claude_handoffs/subtask1_leaderboard_memo_20260505.md`.
 
 ## RunPod Start Commands
 
@@ -208,11 +216,11 @@ tail -f results/subtask1/experiments/overnight.log
 
 - [ ] Confirm whether the submitted `39.74` ZIP came from the older script version or the optimized version.
 - [ ] Sync/pull latest code on RunPod and confirm it has commit `5bb8c08` or newer.
-- [ ] Run the overnight Subtask 1 suite:
+- [ ] Run the targeted Subtask 1 suite:
   ```bash
   python scripts/run_subtask1_experiments.py \
     --data-dir data/subtask1 \
-    --suite overnight \
+    --suite targeted \
     --infer-best \
     --validate-best
   ```

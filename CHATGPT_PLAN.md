@@ -29,11 +29,11 @@ Winning move: use the new RunPod as soon as it is ready to generate leaderboard-
 1. Bring the replacement pod online and select the correct migration mode:
    - Mode A: existing `/workspace` volume is attached; verify `data/subtask1` and start experiments.
    - Mode B: no data volume; redownload Subtask 1, smoke-read pixels/labels, then start experiments.
-2. Run the overnight/long Subtask 1 experiment suite:
+2. Run the targeted Subtask 1 experiment suite around the current winner:
    ```bash
    python scripts/run_subtask1_experiments.py \
      --data-dir data/subtask1 \
-     --suite overnight \
+     --suite targeted \
      --infer-best \
      --validate-best
    ```
@@ -177,7 +177,7 @@ Do not submit a new Subtask 1 ZIP unless:
 - [ ] Keep Subtask 1 leaderboard work as the active priority.
 - [ ] When new RunPod is ready, update `.env` with `scripts/configure_runpod_env.sh --test`.
 - [ ] Choose migration Mode A or Mode B from `REMOTE_PROVIDER.md` based on whether `data/subtask1` exists on the attached volume.
-- [ ] Start the overnight Subtask 1 suite after data checks pass.
+- [ ] Start the targeted Subtask 1 suite after data checks pass.
 - [ ] Submit the next Subtask 1 candidate only after validation passes and metrics suggest a plausible improvement.
 - [ ] Resume Subtask 2 review decisions after the next Subtask 1 leaderboard-improvement pass.
 
@@ -225,8 +225,9 @@ Do not submit a new Subtask 1 ZIP unless:
   - [X] Submit `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip` to CodaBench:
     - score: `40.16`
 - [ ] While RunPod is starting/running, prepare the next code improvement candidate:
-  - [ ] Add a postprocessing or calibration path only after the experiment summary identifies the failure mode.
-  - [ ] Keep changes compatible with `scripts/run_subtask1_experiments.py`.
+  - [X] Add targeted HGB uniform raw-temporal suite with larger pixel budgets and multiple seeds.
+  - [ ] Add a postprocessing or calibration path only after the targeted summary identifies the failure mode.
+  - [X] Keep changes compatible with `scripts/run_subtask1_experiments.py`.
 - [ ] If sampled-pixel score underperforms constant baseline:
   - [X] Add class-balanced pixel sampling.
   - [ ] Try `--model extra_trees`.
@@ -238,10 +239,11 @@ Do not submit a new Subtask 1 ZIP unless:
 ### Claude
 
 - [ ] Subtask 1 today: provide one concise leaderboard-improvement memo focused on AgriPotential:
-  - [ ] Which low-risk non-neural moves are most likely to improve Accuracy +/- 1 today?
-  - [ ] Whether ordinal rounding/calibration or spatial smoothing is defensible for suitability masks.
-  - [ ] Whether the official AgriPotential examples imply any preprocessing, normalization, nodata handling, or band/time ordering we are missing.
-  - [ ] Keep recommendations implementable by Codex in under 2 hours.
+  - [X] Which low-risk non-neural moves are most likely to improve Accuracy +/- 1 today?
+  - [X] Whether ordinal rounding/calibration or spatial smoothing is defensible for suitability masks.
+  - [X] Whether the official AgriPotential examples imply any preprocessing, normalization, nodata handling, or band/time ordering we are missing.
+  - [X] Keep recommendations implementable by Codex in under 2 hours.
+  - Memo: `claude_handoffs/subtask1_leaderboard_memo_20260505.md`.
 - [X] Verify DACIA5 file-name label interpretation from examples like `patch_20240716_9748_3.tif`; confirm which token is crop label and whether `9748`/`3017` are field or parcel ids.
 - [ ] Confirm Sentinel-2 band order for the 12-band patch TIFFs so Codex can safely add NDVI/NDWI/red-edge features.
 - [X] Find or infer expected Subtask 2 prediction artifact format from ImageCLEF/DACIA5 materials:
@@ -381,7 +383,8 @@ Active for Subtask 1 because it has leaderboard feedback.
   - validation return code: `0`
 - [ ] Next targeted candidate:
   - [ ] Stay near the winning setup: HGB, uniform sampling, raw-temporal features.
-  - [ ] Try larger pixel budget and/or multiple seeds before switching model family.
+  - [X] Add targeted suite with larger pixel budgets and multiple seeds before switching model family.
+  - [ ] Run targeted suite on RunPod and submit only if the best ZIP validates and metrics are plausible.
 - [ ] Add simple spatial smoothing or class-prior calibration only after a valid optimized ZIP exists.
 - [ ] Try Subtask 1 ensemble or lightweight neural model only if the pixel baseline pipeline is stable.
 - [ ] Tune Subtask 2 tabular models after Subtask 1 leaderboard loop has a stronger candidate or stalls.
@@ -483,6 +486,18 @@ python scripts/validate_submission_zip.py \
   --subtask1-codabench \
   --expected-ids-file data/subtask1/test.csv \
   --check-class-values
+```
+
+Run the targeted Subtask 1 follow-up suite:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/run_subtask1_experiments.py \
+  --data-dir data/subtask1 \
+  --suite targeted \
+  --infer-best \
+  --validate-best
 ```
 
 ## Handoff Template
