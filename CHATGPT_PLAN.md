@@ -9,10 +9,10 @@ Produce valid, reproducible AI4Agri 2026 submissions before the May 7, 2026 comp
 Current strategy:
 
 1. Treat Subtask 1 score `47.6` as the current submitted floor.
-2. Assign the new L40S 48 GB RunPod entirely to Claude for the Subtask 1 ResNet/FPN and TinyViT vision lane.
-3. Keep the existing RunPod setup in `.env` for VB/Codex setup hardening, shared scripts, validators, and common artifact review.
-4. Keep HGB as fallback and possible ensemble member, not as the main optimization path.
-5. Submit only after ZIP validation, visual review, and non-collapsed prediction checks pass.
+2. Spend remaining Subtask 1 submissions only on candidates with a credible path above `47.6`.
+3. Prefer inference-only postprocessing of the submitted ResNet/FPN checkpoint before more retraining.
+4. Keep HGB and smaller U-Net runs as fallback/ensemble evidence, not as the main optimization path.
+5. Submit only after ZIP validation, candidate audit, visual review, and non-collapsed prediction checks pass.
 
 Related docs:
 
@@ -22,26 +22,16 @@ Related docs:
 
 ## Today Strategy: 2026-05-05
 
-Winning move: outsource the full L40S run to Claude while Codex improves the existing RunPod setup and preserves the common analysis layer VB will use for review. The immediate goal is clean separation: Claude produces metrics, visuals, and a validated candidate ZIP from the L40S lane; VB reviews artifacts in the shared notebooks; Codex keeps the tooling reliable.
+The L40S ResNet/FPN lane produced the new submitted floor `47.6`. The immediate goal is now disciplined submission management: keep the floor, try only low-risk improvements, and stop idle RunPod spend when no training or inference is active.
 
 ### Priority Order
 
-1. Keep the existing pod in `.env`; configure the L40S pod in `.env.l40s.claude`:
-   ```bash
-   scripts/configure_runpod_env.sh \
-     --env-file .env.l40s.claude \
-     --host L40S_PUBLIC_SSH_HOST_OR_IP \
-     --port L40S_PUBLIC_SSH_PORT \
-     --pod-id L40S_POD_ID \
-     --pod-name claude-l40s \
-     --jupyter-url L40S_JUPYTER_URL \
-     --test
-   ```
-2. Give Claude `claude_handoffs/phase1.md`; Claude owns the L40S execution lane end to end.
-3. Codex improves existing RunPod helper behavior and shared artifact review.
-4. Pull Claude results with `scripts/runpod_sync.sh --env-file .env.l40s.claude pull-results`.
-5. VB reviews `results/subtask1/visuals/<run_id>/` in `notebooks/subtask1_testbed.ipynb` before any submission.
-6. Keep the targeted HGB suite as fallback/ensemble evidence:
+1. Confirm remaining CodaBench daily/total submission budget.
+2. Stop any idle RunPod pod if no command is actively running.
+3. Try one inference-only postprocess candidate from `l40s_resnet_fpn_summary_e30/best.pt`.
+4. Submit only if the candidate audit passes and visual review does not show an obvious regression.
+5. Record every upload score immediately in `Next.md` and this plan.
+6. Keep the targeted HGB suite only as fallback/ensemble evidence:
    ```bash
    python scripts/run_subtask1_experiments.py \
      --data-dir data/subtask1 \
@@ -60,6 +50,14 @@ Do not submit a new Subtask 1 ZIP unless:
 - The candidate is not just a duplicate of the already-submitted `47.6` L40S ResNet/FPN baseline.
 - `scripts/review_subtask1_candidate.py --run-id <run_id> --data-dir data/subtask1` passes, or any failure is explicitly accepted by VB.
 - VB records the CodaBench score immediately after submission.
+
+### VB Quick Instructions
+
+1. Use `Next.md` as the short operating checklist.
+2. Keep `47.6` as the floor.
+3. Before any upload, run or request the candidate audit and visually review `results/subtask1/visuals/<run_id>/`.
+4. If the pod is idle, stop it.
+5. Record each new score immediately.
 
 ## Current State
 

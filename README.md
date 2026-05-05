@@ -32,7 +32,7 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 - Subtask 1 sampled-pixel baseline ZIP was submitted to CodaBench and scored `39.74`.
 - Subtask 1 overnight uniform raw-temporal HGB ZIP was submitted to CodaBench and scored `40.16`.
 - Subtask 1 L40S ResNet/FPN ZIP was submitted to CodaBench and scored `47.6`; this is the current floor.
-- Subtask 1 remains the active priority because it has leaderboard feedback. The current plan is an L40S RunPod vision lane, with HGB retained as fallback/ensemble evidence.
+- Subtask 1 remains the active priority because it has leaderboard feedback. The current plan is disciplined follow-up above the `47.6` floor, with HGB retained as fallback/ensemble evidence.
 - Subtask 2 data is downloaded and inspected; leakage-free tabular baselines are complete but parked while Subtask 1 leaderboard work is active.
 
 ## Operating Docs
@@ -42,6 +42,24 @@ Classify crop types from Sentinel-2 optical and Sentinel-1 SAR time series near 
 - [`REMOTE_PROVIDER.md`](REMOTE_PROVIDER.md): RunPod migration plan, current pod template, and operating commands.
 - [`HANDOFF_STRATEGY.md`](HANDOFF_STRATEGY.md): ownership rules for VB, Codex, and Claude.
 - [`Next.md`](Next.md): lightweight working checklist and VB-facing notes.
+
+## VB Operator Notes
+
+Use [`Next.md`](Next.md) as the current operating sheet. The active Subtask 1 floor is `47.6` from:
+
+```text
+results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip
+```
+
+Before spending another CodaBench submission:
+
+- Confirm the remaining daily/total submission budget.
+- Run `scripts/review_subtask1_candidate.py --run-id <run_id> --data-dir data/subtask1`.
+- Visually review `results/subtask1/visuals/<run_id>/`.
+- Submit only if the candidate is plausibly better than `47.6`.
+- Record the CodaBench score immediately in `Next.md` and `CHATGPT_PLAN.md`.
+
+If no training or inference is active, stop idle RunPod pods.
 
 ## Repository Map
 
