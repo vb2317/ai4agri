@@ -31,7 +31,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", required=True, type=Path, help="RunPod AgriPotential data directory.")
     parser.add_argument("--out-dir", type=Path, default=Path("results/subtask1/experiments"))
-    parser.add_argument("--suite", choices=["smoke", "quick", "overnight"], default="overnight")
+    parser.add_argument("--suite", choices=["smoke", "quick", "overnight", "targeted"], default="overnight")
     parser.add_argument("--label-name", default="viticulture", choices=["viticulture", "market", "field"])
     parser.add_argument("--train-split", default="train.csv")
     parser.add_argument("--val-split", default="val.csv")
@@ -53,6 +53,13 @@ def experiment_suite(name: str) -> list[Experiment]:
             Experiment("hgb_uniform_temporal_100k_s43", "hist_gradient_boosting", "uniform", "raw_temporal", 512, 100000, 43),
             Experiment("hgb_cb_raw_100k_s44", "hist_gradient_boosting", "class_balanced", "raw", 512, 100000, 44),
             Experiment("extra_cb_temporal_100k_s45", "extra_trees", "class_balanced", "raw_temporal", 512, 100000, 45),
+        ]
+    if name == "targeted":
+        return [
+            Experiment("hgb_uniform_temporal_300k_s48", "hist_gradient_boosting", "uniform", "raw_temporal", 768, 300000, 48),
+            Experiment("hgb_uniform_temporal_400k_s49", "hist_gradient_boosting", "uniform", "raw_temporal", 768, 400000, 49),
+            Experiment("hgb_uniform_temporal_500k_s50", "hist_gradient_boosting", "uniform", "raw_temporal", 1024, 500000, 50),
+            Experiment("hgb_uniform_temporal_600k_s51", "hist_gradient_boosting", "uniform", "raw_temporal", 1024, 600000, 51),
         ]
     return [
         Experiment("hgb_cb_temporal_200k_s42", "hist_gradient_boosting", "class_balanced", "raw_temporal", 512, 200000, 42),

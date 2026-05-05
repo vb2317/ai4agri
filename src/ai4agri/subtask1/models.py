@@ -141,4 +141,3 @@ def build_model(name: str, in_channels: int, num_classes: int = 5, base_channels
     if name in {"tiny_vit", "patch_transformer"}:
         return TinyPatchTransformerSeg(in_channels, num_classes=num_classes)
     raise ValueError(f"unknown model: {name}")
-

@@ -67,4 +67,3 @@ def save_sample_panel(
     fig.tight_layout()
     fig.savefig(path, dpi=120)
     plt.close(fig)
-

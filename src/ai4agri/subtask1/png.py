@@ -23,4 +23,3 @@ def grayscale_png(width: int, height: int, values) -> bytes:
     rows = [bytes([0]) + array[row].tobytes() for row in range(height)]
     raw = b"".join(rows)
     return signature + png_chunk(b"IHDR", ihdr) + png_chunk(b"IDAT", zlib.compress(raw, level=9)) + png_chunk(b"IEND", b"")
-

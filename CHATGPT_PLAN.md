@@ -8,7 +8,7 @@ Produce valid, reproducible AI4Agri 2026 submissions before the May 7, 2026 comp
 
 Current strategy:
 
-1. Treat Subtask 1 score `40.16` as the current submitted floor.
+1. Treat Subtask 1 score `47.6` as the current submitted floor.
 2. Assign the new L40S 48 GB RunPod entirely to Claude for the Subtask 1 ResNet/FPN and TinyViT vision lane.
 3. Keep the existing RunPod setup in `.env` for VB/Codex setup hardening, shared scripts, validators, and common artifact review.
 4. Keep HGB as fallback and possible ensemble member, not as the main optimization path.
@@ -41,6 +41,14 @@ Winning move: outsource the full L40S run to Claude while Codex improves the exi
 3. Codex improves existing RunPod helper behavior and shared artifact review.
 4. Pull Claude results with `scripts/runpod_sync.sh --env-file .env.l40s.claude pull-results`.
 5. VB reviews `results/subtask1/visuals/<run_id>/` in `notebooks/subtask1_testbed.ipynb` before any submission.
+6. Keep the targeted HGB suite as fallback/ensemble evidence:
+   ```bash
+   python scripts/run_subtask1_experiments.py \
+     --data-dir data/subtask1 \
+     --suite targeted \
+     --infer-best \
+     --validate-best
+   ```
 
 ### Submission Gate
 
@@ -49,7 +57,8 @@ Do not submit a new Subtask 1 ZIP unless:
 - ZIP validation passes with `--subtask1-codabench`, expected ids, and class-value checks.
 - The producing run has saved metrics and a reproducible config under `results/subtask1/vision_runs/`.
 - Visual panels exist for training samples, validation predictions/error maps, and test predictions.
-- The candidate is not just a duplicate of the already-submitted `40.16` baseline.
+- The candidate is not just a duplicate of the already-submitted `47.6` L40S ResNet/FPN baseline.
+- `scripts/review_subtask1_candidate.py --run-id <run_id> --data-dir data/subtask1` passes, or any failure is explicitly accepted by VB.
 - VB records the CodaBench score immediately after submission.
 
 ## Current State
@@ -112,7 +121,19 @@ Do not submit a new Subtask 1 ZIP unless:
   - Sentinel-2 image rasters downloaded
   - disk usage reported by VB: `185G`
   - label smoke-read succeeded for train/val/test samples.
-- Still needed: use the `40.16` result as the new floor, then try one targeted improvement around uniform raw-temporal HGB before escalating to neural work.
+- L40S vision lane status:
+  - GPU: `NVIDIA L40S`, CUDA PyTorch available.
+  - `data/subtask1` present, reported size `185G`.
+  - ResNet/FPN smoke completed with run id `l40s_smoke_resnet_fpn_summary_random`.
+  - TinyViT smoke completed with run id `l40s_smoke_tiny_vit_summary_retry`.
+  - Full ResNet/FPN run `l40s_resnet_fpn_summary_e30` completed with best validation Accuracy +/- 1 `0.78984`.
+  - ZIP generated and validated: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`.
+  - Candidate audit passed with all classes present, class 4 pixel fraction `0.01236`, and `28/800` flat PNGs.
+- L40S ResNet/FPN CodaBench submission completed:
+  - file: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`
+  - score: `47.6`
+  - improvement over previous `40.16` floor: `+7.44`
+- Still needed: decide whether to spend remaining Subtask 1 submissions on ensemble/postprocess attempts above the `47.6` floor.
 - Overnight experiment suite completed on RunPod:
   - run root: `results/subtask1/experiments/20260504T180650Z/overnight`
   - best validation run by Accuracy +/- 1: `hgb_uniform_temporal_200k_s43`
@@ -180,7 +201,7 @@ Do not submit a new Subtask 1 ZIP unless:
 - [ ] Keep Subtask 1 leaderboard work as the active priority.
 - [ ] When new RunPod is ready, update `.env` with `scripts/configure_runpod_env.sh --test`.
 - [ ] Choose migration Mode A or Mode B from `REMOTE_PROVIDER.md` based on whether `data/subtask1` exists on the attached volume.
-- [ ] Start the overnight Subtask 1 suite after data checks pass.
+- [ ] Start the targeted Subtask 1 suite after data checks pass.
 - [ ] Submit the next Subtask 1 candidate only after validation passes and metrics suggest a plausible improvement.
 - [ ] Resume Subtask 2 review decisions after the next Subtask 1 leaderboard-improvement pass.
 
@@ -228,8 +249,9 @@ Do not submit a new Subtask 1 ZIP unless:
   - [X] Submit `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip` to CodaBench:
     - score: `40.16`
 - [ ] While RunPod is starting/running, prepare the next code improvement candidate:
-  - [ ] Add a postprocessing or calibration path only after the experiment summary identifies the failure mode.
-  - [ ] Keep changes compatible with `scripts/run_subtask1_experiments.py`.
+  - [X] Add targeted HGB uniform raw-temporal suite with larger pixel budgets and multiple seeds.
+  - [ ] Add a postprocessing or calibration path only after the targeted summary identifies the failure mode.
+  - [X] Keep changes compatible with `scripts/run_subtask1_experiments.py`.
 - [ ] If sampled-pixel score underperforms constant baseline:
   - [X] Add class-balanced pixel sampling.
   - [ ] Try `--model extra_trees`.
@@ -241,10 +263,11 @@ Do not submit a new Subtask 1 ZIP unless:
 ### Claude
 
 - [ ] Subtask 1 today: provide one concise leaderboard-improvement memo focused on AgriPotential:
-  - [ ] Which low-risk non-neural moves are most likely to improve Accuracy +/- 1 today?
-  - [ ] Whether ordinal rounding/calibration or spatial smoothing is defensible for suitability masks.
-  - [ ] Whether the official AgriPotential examples imply any preprocessing, normalization, nodata handling, or band/time ordering we are missing.
-  - [ ] Keep recommendations implementable by Codex in under 2 hours.
+  - [X] Which low-risk non-neural moves are most likely to improve Accuracy +/- 1 today?
+  - [X] Whether ordinal rounding/calibration or spatial smoothing is defensible for suitability masks.
+  - [X] Whether the official AgriPotential examples imply any preprocessing, normalization, nodata handling, or band/time ordering we are missing.
+  - [X] Keep recommendations implementable by Codex in under 2 hours.
+  - Memo: `claude_handoffs/subtask1_leaderboard_memo_20260505.md`.
 - [X] Verify DACIA5 file-name label interpretation from examples like `patch_20240716_9748_3.tif`; confirm which token is crop label and whether `9748`/`3017` are field or parcel ids.
 - [ ] Confirm Sentinel-2 band order for the 12-band patch TIFFs so Codex can safely add NDVI/NDWI/red-edge features.
 - [X] Find or infer expected Subtask 2 prediction artifact format from ImageCLEF/DACIA5 materials:
@@ -384,7 +407,8 @@ Active for Subtask 1 because it has leaderboard feedback.
   - validation return code: `0`
 - [ ] Next targeted candidate:
   - [ ] Stay near the winning setup: HGB, uniform sampling, raw-temporal features.
-  - [ ] Try larger pixel budget and/or multiple seeds before switching model family.
+  - [X] Add targeted suite with larger pixel budgets and multiple seeds before switching model family.
+  - [ ] Run targeted suite on RunPod and submit only if the best ZIP validates and metrics are plausible.
 - [ ] Add simple spatial smoothing or class-prior calibration only after a valid optimized ZIP exists.
 - [ ] Try Subtask 1 ensemble or lightweight neural model only if the pixel baseline pipeline is stable.
 - [ ] Tune Subtask 2 tabular models after Subtask 1 leaderboard loop has a stronger candidate or stalls.
@@ -486,6 +510,18 @@ python scripts/validate_submission_zip.py \
   --subtask1-codabench \
   --expected-ids-file data/subtask1/test.csv \
   --check-class-values
+```
+
+Run the targeted Subtask 1 follow-up suite:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/run_subtask1_experiments.py \
+  --data-dir data/subtask1 \
+  --suite targeted \
+  --infer-best \
+  --validate-best
 ```
 
 ## Handoff Template

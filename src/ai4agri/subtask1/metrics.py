@@ -76,4 +76,3 @@ def segmentation_metrics(y_true: np.ndarray, y_pred: np.ndarray, num_classes: in
         "confusion_matrix": confusion.astype(int).tolist(),
         "pixels": int(true.size),
     }
-
