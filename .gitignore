@@ -2,7 +2,11 @@ data/
 results/subtask1/submissions/
 results/subtask2/submissions/
 results/subtask1/baseline/
+results/subtask1/experiments/
 results/subtask1/features/
+results/subtask1/val_preds/
+results/subtask1/vision_runs/
+results/subtask1/visuals/
 results/subtask2/baseline/
 results/subtask2/features/
 results/subtask2/manifest.csv

@@ -94,12 +94,15 @@ main() {
     push)
       rsync -rtv --no-owner --no-group --no-perms \
         --exclude .git \
+        --exclude .claude \
         --exclude .DS_Store \
         --exclude .env \
+        --exclude .env.* \
         --exclude .venv \
         --exclude __pycache__ \
         --exclude data \
         --exclude results/subtask1/baseline \
+        --exclude results/subtask1/experiments \
         --exclude results/subtask1/features \
         --exclude results/subtask1/val_preds \
         --exclude results/subtask1/vision_runs \

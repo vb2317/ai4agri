@@ -122,6 +122,7 @@ class AgriPotentialVisionDataset(Dataset):
         patch_limit: int = 0,
         augment: bool = False,
         random_state: int = 42,
+        shuffle_rows: bool = False,
     ) -> None:
         self.data_dir = data_dir
         self.split = split
@@ -134,6 +135,9 @@ class AgriPotentialVisionDataset(Dataset):
         split_path = data_dir / f"{split}.csv"
         self.rows = read_csv_rows(split_path)
         require_split_columns(self.rows, split_path)
+        if shuffle_rows:
+            indices = self.rng.permutation(len(self.rows))
+            self.rows = [self.rows[int(index)] for index in indices]
         if patch_limit:
             self.rows = self.rows[:patch_limit]
 
@@ -199,4 +203,3 @@ def collate_patches(batch: list[dict[str, object]]) -> dict[str, object]:
     if "y" in batch[0]:
         result["y"] = torch.stack([item["y"] for item in batch])  # type: ignore[index]
     return result
-

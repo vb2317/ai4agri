@@ -43,6 +43,7 @@ def parse_args() -> argparse.Namespace:
     train.add_argument("--val-patch-limit", type=int, default=0)
     train.add_argument("--visual-limit", type=int, default=20)
     train.add_argument("--loss", choices=["soft_ce", "ce"], default="soft_ce")
+    train.add_argument("--class-weights", default="", help="Optional comma-separated CE weights for classes 0..4.")
     train.add_argument("--patience", type=int, default=8)
     train.add_argument("--write-test-visuals", action="store_true")
     train.add_argument("--test-visual-limit", type=int, default=20)
@@ -105,14 +106,24 @@ def make_loader(dataset: AgriPotentialVisionDataset, batch_size: int, workers: i
     )
 
 
-def compute_loss(logits: torch.Tensor, target: torch.Tensor, loss_name: str) -> torch.Tensor:
+def parse_class_weights(value: str, device: str) -> torch.Tensor | None:
+    if not value:
+        return None
+    weights = [float(item.strip()) for item in value.split(",") if item.strip()]
+    if len(weights) != 5:
+        raise ValueError("--class-weights must contain exactly 5 comma-separated values")
+    return torch.tensor(weights, dtype=torch.float32, device=device)
+
+
+def compute_loss(logits: torch.Tensor, target: torch.Tensor, loss_name: str, class_weights: torch.Tensor | None) -> torch.Tensor:
     if loss_name == "soft_ce":
         return soft_ordinal_cross_entropy(logits, target)
-    return F.cross_entropy(logits, target.clamp(0, 4), ignore_index=255)
+    return F.cross_entropy(logits, target.clamp(0, 4), weight=class_weights, ignore_index=255)
 
 
 def train_one_epoch(model, loader, optimizer, device: str, loss_name: str) -> float:
     model.train()
+    class_weights = getattr(model, "_class_weights", None)
     total_loss = 0.0
     batches = 0
     for batch in tqdm(loader, desc="train", leave=False):
@@ -120,7 +131,7 @@ def train_one_epoch(model, loader, optimizer, device: str, loss_name: str) -> fl
         y = batch["y"].to(device, non_blocking=True)
         optimizer.zero_grad(set_to_none=True)
         logits = model(x)
-        loss = compute_loss(logits, y, loss_name)
+        loss = compute_loss(logits, y, loss_name, class_weights)
         loss.backward()
         optimizer.step()
         total_loss += float(loss.detach().cpu())
@@ -212,6 +223,7 @@ def train_command(args: argparse.Namespace) -> None:
         patch_limit=args.patch_limit,
         augment=True,
         random_state=args.seed,
+        shuffle_rows=bool(args.patch_limit),
     )
     val_ds = AgriPotentialVisionDataset(
         args.data_dir,
@@ -221,11 +233,13 @@ def train_command(args: argparse.Namespace) -> None:
         patch_limit=args.val_patch_limit,
         augment=False,
         random_state=args.seed + 1,
+        shuffle_rows=bool(args.val_patch_limit),
     )
     train_loader = make_loader(train_ds, args.batch_size, args.num_workers, shuffle=True)
     val_loader = make_loader(val_ds, args.batch_size, args.num_workers, shuffle=False)
 
     model = build_model(args.model, train_ds.input_channels, base_channels=args.base_channels).to(args.device)
+    model._class_weights = parse_class_weights(args.class_weights, args.device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     best_score = -1.0
     stale_epochs = 0

@@ -91,6 +91,21 @@ Artifacts to review in `notebooks/subtask1_testbed.ipynb`:
 - `results/subtask1/visuals/<run_id>/`
 - `results/subtask1/submissions/<run_id>.zip`
 
+## Latest Existing-Pod Vision Candidate
+
+- Run ID: `existing_unet_ce_summary_rand_e10_p1024_v256_m5`
+- Model: U-Net, `summary` temporal mode, CE loss, randomized limited rows, median `5`
+- Train/val subset: 1024 train patches, 256 validation patches
+- Best epoch: `2`
+- Validation Accuracy +/- 1: `0.7278788585595585`
+- Exact accuracy: `0.43254234800646274`
+- MAE: `1.1169152227438965`
+- Remote ZIP validation: passed against `data/subtask1/test.csv`
+- ZIP: `results/subtask1/submissions/existing_unet_ce_summary_rand_e10_p1024_v256_m5.zip`
+- Visuals: `results/subtask1/visuals/existing_unet_ce_summary_rand_e10_p1024_v256_m5/`
+- Test class distribution: class 0 `40.36%`, class 1 `26.24%`, class 2 `1.54%`, class 3 `0.18%`, class 4 `31.67%`
+- Gate: not constant and beats HGB validation floor on randomized subset, but class 2/3 recall is weak; VB visual review required before any CodaBench submission.
+
 ### VB
 
 - [ ] Keep existing RunPod configured in `.env`.

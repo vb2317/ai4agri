@@ -81,6 +81,16 @@
           "row": 7296,
           "col": 14720,
           "patch_size": 128,
+          "data_shape": [
+            34,
+            10,
+            128,
+            128
+          ],
+          "data_dtype": "int16",
+          "data_min": 41.0,
+          "data_max": 22959.0,
+          "data_mean": 1900.3248289220473,
           "label_shape": [
             128,
             128
@@ -157,6 +167,16 @@
           "row": 9472,
           "col": 2048,
           "patch_size": 128,
+          "data_shape": [
+            34,
+            10,
+            128,
+            128
+          ],
+          "data_dtype": "int16",
+          "data_min": -46.0,
+          "data_max": 7393.0,
+          "data_mean": 1527.1773683435777,
           "label_shape": [
             128,
             128
@@ -232,6 +252,16 @@
           "row": 7552,
           "col": 13056,
           "patch_size": 128,
+          "data_shape": [
+            34,
+            10,
+            128,
+            128
+          ],
+          "data_dtype": "int16",
+          "data_min": -153.0,
+          "data_max": 8416.0,
+          "data_mean": 1791.4113850313074,
           "label_shape": [
             128,
             128
