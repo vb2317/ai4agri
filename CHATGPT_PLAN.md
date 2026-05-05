@@ -127,6 +127,29 @@ Do not submit a new Subtask 1 ZIP unless:
   - Full ResNet/FPN run `l40s_resnet_fpn_summary_e30` completed with best validation Accuracy +/- 1 `0.78984`.
   - ZIP generated and validated: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`.
   - Candidate audit passed with all classes present, class 4 pixel fraction `0.01236`, and `28/800` flat PNGs.
+- Existing U-Net CE summary rand e10 CodaBench submission completed:
+  - file: `results/subtask1/submissions/existing_unet_ce_summary_rand_e10_p1024_v256_m5.zip`
+  - score: `45.96`
+  - below current floor of `47.6`; floor unchanged.
+- PM1-optimized U-Net subset experiments completed on the existing RunPod:
+  - `existing_unet_pm1bce_nsum_summary_rand_e10_p1024_v256_m5`
+    - loss: `pm1_bce`
+    - decode: `neighbor_sum_sigmoid`
+    - best validation Accuracy +/- 1: `0.792395`
+    - best epoch: `9`
+    - predicts only classes `1..3`, which is acceptable to inspect because edge labels `0` and `4` can score correctly as adjacent predictions under Accuracy +/- 1.
+  - `existing_unet_pm1bce_softnsum_summary_rand_e10_p1024_v256_m5`
+    - loss: `pm1_bce`
+    - decode: `neighbor_sum`
+    - best validation Accuracy +/- 1: `0.786270`
+    - best epoch: `4`
+  - Full-data PM1 run started:
+    - run id: `existing_unet_pm1bce_nsum_summary_full_e30_m5`
+    - command family: U-Net summary, `pm1_bce`, `neighbor_sum_sigmoid`, median size `5`, full train/val splits, `30` epochs, patience `6`.
+- Visual review updates:
+  - `src/ai4agri/subtask1/visualize.py` now renders nodata/boundary separately and adds an Accuracy +/- 1 map panel.
+  - `notebooks/11_subtask1_visual_review.ipynb` reviews GT/prediction/error/Accuracy +/- 1 artifacts.
+  - `notebooks/12_accuracy_pm1_review.ipynb` focuses only on Accuracy +/- 1, including curated good examples and edge-class behavior.
 - L40S ResNet/FPN CodaBench submission completed:
   - file: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`
   - score: `47.6`
@@ -551,6 +574,15 @@ Needed output:
 
 ### 2026-05-05
 
+- Existing U-Net CE summary rand e10 (`existing_unet_ce_summary_rand_e10_p1024_v256_m5.zip`) submitted: score `45.96`. Below current floor `47.6`; floor unchanged.
+- Added PM1-specific U-Net training support:
+  - `pm1_bce` multi-hot loss marks the true class and +/-1 neighboring classes as positive.
+  - `neighbor_sum` and `neighbor_sum_sigmoid` decoders score candidate classes by summing the probability mass in each +/-1 neighborhood.
+  - Subset run `existing_unet_pm1bce_nsum_summary_rand_e10_p1024_v256_m5` reached validation Accuracy +/- 1 `0.792395`.
+  - Full-data run `existing_unet_pm1bce_nsum_summary_full_e30_m5` started on the existing RunPod.
+- Added Accuracy +/- 1 visual analysis:
+  - general visual review notebook `notebooks/11_subtask1_visual_review.ipynb`
+  - focused PM1 notebook `notebooks/12_accuracy_pm1_review.ipynb`
 - Subtask 1 declared active priority because CodaBench leaderboard feedback is immediate and current model score `39.74` only slightly improves on constant baseline `39.52`.
 - Replacement RunPod strategy documented with two migration modes:
   - Mode A: reuse existing `/workspace` volume and verify `data/subtask1`.

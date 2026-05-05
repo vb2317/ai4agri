@@ -18,11 +18,34 @@ def soft_ordinal_cross_entropy(logits: torch.Tensor, target: torch.Tensor, sigma
     return loss[valid].mean()
 
 
+def pm1_multihot_binary_cross_entropy(logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    """BCE loss where true class and its +/-1 neighbors are positive targets."""
+
+    classes = torch.arange(logits.shape[1], device=logits.device, dtype=torch.float32)
+    valid = (target >= 0) & (target <= 4)
+    safe_target = target.clamp(0, 4).float()
+    distances = (classes.view(1, -1, 1, 1) - safe_target.unsqueeze(1)).abs()
+    multi_hot = (distances <= 1).to(dtype=logits.dtype)
+    loss = torch.nn.functional.binary_cross_entropy_with_logits(logits, multi_hot, reduction="none").mean(dim=1)
+    return loss[valid].mean()
+
+
+def _neighbor_sum(prob: torch.Tensor) -> torch.Tensor:
+    padded = torch.nn.functional.pad(prob, (0, 0, 0, 0, 1, 1))
+    return padded[:, :-2] + padded[:, 1:-1] + padded[:, 2:]
+
+
 def decode_logits(logits: torch.Tensor, mode: str = "argmax") -> torch.Tensor:
     if mode == "expected":
         prob = torch.softmax(logits, dim=1)
         values = torch.arange(logits.shape[1], device=logits.device, dtype=prob.dtype)
         return (prob * values.view(1, -1, 1, 1)).sum(dim=1).round().clamp(0, 4).long()
+    if mode == "neighbor_sum":
+        prob = torch.softmax(logits, dim=1)
+        return _neighbor_sum(prob).argmax(dim=1).long()
+    if mode == "neighbor_sum_sigmoid":
+        prob = torch.sigmoid(logits)
+        return _neighbor_sum(prob).argmax(dim=1).long()
     if mode == "argmax":
         return logits.argmax(dim=1).long()
     raise ValueError(f"unknown decode mode: {mode}")

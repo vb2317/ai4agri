@@ -34,6 +34,16 @@ have not been executed end-to-end.
 | Constant class 2 | floor | **39.52** |
 | Sampled-pixel HGB (default) | model | 39.74 |
 | Overnight HGB, uniform sampling, raw-temporal features, 200k px, seed 43 | model | **40.16** |
+| Existing U-Net CE summary rand e10 (`existing_unet_ce_summary_rand_e10_p1024_v256_m5.zip`) | model | 45.96 |
+| L40S ResNet/FPN summary e30 | model | **47.6** ← current floor |
+
+Unsubmitted validation candidates under review:
+
+| Candidate | Val Acc±1 | Notes |
+|---|---:|---|
+| `existing_unet_pm1bce_nsum_summary_rand_e10_p1024_v256_m5` | 0.792395 | PM1 multi-hot BCE + sigmoid neighbor-sum; predicts only classes 1..3 by decoder behavior |
+| `existing_unet_pm1bce_softnsum_summary_rand_e10_p1024_v256_m5` | 0.786270 | PM1 multi-hot BCE + softmax neighbor-sum |
+| `existing_unet_pm1bce_nsum_summary_full_e30_m5` | running | Full-data version of the stronger PM1 setup |
 
 Best **val** Acc±1 for that overnight run was 0.72604 — the test scores are ~32 points below
 val. That gap is the single most important fact for planning.
@@ -76,7 +86,7 @@ that mirrors the test shift.
 
 ### 2.1 Win condition
 
-- **Subtask 1:** Final test Acc±1 strictly above 40.16 by EOD May 6 (UTC), with at least one
+- **Subtask 1:** Final test Acc±1 strictly above 47.6 by EOD May 6 (UTC), with at least one
   fallback submission already on the leaderboard.
 - **Subtask 2:** A clean Colab notebook + 3-page report with current tabular baselines as the
   floor (Q=0.66 / Q=0.81), and at least one improved Problem-1 model (target Q ≥ 0.72).
@@ -150,9 +160,12 @@ reproducible test gain.
 
 ### 2.4 Submission gating (preserve the leaderboard floor)
 
-- Floor: `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip`
-  (40.16). We never submit a ZIP that fails `validate_submission_zip.py --subtask1-codabench
+- Floor: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`
+  (47.6). We never submit a ZIP that fails `validate_submission_zip.py --subtask1-codabench
   --check-class-values --expected-ids-file data/subtask1/test.csv`.
+- PM1-loss candidates must pass `notebooks/12_accuracy_pm1_review.ipynb` visual review:
+  red pixels in the Accuracy +/- 1 map should be localized, and edge classes 0/4 should
+  mostly map to adjacent classes 1/3 rather than crossing by more than one class.
 - Submission budget: today (May 5) and tomorrow (May 6) we have 20 daily submissions plus
   whatever remains of the 100 total. Spend 1 submission on Layer A, 1 on Layer B, up to 2 on
   Layer C variants. Keep ≥ 4 in reserve for final-day rebuilds.
