@@ -35,7 +35,8 @@ have not been executed end-to-end.
 | Sampled-pixel HGB (default) | model | 39.74 |
 | Overnight HGB, uniform sampling, raw-temporal features, 200k px, seed 43 | model | **40.16** |
 | Existing U-Net CE summary rand e10 (`existing_unet_ce_summary_rand_e10_p1024_v256_m5.zip`) | model | 45.96 |
-| L40S ResNet/FPN summary e30 | model | **47.6** ← current floor |
+| L40S ResNet/FPN summary e30 | model | 47.6 |
+| L40S TinyViT summary soft full e30 seed 52 | model | **50.63** ← current floor |
 
 Unsubmitted validation candidates under review:
 
@@ -86,7 +87,7 @@ that mirrors the test shift.
 
 ### 2.1 Win condition
 
-- **Subtask 1:** Final test Acc±1 strictly above 47.6 by EOD May 6 (UTC), with at least one
+- **Subtask 1:** Final test Acc±1 strictly above 50.63 by EOD May 6 (UTC), with at least one
   fallback submission already on the leaderboard.
 - **Subtask 2:** A clean Colab notebook + 3-page report with current tabular baselines as the
   floor (Q=0.66 / Q=0.81), and at least one improved Problem-1 model (target Q ≥ 0.72).
@@ -160,8 +161,8 @@ reproducible test gain.
 
 ### 2.4 Submission gating (preserve the leaderboard floor)
 
-- Floor: `results/subtask1/submissions/l40s_resnet_fpn_summary_e30.zip`
-  (47.6). We never submit a ZIP that fails `validate_submission_zip.py --subtask1-codabench
+- Floor: `results/subtask1/submissions/l40s_tiny_vit_summary_soft_full_e30_s52.zip`
+  (50.63). We never submit a ZIP that fails `validate_submission_zip.py --subtask1-codabench
   --check-class-values --expected-ids-file data/subtask1/test.csv`.
 - PM1-loss candidates must pass `notebooks/12_accuracy_pm1_review.ipynb` visual review:
   red pixels in the Accuracy +/- 1 map should be localized, and edge classes 0/4 should
