@@ -2,7 +2,113 @@
 
 Last updated: 2026-05-04
 
-## Current State
+## RunPod Config Template
+
+When a new pod is created, update local `.env` first. Do not hardcode pod host/port in scripts.
+
+```bash
+scripts/configure_runpod_env.sh \
+  --host NEW_PUBLIC_SSH_HOST_OR_IP \
+  --port NEW_PUBLIC_SSH_PORT \
+  --pod-id NEW_POD_ID \
+  --jupyter-url NEW_JUPYTER_LAB_URL
+```
+
+Then test connectivity:
+
+```bash
+scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'
+```
+
+Push current code/docs to the new pod:
+
+```bash
+scripts/runpod_sync.sh push
+```
+
+## Migration Plan
+
+### Mode A: Restart With Existing Volume
+
+Use this when the new pod attaches the previous 450 GB volume at `/workspace`.
+
+Local Mac:
+
+```bash
+scripts/configure_runpod_env.sh \
+  --host NEW_PUBLIC_SSH_HOST_OR_IP \
+  --port NEW_PUBLIC_SSH_PORT \
+  --pod-id NEW_POD_ID \
+  --jupyter-url NEW_JUPYTER_LAB_URL \
+  --test
+scripts/runpod_sync.sh push
+scripts/runpod_exec.sh 'bash scripts/runpod_bootstrap.sh'
+scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'
+```
+
+RunPod data check:
+
+```bash
+cd /workspace/ai4agri
+du -sh data/subtask1
+test -f data/subtask1/test.csv
+test -f data/subtask1/viticulture.tif
+find data/subtask1 -maxdepth 1 -name "*.tif" | wc -l
+```
+
+Expected signal: `data/subtask1` is about `185G`, `test.csv` and `viticulture.tif` exist, and the TIFF count is large enough to include the 34 Sentinel-2 rasters plus labels. If this passes, start the overnight suite directly.
+
+### Mode B: Restart Without Existing Data
+
+Use this when `/workspace/ai4agri/data/subtask1` is missing, tiny, or does not contain the expected CSVs/rasters.
+
+Local Mac:
+
+```bash
+scripts/configure_runpod_env.sh \
+  --host NEW_PUBLIC_SSH_HOST_OR_IP \
+  --port NEW_PUBLIC_SSH_PORT \
+  --pod-id NEW_POD_ID \
+  --jupyter-url NEW_JUPYTER_LAB_URL \
+  --test
+scripts/runpod_sync.sh push
+scripts/runpod_exec.sh 'bash scripts/runpod_bootstrap.sh'
+```
+
+RunPod redownload:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+python scripts/download_subtask1_hf.py --out-dir data/subtask1
+python scripts/inspect_subtask1.py \
+  --data-dir data/subtask1 \
+  --splits train val test \
+  --limit 1 \
+  --read-pixels \
+  --read-labels
+du -sh data/subtask1
+```
+
+Expected signal: the download completes, image/label smoke-read succeeds, and `data/subtask1` is about `185G`. Start the overnight suite only after this check passes.
+
+### Start Overnight Suite
+
+Run this in either mode after data checks pass:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+mkdir -p results/subtask1/experiments
+nohup python scripts/run_subtask1_experiments.py \
+  --data-dir data/subtask1 \
+  --suite overnight \
+  --infer-best \
+  --validate-best \
+  > results/subtask1/experiments/overnight.log 2>&1 &
+```
+
+## Last Known Pod
 
 ```text
 Provider: RunPod
@@ -38,8 +144,9 @@ Results: /workspace/ai4agri/results
 
 ## Pending
 
+- Start a replacement pod and choose Mode A if the old volume is available; otherwise use Mode B and redownload Subtask 1.
 - Keep the Pod running only while Subtask 1 training/inference is active.
-- When full Subtask 1 training finishes, run inference, validate the ZIP, and pull results locally.
+- When overnight experiments finish, inspect `summary.csv`, validate the best ZIP, and pull results locally.
 - Stop the Pod when idle after metrics and submission candidates have been synced back.
 
 ## Local Commands
@@ -100,17 +207,35 @@ python scripts/validate_submission_zip.py \
   --check-class-values
 ```
 
+Overnight Subtask 1 experiment suite:
+
+```bash
+cd /workspace/ai4agri
+source .venv/bin/activate
+mkdir -p results/subtask1/experiments
+nohup python scripts/run_subtask1_experiments.py \
+  --data-dir data/subtask1 \
+  --suite overnight \
+  --infer-best \
+  --validate-best \
+  > results/subtask1/experiments/overnight.log 2>&1 &
+```
+
 ## Local `.env`
 
 Do not commit `.env`.
 
 ```text
-AI4AGRI_REMOTE_HOST=213.173.107.6
+AI4AGRI_REMOTE_HOST=<new pod ssh host>
 AI4AGRI_REMOTE_USER=root
 AI4AGRI_REMOTE_PROJECT_DIR=/workspace/ai4agri
-AI4AGRI_DATA_DIR=/workspace/ai4agri/data
-AI4AGRI_RESULTS_DIR=/workspace/ai4agri/results
-RUNPOD_SSH_PORT=34365
+AI4AGRI_REMOTE_DATA_DIR=/workspace/ai4agri/data
+AI4AGRI_REMOTE_RESULTS_DIR=/workspace/ai4agri/results
+RUNPOD_SSH_PORT=<new pod ssh port>
+RUNPOD_SSH_KEY=~/.ssh/id_ed25519
+RUNPOD_JUPYTER_URL=<optional>
+RUNPOD_POD_ID=<optional>
+RUNPOD_POD_NAME=<optional>
 ```
 
 ## Rules
