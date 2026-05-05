@@ -4,19 +4,20 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/runpod_install_rsync.sh
+  scripts/runpod_install_rsync.sh [--env-file PATH]
 
 Installs rsync on the active RunPod using plain SSH. Use this before
 scripts/runpod_sync.sh when a fresh pod does not have rsync installed yet.
-Connection details are read from .env.
+Connection details are read from .env by default.
 USAGE
 }
 
 load_env() {
-  if [[ -f .env ]]; then
+  local env_file="${1:-.env}"
+  if [[ -f "$env_file" ]]; then
     set -a
     # shellcheck disable=SC1091
-    source .env
+    source "$env_file"
     set +a
   fi
 }
@@ -31,16 +32,25 @@ require_env() {
 }
 
 main() {
+  local env_file=".env"
   if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
     usage
     exit 0
+  fi
+  if [[ "${1:-}" == "--env-file" ]]; then
+    if [[ $# -lt 2 ]]; then
+      usage >&2
+      exit 2
+    fi
+    env_file="$2"
+    shift 2
   fi
   if [[ $# -ne 0 ]]; then
     usage >&2
     exit 2
   fi
 
-  load_env
+  load_env "$env_file"
 
   local host="${AI4AGRI_REMOTE_HOST:-}"
   local user="${AI4AGRI_REMOTE_USER:-root}"

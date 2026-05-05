@@ -8,11 +8,11 @@ Produce valid, reproducible AI4Agri 2026 submissions before the May 7, 2026 comp
 
 Current strategy:
 
-1. Treat Subtask 1 score `39.74` as the current submitted model baseline and `39.52` as the packaging floor.
-2. Keep Subtask 1 as the active priority because CodaBench provides immediate leaderboard feedback.
-3. Run one optimized Subtask 1 candidate at a time on RunPod, validate locally/remotely, then submit only if the candidate is structurally valid and plausibly better.
-4. Use RunPod for data, feature extraction, training, inference, and anything that touches the full datasets.
-5. Use local for code edits, review, result sync, documentation, commits, and submission prep.
+1. Treat Subtask 1 score `40.16` as the current submitted floor.
+2. Assign the new L40S 48 GB RunPod entirely to Claude for the Subtask 1 ResNet/FPN and TinyViT vision lane.
+3. Keep the existing RunPod setup in `.env` for VB/Codex setup hardening, shared scripts, validators, and common artifact review.
+4. Keep HGB as fallback and possible ensemble member, not as the main optimization path.
+5. Submit only after ZIP validation, visual review, and non-collapsed prediction checks pass.
 
 Related docs:
 
@@ -22,31 +22,33 @@ Related docs:
 
 ## Today Strategy: 2026-05-05
 
-Winning move: use the new RunPod as soon as it is ready to generate leaderboard-relevant Subtask 1 signals, while keeping submissions disciplined. The immediate goal is not a large neural rewrite; it is to find a materially better validated tabular/pixel candidate, submit only if plausible, and use the result to decide whether to escalate to U-Net/ViT.
+Winning move: outsource the full L40S run to Claude while Codex improves the existing RunPod setup and preserves the common analysis layer VB will use for review. The immediate goal is clean separation: Claude produces metrics, visuals, and a validated candidate ZIP from the L40S lane; VB reviews artifacts in the shared notebooks; Codex keeps the tooling reliable.
 
 ### Priority Order
 
-1. Bring the replacement pod online and select the correct migration mode:
-   - Mode A: existing `/workspace` volume is attached; verify `data/subtask1` and start experiments.
-   - Mode B: no data volume; redownload Subtask 1, smoke-read pixels/labels, then start experiments.
-2. Run the overnight/long Subtask 1 experiment suite:
+1. Keep the existing pod in `.env`; configure the L40S pod in `.env.l40s.claude`:
    ```bash
-   python scripts/run_subtask1_experiments.py \
-     --data-dir data/subtask1 \
-     --suite overnight \
-     --infer-best \
-     --validate-best
+   scripts/configure_runpod_env.sh \
+     --env-file .env.l40s.claude \
+     --host L40S_PUBLIC_SSH_HOST_OR_IP \
+     --port L40S_PUBLIC_SSH_PORT \
+     --pod-id L40S_POD_ID \
+     --pod-name claude-l40s \
+     --jupyter-url L40S_JUPYTER_URL \
+     --test
    ```
-3. Review `summary.csv`, `summary.json`, and `best_inference.json`.
-4. Submit at most one clearly valid/improved candidate first; keep remaining daily submissions for genuinely different candidates.
-5. The suite produced a validated `40.16` submission; Codex should now stay near the winning configuration and try a targeted HGB uniform/raw-temporal follow-up before neural work.
+2. Give Claude `claude_handoffs/phase1.md`; Claude owns the L40S execution lane end to end.
+3. Codex improves existing RunPod helper behavior and shared artifact review.
+4. Pull Claude results with `scripts/runpod_sync.sh --env-file .env.l40s.claude pull-results`.
+5. VB reviews `results/subtask1/visuals/<run_id>/` in `notebooks/subtask1_testbed.ipynb` before any submission.
 
 ### Submission Gate
 
 Do not submit a new Subtask 1 ZIP unless:
 
 - ZIP validation passes with `--subtask1-codabench`, expected ids, and class-value checks.
-- The producing run has saved metrics and a reproducible config under `results/subtask1/experiments/`.
+- The producing run has saved metrics and a reproducible config under `results/subtask1/vision_runs/`.
+- Visual panels exist for training samples, validation predictions/error maps, and test predictions.
 - The candidate is not just a duplicate of the already-submitted `40.16` baseline.
 - VB records the CodaBench score immediately after submission.
 
@@ -58,7 +60,8 @@ Do not submit a new Subtask 1 ZIP unless:
 - Subtask 1 CodaBench access: confirmed by VB.
 - Remote provider: RunPod.
 - Last known RunPod Pod ID: `vit08hc86csllk`.
-- New pods must be recorded locally with `scripts/configure_runpod_env.sh`; sync/exec scripts read `.env` and should not hardcode pod-specific host/port values.
+- Existing pod is recorded in `.env`; Claude's L40S pod is recorded in `.env.l40s.claude`.
+- RunPod helpers accept `--env-file PATH`; do not overwrite `.env` when configuring Claude's L40S pod.
 - Replacement pod migration has two supported modes:
   - Mode A: attach existing `/workspace` volume and verify `data/subtask1` before running.
   - Mode B: start without data, redownload Subtask 1, then smoke-read images/labels before running.

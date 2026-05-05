@@ -6,10 +6,11 @@ usage() {
 Usage:
   scripts/configure_runpod_env.sh --host HOST --port PORT [options]
 
-Writes or updates local .env with the active RunPod connection details.
+Writes or updates a local env file with RunPod connection details.
 Run this whenever VB starts a new pod or SSH port changes.
 
 Options:
+  --env-file PATH             Env file to write, default: .env.
   --host HOST                 Public SSH host or IP, required.
   --port PORT                 Public SSH port, required.
   --user USER                 SSH user, default: root.
@@ -62,10 +63,12 @@ main() {
   local pod_id=""
   local pod_name=""
   local test_connection=0
+  local env_file=".env"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --host) host="$2"; shift 2 ;;
+      --env-file) env_file="$2"; shift 2 ;;
       --port) port="$2"; shift 2 ;;
       --user) user="$2"; shift 2 ;;
       --key) key="$2"; shift 2 ;;
@@ -89,25 +92,25 @@ main() {
   data_dir="${data_dir:-${project_dir}/data}"
   results_dir="${results_dir:-${project_dir}/results}"
 
-  if [[ ! -f .env ]]; then
-    cp .env.example .env
+  if [[ ! -f "$env_file" ]]; then
+    cp .env.example "$env_file"
   fi
 
-  upsert_env AI4AGRI_REMOTE_HOST "$host" .env
-  upsert_env AI4AGRI_REMOTE_USER "$user" .env
-  upsert_env RUNPOD_SSH_PORT "$port" .env
-  upsert_env RUNPOD_SSH_KEY "$key" .env
-  upsert_env AI4AGRI_REMOTE_PROJECT_DIR "$project_dir" .env
-  upsert_env AI4AGRI_REMOTE_DATA_DIR "$data_dir" .env
-  upsert_env AI4AGRI_REMOTE_RESULTS_DIR "$results_dir" .env
-  upsert_env RUNPOD_JUPYTER_URL "$jupyter_url" .env
-  upsert_env RUNPOD_POD_ID "$pod_id" .env
-  upsert_env RUNPOD_POD_NAME "$pod_name" .env
+  upsert_env AI4AGRI_REMOTE_HOST "$host" "$env_file"
+  upsert_env AI4AGRI_REMOTE_USER "$user" "$env_file"
+  upsert_env RUNPOD_SSH_PORT "$port" "$env_file"
+  upsert_env RUNPOD_SSH_KEY "$key" "$env_file"
+  upsert_env AI4AGRI_REMOTE_PROJECT_DIR "$project_dir" "$env_file"
+  upsert_env AI4AGRI_REMOTE_DATA_DIR "$data_dir" "$env_file"
+  upsert_env AI4AGRI_REMOTE_RESULTS_DIR "$results_dir" "$env_file"
+  upsert_env RUNPOD_JUPYTER_URL "$jupyter_url" "$env_file"
+  upsert_env RUNPOD_POD_ID "$pod_id" "$env_file"
+  upsert_env RUNPOD_POD_NAME "$pod_name" "$env_file"
 
-  echo "Updated .env for RunPod host ${host}:${port}"
-  echo "Test with: scripts/runpod_exec.sh 'bash scripts/runpod_status.sh'"
+  echo "Updated ${env_file} for RunPod host ${host}:${port}"
+  echo "Test with: scripts/runpod_exec.sh --env-file ${env_file} 'bash scripts/runpod_status.sh'"
   if [[ "$test_connection" -eq 1 ]]; then
-    scripts/runpod_exec.sh --no-cd 'hostname && pwd'
+    scripts/runpod_exec.sh --env-file "$env_file" --no-cd 'hostname && pwd'
   fi
 }
 

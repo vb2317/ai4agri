@@ -4,6 +4,8 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
+  scripts/runpod_exec.sh [--env-file PATH] 'COMMAND'
+  scripts/runpod_exec.sh [--env-file PATH] --no-cd 'COMMAND'
   scripts/runpod_exec.sh 'COMMAND'
   scripts/runpod_exec.sh --no-cd 'COMMAND'
 
@@ -17,10 +19,11 @@ USAGE
 }
 
 load_env() {
-  if [[ -f .env ]]; then
+  local env_file="${1:-.env}"
+  if [[ -f "$env_file" ]]; then
     set -a
     # shellcheck disable=SC1091
-    source .env
+    source "$env_file"
     set +a
   fi
 }
@@ -43,8 +46,21 @@ main() {
     usage
     exit 2
   fi
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    usage
+    exit 0
+  fi
 
   local use_cd=1
+  local env_file=".env"
+  if [[ "${1:-}" == "--env-file" ]]; then
+    if [[ $# -lt 2 ]]; then
+      usage
+      exit 2
+    fi
+    env_file="$2"
+    shift 2
+  fi
   if [[ "${1:-}" == "--no-cd" ]]; then
     use_cd=0
     shift
@@ -54,7 +70,7 @@ main() {
     exit 2
   fi
 
-  load_env
+  load_env "$env_file"
 
   local host="${AI4AGRI_REMOTE_HOST:-}"
   local user="${AI4AGRI_REMOTE_USER:-root}"

@@ -9,6 +9,7 @@ results/subtask2/manifest.csv
 __pycache__/
 *.pyc
 .env
+.env.*
 .venv/
 *.egg-info/
 .DS_Store

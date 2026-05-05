@@ -11,8 +11,8 @@ Current operational state is tracked in `CHATGPT_PLAN.md`. Repository and pipeli
 The core pattern:
 
 1. VB decides and operates external systems.
-2. Claude researches bounded questions and returns findings.
-3. Codex turns confirmed findings into repo code, scripts, validators, notebooks, and reproducible commands.
+2. Claude owns the dedicated L40S 48 GB RunPod execution lane for Subtask 1 vision experiments.
+3. Codex turns confirmed findings into repo code, scripts, validators, notebooks, and reproducible commands, and keeps the existing pod setup healthy.
 
 ## Default Ownership
 
@@ -56,6 +56,7 @@ Codex should avoid:
 Owns:
 
 - Bounded research questions.
+- The L40S Subtask 1 vision run when explicitly assigned in `claude_handoffs/phase1.md`.
 - Logged-in page summarization if VB gives Claude access or screenshots.
 - Literature/package/tutorial review.
 - Draft model ideas that Codex can implement.
@@ -64,8 +65,8 @@ Owns:
 Claude should avoid:
 
 - Making final submission decisions.
-- Producing broad brainstorming when a specific answer is needed.
-- Changing repo structure unless explicitly assigned.
+- Changing shared repo structure during the L40S run; use existing scripts and return artifacts/metrics.
+- Running HGB-only experiments on the L40S lane unless needed for a final ensemble comparison.
 
 ## Handoff States
 
@@ -141,40 +142,38 @@ The original route to useful results was:
 
 Current critical path for 2026-05-05:
 
-1. VB starts the replacement RunPod and chooses migration Mode A or Mode B.
-2. VB/Codex verifies Subtask 1 data availability or redownloads it.
-3. Codex experiment runner explores multiple Subtask 1 candidates and validates the best ZIP.
-4. VB submits one validated, plausibly improved ZIP and records leaderboard score.
-5. Claude provides a bounded Subtask 1 improvement memo while experiments run.
-6. Codex implements one targeted improvement only after experiment results identify the failure mode.
+1. VB keeps the existing RunPod connection in `.env` and configures the L40S pod in `.env.l40s.claude`.
+2. Claude runs the entire L40S Subtask 1 vision lane from `claude_handoffs/phase1.md`.
+3. Codex improves the existing RunPod setup, common scripts, validators, notebooks, and artifact review flow.
+4. VB reviews visual artifacts in `notebooks/subtask1_testbed.ipynb`.
+5. VB submits one validated, plausibly improved ZIP and records leaderboard score.
 
 ## Parallel Work Plan
 
-### Track A: Remote And Submission
+### Track A: Existing Pod And Submission
 
-Owner: VB with Claude support.
+Owner: VB with Codex support.
 
 - VB: keep RunPod funded only for active work.
-- VB: update `.env` for each new pod and choose Mode A or Mode B.
+- VB: keep `.env` pointed at the existing pod.
 - VB: submit only validated ZIPs and record scores.
 - Codex: keep remote scripts pod-agnostic and validation strict.
 
-### Track B: Subtask 1 Experiments
+### Track B: L40S Vision Experiments
 
-Owner: Codex implements, VB runs remote commands.
+Owner: Claude.
 
-- Codex: maintain `scripts/run_subtask1_experiments.py`.
-- VB: start the overnight suite when the pod/data are ready.
-- Codex: review summary and logs after completion.
+- Claude: use `.env.l40s.claude` and run `claude_handoffs/phase1.md` end to end.
+- Claude: return metrics, visual artifact paths, logs, validation status, and recommendation.
 - VB: submit the selected candidate only after validation.
 
-### Track C: Research Support
+### Track C: Common Analysis And Review
 
-Owner: Claude advises, Codex converts to code.
+Owner: Codex.
 
-- Claude: focus on AgriPotential/Subtask 1 today.
-- Claude: recommend low-risk moves implementable in under 2 hours.
-- Codex: implement at most one targeted improvement at a time.
+- Codex: maintain `scripts/run_subtask1_vision.py`, validators, and notebook review cells.
+- Codex: keep artifact paths stable for VB review.
+- Codex: integrate Claude-returned results into docs and final stack review.
 
 ### Track D: Parked Reporting
 
