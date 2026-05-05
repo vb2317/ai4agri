@@ -106,6 +106,19 @@ Artifacts to review in `notebooks/subtask1_testbed.ipynb`:
 - Test class distribution: class 0 `40.36%`, class 1 `26.24%`, class 2 `1.54%`, class 3 `0.18%`, class 4 `31.67%`
 - Gate: not constant and beats HGB validation floor on randomized subset, but class 2/3 recall is weak; VB visual review required before any CodaBench submission.
 
+## Latest Weighted Vision Smoke
+
+- Run ID: `existing_unet_wce_summary_rand_e6_p512_v128_m5`
+- Model: U-Net, `summary` temporal mode, weighted CE, randomized limited rows, median `5`
+- Train/val subset: 512 train patches, 128 validation patches
+- Best epoch: `1`
+- Validation Accuracy +/- 1: `0.7425670355301913`
+- Exact accuracy: `0.4574410747449113`
+- MAE: `0.9890531818457138`
+- Per-class recall: class 0 `0.7968`, class 1 `0.0000`, class 2 `0.0118`, class 3 `0.6654`, class 4 `0.0000`
+- Visuals: `results/subtask1/visuals/existing_unet_wce_summary_rand_e6_p512_v128_m5/`
+- Gate: useful for VB side-by-side review because it recovers class 3 and improves +/-1 on a smaller randomized slice, but it collapses classes 1 and 4 and should not be submitted as-is.
+
 ### VB
 
 - [ ] Keep existing RunPod configured in `.env`.
