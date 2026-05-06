@@ -17,6 +17,7 @@ from pathlib import Path
 SPLIT_COLUMNS = ("patch_id", "row", "col", "patch_size", "n_annotated")
 RAW_LABEL_MIN = 1
 RAW_LABEL_MAX = 5
+LABEL_MAPPING_VERSION = "raw1-5_to_model0-4_ignore0_v1"
 
 
 def parse_args() -> argparse.Namespace:
@@ -130,6 +131,28 @@ def shift_raw_labels(labels):
 
     shifted = labels.astype("int64", copy=False) - RAW_LABEL_MIN
     return np.clip(shifted, 0, RAW_LABEL_MAX - RAW_LABEL_MIN)
+
+
+def label_mapping_metadata() -> dict[str, object]:
+    return {
+        "version": LABEL_MAPPING_VERSION,
+        "raw_label_min": RAW_LABEL_MIN,
+        "raw_label_max": RAW_LABEL_MAX,
+        "raw_ignore_values": [0],
+        "model_label_min": 0,
+        "model_label_max": RAW_LABEL_MAX - RAW_LABEL_MIN,
+        "input_mapping": "raw labels 1..5 are shifted to model classes 0..4; raw 0 is ignored",
+        "submission_mapping": "model classes 0..4 are written as raw labels 1..5 by adding offset 1",
+    }
+
+
+def output_label_metadata(submission_label_offset: int = 1) -> dict[str, object]:
+    return {
+        "submission_label_offset": submission_label_offset,
+        "model_output_labels": "0..4",
+        "submission_output_labels": f"{submission_label_offset}..{submission_label_offset + 4}",
+        "codabench_expected_raw_labels": "1..5",
+    }
 
 
 def balanced_indices(y_all, valid, pixels_per_patch: int, rng):
@@ -303,6 +326,8 @@ def train_command(args: argparse.Namespace) -> None:
         "train_pixels": int(x_train.shape[0]),
         "val_pixels": int(x_val.shape[0]),
         "feature_count": int(x_train.shape[1]),
+        "label_mapping": label_mapping_metadata(),
+        "output_label_mapping": output_label_metadata(),
         "exact_accuracy": float(accuracy_score(y_val, val_pred)),
         "accuracy_pm1": accuracy_pm1(y_val, val_pred),
         "mean_absolute_error": float(mean_absolute_error(y_val, val_pred)),
@@ -320,6 +345,8 @@ def train_command(args: argparse.Namespace) -> None:
                 "raster_count": len(raster_files),
                 "feature_mode": args.feature_mode,
                 "sampling": args.sampling,
+                "label_mapping": label_mapping_metadata(),
+                "output_label_mapping": output_label_metadata(),
                 "report": report,
             },
             file,
@@ -382,6 +409,20 @@ def infer_command(args: argparse.Namespace) -> None:
                 zf.writestr(f"{patch['patch_id']}.png", grayscale_png(patch_size, patch_size, prediction))
                 if index % 50 == 0:
                     print(f"predicted {index}/{len(rows)}")
+    args.out.with_suffix(args.out.suffix + ".json").write_text(
+        json.dumps(
+            {
+                "model_path": str(args.model_path),
+                "split": args.split,
+                "label_mapping": payload.get("label_mapping", label_mapping_metadata()),
+                "output_label_mapping": output_label_metadata(args.submission_label_offset),
+                "feature_mode": feature_mode,
+                "limit": args.limit,
+            },
+            indent=2,
+        )
+        + "\n"
+    )
     print(f"Wrote {args.out} with {len(rows)} PNG mask(s)")
 
 
