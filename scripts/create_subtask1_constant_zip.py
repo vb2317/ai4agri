@@ -36,7 +36,7 @@ def parse_args() -> argparse.Namespace:
         default=Path("results/subtask1/submissions/constant_class_2.zip"),
         help="Output ZIP path.",
     )
-    parser.add_argument("--class-id", type=int, default=2, help="Constant class id to write, expected 0..4.")
+    parser.add_argument("--class-id", type=int, default=3, help="Constant raw class id to write, expected 1..5.")
     parser.add_argument("--patch-id-column", default="patch_id")
     parser.add_argument("--patch-size-column", default="patch_size")
     parser.add_argument("--default-patch-size", type=int, default=128)
@@ -85,8 +85,8 @@ def grayscale_png(width: int, height: int, value: int) -> bytes:
 
 def main() -> None:
     args = parse_args()
-    if not 0 <= args.class_id <= 4:
-        raise SystemExit("--class-id must be in the confirmed AgriPotential range 0..4")
+    if not 1 <= args.class_id <= 5:
+        raise SystemExit("--class-id must be in the confirmed AgriPotential raw label range 1..5")
 
     ref = split_ref(args.data_dir, args.split_csv)
     rows = read_split_rows(ref)

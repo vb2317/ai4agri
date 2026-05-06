@@ -26,6 +26,7 @@ from ai4agri.subtask1.data import AgriPotentialVisionDataset, collate_patches
 from ai4agri.subtask1.metrics import (
     decode_logits,
     median_smooth,
+    pm1_multihot_binary_cross_entropy,
     pm1_tolerant_cross_entropy,
     segmentation_metrics,
     soft_ordinal_cross_entropy,
@@ -48,11 +49,13 @@ def parse_args() -> argparse.Namespace:
     train.add_argument("--patch-limit", type=int, default=0)
     train.add_argument("--val-patch-limit", type=int, default=0)
     train.add_argument("--visual-limit", type=int, default=20)
-    train.add_argument("--loss", choices=["soft_ce", "pm1_ce", "ce"], default="soft_ce")
+    train.add_argument("--loss", choices=["soft_ce", "pm1_ce", "ce", "pm1_bce"], default="soft_ce")
     train.add_argument("--class-weights", default="", help="Optional comma-separated CE weights for classes 0..4.")
     train.add_argument("--patience", type=int, default=8)
     train.add_argument("--write-test-visuals", action="store_true")
     train.add_argument("--test-visual-limit", type=int, default=20)
+    train.add_argument("--cache-dir", type=Path, default=None, help="Optional feature cache directory for decoded patch tensors.")
+    train.add_argument("--precache", action="store_true", help="Build the feature cache before training starts.")
 
     infer = subparsers.add_parser("infer", help="Infer masks from a saved checkpoint and write a CodaBench ZIP.")
     add_common_model_args(infer)
@@ -62,6 +65,12 @@ def parse_args() -> argparse.Namespace:
     infer.add_argument("--out", type=Path, default=None)
     infer.add_argument("--num-workers", type=int, default=2)
     infer.add_argument("--visual-limit", type=int, default=20)
+    infer.add_argument(
+        "--submission-label-offset",
+        type=int,
+        default=1,
+        help="Value added to model classes before writing PNG masks. Use 1 for raw AgriPotential labels 1..5.",
+    )
     infer.set_defaults(decode=None, median_size=None)
 
     smoke = subparsers.add_parser("self-test", help="Run a synthetic forward/metric smoke check without data files.")
@@ -79,7 +88,7 @@ def add_common_model_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--label-name", choices=["viticulture", "market", "field"], default="viticulture")
     parser.add_argument("--out-root", type=Path, default=Path("results/subtask1"))
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
-    parser.add_argument("--decode", choices=["argmax", "expected"], default="argmax")
+    parser.add_argument("--decode", choices=["argmax", "expected", "neighbor_sum", "neighbor_sum_sigmoid"], default="argmax")
     parser.add_argument("--median-size", type=int, choices=[1, 3, 5], default=1)
     parser.add_argument("--base-channels", type=int, default=32)
     parser.add_argument("--seed", type=int, default=42)
@@ -108,8 +117,18 @@ def make_loader(dataset: AgriPotentialVisionDataset, batch_size: int, workers: i
         shuffle=shuffle,
         num_workers=workers,
         pin_memory=torch.cuda.is_available(),
+        persistent_workers=workers > 0,
+        prefetch_factor=4 if workers > 0 else None,
         collate_fn=collate_patches,
     )
+
+
+def warm_feature_cache(dataset: AgriPotentialVisionDataset, batch_size: int, workers: int, name: str) -> None:
+    if dataset.cache_dir is None:
+        return
+    loader = make_loader(dataset, batch_size, workers, shuffle=False)
+    for _ in tqdm(loader, desc=f"cache:{name}", leave=False):
+        pass
 
 
 def parse_class_weights(value: str, device: str) -> torch.Tensor | None:
@@ -126,6 +145,8 @@ def compute_loss(logits: torch.Tensor, target: torch.Tensor, loss_name: str, cla
         return soft_ordinal_cross_entropy(logits, target)
     if loss_name == "pm1_ce":
         return pm1_tolerant_cross_entropy(logits, target)
+    if loss_name == "pm1_bce":
+        return pm1_multihot_binary_cross_entropy(logits, target)
     return F.cross_entropy(logits, target.clamp(0, 4), weight=class_weights, ignore_index=255)
 
 
@@ -157,7 +178,8 @@ def evaluate(model, loader, device: str, decode: str, median_size: int) -> tuple
     for batch in tqdm(loader, desc="val", leave=False):
         x = batch["x"].to(device, non_blocking=True)
         logits = model(x)
-        probs = torch.softmax(logits, dim=1).cpu().numpy().astype("float16")
+        probs_tensor = torch.sigmoid(logits) if decode == "neighbor_sum_sigmoid" else torch.softmax(logits, dim=1)
+        probs = probs_tensor.cpu().numpy().astype("float16")
         pred = decode_logits(logits, mode=decode).cpu().numpy().astype("uint8")
         if median_size > 1:
             pred = np.stack([median_smooth(item, median_size) for item in pred], axis=0)
@@ -232,6 +254,7 @@ def train_command(args: argparse.Namespace) -> None:
         augment=True,
         random_state=args.seed,
         shuffle_rows=bool(args.patch_limit),
+        cache_dir=args.cache_dir,
     )
     val_ds = AgriPotentialVisionDataset(
         args.data_dir,
@@ -242,7 +265,22 @@ def train_command(args: argparse.Namespace) -> None:
         augment=False,
         random_state=args.seed + 1,
         shuffle_rows=bool(args.val_patch_limit),
+        cache_dir=args.cache_dir,
     )
+    if args.precache:
+        warm_train_ds = AgriPotentialVisionDataset(
+            args.data_dir,
+            "train",
+            args.temporal_mode,
+            label_name=args.label_name,
+            patch_limit=args.patch_limit,
+            augment=False,
+            random_state=args.seed,
+            shuffle_rows=bool(args.patch_limit),
+            cache_dir=args.cache_dir,
+        )
+        warm_feature_cache(warm_train_ds, args.batch_size, args.num_workers, "train")
+        warm_feature_cache(val_ds, args.batch_size, args.num_workers, "val")
     train_loader = make_loader(train_ds, args.batch_size, args.num_workers, shuffle=True)
     val_loader = make_loader(val_ds, args.batch_size, args.num_workers, shuffle=False)
 
@@ -360,7 +398,8 @@ def infer_command(args: argparse.Namespace) -> None:
 
     with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for patch_id, mask in predict_dataset(model, loader, args.device, decode, median_size):
-            zf.writestr(f"{patch_id}.png", grayscale_png(mask.shape[1], mask.shape[0], mask))
+            submission_mask = np.clip(mask.astype("int16") + args.submission_label_offset, 0, 255).astype("uint8")
+            zf.writestr(f"{patch_id}.png", grayscale_png(mask.shape[1], mask.shape[0], submission_mask))
 
     infer_visuals(args, args.checkpoint, run_id, limit=args.visual_limit)
     print(f"Wrote {out_path}")
@@ -400,8 +439,8 @@ def self_test_command(args: argparse.Namespace) -> None:
     logits = model(x)
     if tuple(logits.shape) != (2, 5, 128, 128):
         raise SystemExit(f"bad output shape: {tuple(logits.shape)}")
-    loss = soft_ordinal_cross_entropy(logits, y)
-    pred = decode_logits(logits)
+    loss = pm1_multihot_binary_cross_entropy(logits, y)
+    pred = decode_logits(logits, mode="neighbor_sum_sigmoid")
     metrics = segmentation_metrics(y.numpy(), pred.numpy())
     print(json.dumps({"output_shape": list(logits.shape), "loss": float(loss.detach()), "metrics": metrics}, indent=2))
 

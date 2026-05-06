@@ -34,6 +34,17 @@ have not been executed end-to-end.
 | Constant class 2 | floor | **39.52** |
 | Sampled-pixel HGB (default) | model | 39.74 |
 | Overnight HGB, uniform sampling, raw-temporal features, 200k px, seed 43 | model | **40.16** |
+| Existing U-Net CE summary rand e10 (`existing_unet_ce_summary_rand_e10_p1024_v256_m5.zip`) | model | 45.96 |
+| L40S ResNet/FPN summary e30 | model | 47.6 |
+| L40S TinyViT summary soft full e30 seed 52 | model | **50.63** ← current floor |
+
+Unsubmitted validation candidates under review:
+
+| Candidate | Val Acc±1 | Notes |
+|---|---:|---|
+| `existing_unet_pm1bce_nsum_summary_rand_e10_p1024_v256_m5` | 0.792395 | PM1 multi-hot BCE + sigmoid neighbor-sum; predicts only classes 1..3 by decoder behavior |
+| `existing_unet_pm1bce_softnsum_summary_rand_e10_p1024_v256_m5` | 0.786270 | PM1 multi-hot BCE + softmax neighbor-sum |
+| `existing_unet_pm1bce_nsum_summary_full_e30_m5` | running | Full-data version of the stronger PM1 setup |
 
 Best **val** Acc±1 for that overnight run was 0.72604 — the test scores are ~32 points below
 val. That gap is the single most important fact for planning.
@@ -51,15 +62,19 @@ email by May 28.
 
 ### 1.4 Diagnosis: why are NB00 and the leaderboard so far apart?
 
-Plausible causes for the val 0.72 vs test 0.40 gap, ranked by how much they would change strategy:
+**Confirmed since last update (2026-05-06):**
+
+0. **Label offset bug (CONFIRMED, HIGH IMPACT).** The official dataset tutorial (`agripotential_tutorial.ipynb`, cell 21) states raw labels are `0=nodata/unlabelled, 1-5=very low to very high`. Our `valid_label_mask` uses `labels >= 0 AND labels <= 4`, which **includes raw 0 (nodata) as class 0** and **excludes raw 5 (Very High) from training entirely**. Every model trained to date has never seen a Very High supervision signal. This directly explains the near-zero class 4 recall across all submitted models (TinyViT full-data: 0.0245). Fix: `valid = (labels >= 1) & (labels <= 5)` then `labels -= 1`. Must be applied before the next retraining run.
+
+Plausible causes for the remaining val 0.72 vs test 0.40 gap, ranked by how much they would change strategy:
 
 1. **Geographic / domain shift between the train+val region and the test region.** 6329 train
    patches cover the same raster, but `test.csv` may pull from a very different location or
    acquisition window. NB1's "spatial distribution by majority class" plot is the place to
    verify this; nobody has run it end-to-end.
-2. **Class prior shift.** The constant-class-2 baseline scores 39.52, so class 2 alone covers
-   ~40% of test pixels with ±1 tolerance. If train is heavier on classes 1/2/3 and test is
-   heavier on extremes, a model tuned to val will under-predict the tails on test.
+2. **Class prior shift.** Constant-class probes show class 1 is the best constant predictor
+   on test (46.58), not class 0 or 2. Class 2 is nearly absent on test (algebra gives ~1.76%).
+   If train over-represents class 2 and the model learns that prior, it will lose on test.
 3. **No-data / cloud handling.** Sentinel-2 rasters often have nodata sentinel values; if those
    leak into the temporal mean/std features, train and test get systematically different
    feature scales.
@@ -76,7 +91,7 @@ that mirrors the test shift.
 
 ### 2.1 Win condition
 
-- **Subtask 1:** Final test Acc±1 strictly above 40.16 by EOD May 6 (UTC), with at least one
+- **Subtask 1:** Final test Acc±1 strictly above 50.63 by EOD May 6 (UTC), with at least one
   fallback submission already on the leaderboard.
 - **Subtask 2:** A clean Colab notebook + 3-page report with current tabular baselines as the
   floor (Q=0.66 / Q=0.81), and at least one improved Problem-1 model (target Q ≥ 0.72).
@@ -150,9 +165,12 @@ reproducible test gain.
 
 ### 2.4 Submission gating (preserve the leaderboard floor)
 
-- Floor: `results/subtask1/submissions/20260504T180650Z_overnight_hgb_uniform_temporal_200k_s43.zip`
-  (40.16). We never submit a ZIP that fails `validate_submission_zip.py --subtask1-codabench
+- Floor: `results/subtask1/submissions/l40s_tiny_vit_summary_soft_full_e30_s52.zip`
+  (50.63). We never submit a ZIP that fails `validate_submission_zip.py --subtask1-codabench
   --check-class-values --expected-ids-file data/subtask1/test.csv`.
+- PM1-loss candidates must pass `notebooks/12_accuracy_pm1_review.ipynb` visual review:
+  red pixels in the Accuracy +/- 1 map should be localized, and edge classes 0/4 should
+  mostly map to adjacent classes 1/3 rather than crossing by more than one class.
 - Submission budget: today (May 5) and tomorrow (May 6) we have 20 daily submissions plus
   whatever remains of the 100 total. Spend 1 submission on Layer A, 1 on Layer B, up to 2 on
   Layer C variants. Keep ≥ 4 in reserve for final-day rebuilds.
@@ -238,12 +256,14 @@ training runs.
 
 | Risk | Likelihood | Mitigation |
 |---|---|---|
+| **Label offset bug corrupts all future training** (CONFIRMED) | **Certain if unpatched** | Apply `valid = (labels >= 1) & (labels <= 5); labels -= 1` in every script before any new training run. All pre-fix checkpoints are best-effort artifacts; do not treat them as baselines for corrected-label comparisons. |
+| Label fix changes class 4 score adversely | Low | After fix, Very High (formerly excluded) will be in training. On test, CodaBench scoring denominator behaviour for nodata pixels is still unknown — monitor after first post-fix submission. |
 | Layer A produces no leaderboard improvement (val→test shift dominates everything) | Medium | Run NB1 EDA *first*; if test patches are spatially distinct, build a within-train spatial CV that mimics it before training Layer C models. |
 | RunPod data missing (Mode B redownload) | Medium | Mode B path is documented in `Next.md`; budget ~6 hr for the 185 GB redownload; cuts Day 1 in half. Have Layer A ready to go from cached features if available. |
 | U-Net training does not converge in 30 epochs | Low | NB3 default (`summary` mode, base_ch=32) fits in <8 hr on a single GPU; have NB3 with `concat` mode as fallback if `summary` underfits. |
 | CodaBench daily limit hit | Low | We need ≤4 submissions; budget is 10/day. |
-| Final ZIP fails validation 30 min before deadline | Low | Pre-validate every ZIP with `validate_submission_zip.py` before submission. Keep the 40.16 ZIP loaded in CodaBench as the floor at all times. |
-| Subtask 2 band order remains unconfirmed past May 8 | Medium | Default to `m-sakka/agripotential` order (B1..B9 then B11/B12) and document the assumption in the report; do not block. |
+| Final ZIP fails validation 30 min before deadline | Low | Pre-validate every ZIP with `validate_submission_zip.py` before submission. Keep the 50.63 ZIP on the leaderboard as the floor at all times. |
+| Subtask 2 band order remains unconfirmed past May 8 | Medium | Tutorial confirms AgriPotential bands start at B2; assume same order for DACIA5 (`B2,B3,B4,B5,B6,B7,B8,B8A,B11,B12`) and document the assumption in the report. |
 
 ## 6. Decision log entries to add when actions land
 

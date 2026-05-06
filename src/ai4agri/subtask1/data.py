@@ -14,6 +14,9 @@ from torch.utils.data import Dataset
 
 SPLIT_COLUMNS = ("patch_id", "row", "col", "patch_size", "n_annotated")
 BANDS_PER_SCENE = 10
+RAW_LABEL_MIN = 1
+RAW_LABEL_MAX = 5
+IGNORE_INDEX = 255
 
 
 @dataclass(frozen=True)
@@ -109,6 +112,16 @@ def channels_for_mode(scene_count: int, mode: str) -> int:
     raise ValueError(f"unknown temporal mode: {mode}")
 
 
+def remap_raw_labels(labels: np.ndarray) -> np.ndarray:
+    """Map raw AgriPotential labels 1..5 to model classes 0..4; raw 0 is ignored."""
+
+    raw = labels.astype("int64", copy=False)
+    mapped = np.full(raw.shape, IGNORE_INDEX, dtype="int64")
+    valid = (raw >= RAW_LABEL_MIN) & (raw <= RAW_LABEL_MAX)
+    mapped[valid] = raw[valid] - RAW_LABEL_MIN
+    return mapped
+
+
 class AgriPotentialVisionDataset(Dataset):
     """Reads Sentinel-2 patch tensors and optional viticulture labels on demand."""
 
@@ -122,6 +135,7 @@ class AgriPotentialVisionDataset(Dataset):
         augment: bool = False,
         random_state: int = 42,
         shuffle_rows: bool = False,
+        cache_dir: Path | str | None = None,
     ) -> None:
         self.data_dir = Path(data_dir)
         self.split = split
@@ -142,6 +156,9 @@ class AgriPotentialVisionDataset(Dataset):
 
         label_path = self.data_dir / f"{label_name}.tif"
         self.label_path = label_path if label_path.exists() and split != "test" else None
+        self.cache_dir = Path(cache_dir) / split if cache_dir else None
+        if self.cache_dir is not None:
+            self.cache_dir.mkdir(parents=True, exist_ok=True)
         self._sources: list[Any] | None = None
         self._label_source: Any | None = None
 
@@ -188,6 +205,13 @@ class AgriPotentialVisionDataset(Dataset):
 
     def __getitem__(self, index: int) -> dict[str, object]:
         patch = self.rows[index]
+        cached = self.read_cached_arrays(index, patch)
+        if cached is not None:
+            x, y = cached
+            if self.augment:
+                x, y = self.apply_augmentation(x, y)
+            return self.make_item(patch["patch_id"], x, y)
+
         row = int(patch["row"])
         col = int(patch["col"])
         patch_size = int(patch["patch_size"])
@@ -211,18 +235,57 @@ class AgriPotentialVisionDataset(Dataset):
                 if reopened_label_source is None:
                     raise
                 y = read_window(reopened_label_source, row, col, patch_size)[0].astype("int64")
-            y[(y < 0) | (y > 4)] = 255
+            y = remap_raw_labels(y)
+
+        self.write_cached_item(index, patch, x, y)
 
         if self.augment:
             x, y = self.apply_augmentation(x, y)
 
+        return self.make_item(patch["patch_id"], x, y)
+
+    def make_item(self, patch_id: str, x: np.ndarray, y: np.ndarray | None) -> dict[str, object]:
         item: dict[str, object] = {
-            "patch_id": patch["patch_id"],
+            "patch_id": patch_id,
             "x": torch.from_numpy(np.ascontiguousarray(x)).float(),
         }
         if y is not None:
             item["y"] = torch.from_numpy(np.ascontiguousarray(y)).long()
         return item
+
+    def cache_path(self, index: int, patch: dict[str, str]) -> Path | None:
+        if self.cache_dir is None:
+            return None
+        patch_id = patch["patch_id"].replace("/", "_")
+        return self.cache_dir / f"{index:06d}_{patch_id}_{self.temporal_mode}.npz"
+
+    def read_cached_arrays(self, index: int, patch: dict[str, str]) -> tuple[np.ndarray, np.ndarray | None] | None:
+        path = self.cache_path(index, patch)
+        if path is None or not path.exists():
+            return None
+        try:
+            with np.load(path) as payload:
+                x = payload["x"].astype("float32", copy=False)
+                y = payload["y"].astype("int64", copy=False) if "y" in payload.files else None
+                return x, y
+        except Exception:
+            path.unlink(missing_ok=True)
+            return None
+
+    def write_cached_item(self, index: int, patch: dict[str, str], x: np.ndarray, y: np.ndarray | None) -> None:
+        path = self.cache_path(index, patch)
+        if path is None:
+            return
+        temp_path = path.with_suffix(path.suffix + ".tmp")
+        try:
+            payload: dict[str, np.ndarray] = {"x": x.astype("float16", copy=False)}
+            if y is not None:
+                payload["y"] = y.astype("uint8", copy=False)
+            with temp_path.open("wb") as file:
+                np.savez(file, **payload)
+            temp_path.replace(path)
+        except Exception:
+            temp_path.unlink(missing_ok=True)
 
     def apply_augmentation(self, x: np.ndarray, y: np.ndarray | None) -> tuple[np.ndarray, np.ndarray | None]:
         if self.rng.random() < 0.5:
