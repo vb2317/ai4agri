@@ -14,6 +14,9 @@ from torch.utils.data import Dataset
 
 SPLIT_COLUMNS = ("patch_id", "row", "col", "patch_size", "n_annotated")
 BANDS_PER_SCENE = 10
+RAW_LABEL_MIN = 1
+RAW_LABEL_MAX = 5
+IGNORE_INDEX = 255
 
 
 @dataclass(frozen=True)
@@ -107,6 +110,16 @@ def channels_for_mode(scene_count: int, mode: str) -> int:
     if mode == "seasonal":
         return 8 * BANDS_PER_SCENE
     raise ValueError(f"unknown temporal mode: {mode}")
+
+
+def remap_raw_labels(labels: np.ndarray) -> np.ndarray:
+    """Map raw AgriPotential labels 1..5 to model classes 0..4; raw 0 is ignored."""
+
+    raw = labels.astype("int64", copy=False)
+    mapped = np.full(raw.shape, IGNORE_INDEX, dtype="int64")
+    valid = (raw >= RAW_LABEL_MIN) & (raw <= RAW_LABEL_MAX)
+    mapped[valid] = raw[valid] - RAW_LABEL_MIN
+    return mapped
 
 
 class AgriPotentialVisionDataset(Dataset):
@@ -211,7 +224,7 @@ class AgriPotentialVisionDataset(Dataset):
                 if reopened_label_source is None:
                     raise
                 y = read_window(reopened_label_source, row, col, patch_size)[0].astype("int64")
-            y[(y < 0) | (y > 4)] = 255
+            y = remap_raw_labels(y)
 
         if self.augment:
             x, y = self.apply_augmentation(x, y)

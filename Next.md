@@ -1,10 +1,12 @@
 # Next
 
-Last updated: 2026-05-05
+Last updated: 2026-05-06
 
 ## Current Floor
 
 Subtask 1 is still the active priority because CodaBench gives immediate leaderboard feedback.
+
+Critical correction found on `2026-05-06`: raw AgriPotential labels are `1..5`, and raw `0` means unlabelled/nodata. Training code now remaps raw `1..5` to model classes `0..4` and ignores raw `0` as `255`. Any run created before this correction has trained on the wrong label convention and should be treated as deprecated evidence only.
 
 Submitted scores:
 
@@ -14,6 +16,7 @@ Submitted scores:
 - Existing U-Net CE summary rand e10: `45.96`
 - L40S ResNet/FPN vision model: `47.6`
 - Full-data TinyViT summary-soft model: `50.63`
+- Existing U-Net PM1 BCE neighbor-sum full-data model: `41.83`
 
 Current floor: `50.63` from:
 
@@ -37,6 +40,91 @@ Validation for that run:
 3. If the L40S or existing RunPod pod is idle, stop it to avoid unnecessary cost.
 4. If trying one more Subtask 1 candidate, prefer inference-only postprocessing from the existing ResNet/FPN checkpoint before retraining.
 5. After every CodaBench upload, immediately record the score in this file and in `CHATGPT_PLAN.md`.
+6. Do not submit PM1 neighbor-sum U-Net as a standalone model again. Its full-val Accuracy +/- 1 was high, but its CodaBench score was only `41.83`, showing a severe validation/leaderboard mismatch.
+7. Restart Subtask 1 model exploration from corrected labels before spending more submissions. New inference defaults to writing raw `1..5` PNG values via `--submission-label-offset 1`.
+
+## Label And Band Corrections
+
+Raw label convention:
+
+- Raw `0`: unlabelled/nodata; ignore for training and validation.
+- Raw `1..5`: valid ordinal classes.
+- Model convention: raw labels are shifted to `0..4` internally.
+- Submission convention: corrected inference writes model prediction `+1`, producing raw values `1..5` by default.
+
+Patched files:
+
+- `src/ai4agri/subtask1/data.py`: U-Net/ResNet/TinyViT loader now ignores raw `0` and shifts raw `1..5` to model `0..4`.
+- `scripts/subtask1_baseline.py`: sampled-pixel baseline now uses the same raw-label shift.
+- `scripts/run_subtask1_vision.py`: inference now supports `--submission-label-offset`, default `1`.
+- `scripts/validate_submission_zip.py` and `scripts/review_subtask1_candidate.py`: validation/audit defaults now allow raw submission classes `1..5`.
+
+Band interpretation:
+
+- Sentinel-2 raster band index `0` is `B2`, not `B1`.
+- RGB visualization should use indices `2,1,0` for `B4,B3,B2`.
+- Likely 10-band order: `B2,B3,B4,B5,B6,B7,B8,B8A,B11,B12`.
+- This does not invalidate model inputs, but previous feature/band labels referring to `B1` were wrong.
+
+Deprecated runs:
+
+- All submitted and trained models before this fix, including TinyViT `50.63`, ResNet/FPN `47.6`, U-Net CE `45.96`, and PM1 `41.83`, were trained/evaluated with the wrong raw label convention.
+- Keep `50.63` as the leaderboard floor, but do not use old validation metrics to choose architecture without rerunning under corrected labels.
+
+## Corrected-Label Full Run
+
+Started on existing RTX PRO 4500 RunPod at `2026-05-06T04:29:00Z` after killing all stale queues/runs.
+
+Run id:
+
+```text
+corrected_resnet_fpn_summary_full_e30_s73
+```
+
+Why this strategy: among the pre-fix non-PM1 full-data runs, `l40s_resnet_fpn_summary_e30` had the strongest validation Accuracy +/- 1 (`0.78984`). PM1 had higher local validation but scored `41.83` on CodaBench and is not a reliable standalone path.
+
+Command:
+
+```bash
+python scripts/run_subtask1_vision.py train \
+  --data-dir data/subtask1 \
+  --run-id corrected_resnet_fpn_summary_full_e30_s73 \
+  --model resnet_fpn \
+  --temporal-mode summary \
+  --epochs 30 \
+  --batch-size 4 \
+  --patience 6 \
+  --visual-limit 24 \
+  --loss soft_ce \
+  --decode expected \
+  --median-size 3 \
+  --seed 73 \
+  --num-workers 4 \
+  --write-test-visuals \
+  --test-visual-limit 24
+```
+
+Monitor:
+
+```bash
+scripts/runpod_exec.sh 'tail -n 80 results/subtask1/vision_runs/corrected_resnet_fpn_summary_full_e30_s73/nohup.log'
+```
+
+Generate corrected raw-label ZIP after training:
+
+```bash
+scripts/runpod_exec.sh '.venv/bin/python scripts/run_subtask1_vision.py infer \
+  --data-dir data/subtask1 \
+  --run-id corrected_resnet_fpn_summary_full_e30_s73 \
+  --model resnet_fpn \
+  --temporal-mode summary \
+  --checkpoint results/subtask1/vision_runs/corrected_resnet_fpn_summary_full_e30_s73/best.pt \
+  --decode expected \
+  --median-size 3 \
+  --submission-label-offset 1 \
+  --num-workers 4 \
+  --visual-limit 24'
+```
 
 ## Overnight Run Plan
 
@@ -62,7 +150,7 @@ results/subtask1/vision_runs/overnight_existing_gpu_20260505.log
 
 The queue waits for the active full-data PM1 U-Net run to finish before starting additional training. Do not start another foreground training process on the existing pod unless this queue has been stopped or has finished.
 
-Currently active lead run:
+Completed lead run:
 
 ```text
 existing_unet_pm1bce_nsum_summary_full_e30_m5
@@ -74,6 +162,9 @@ Visible full-val metrics so far:
 - Epoch 2: Accuracy +/- 1 `0.78693`, exact `0.21172`, MAE `1.07214`.
 - Epoch 3: Accuracy +/- 1 `0.73572`, exact `0.15946`, MAE `1.20105`.
 - Epoch 4: Accuracy +/- 1 `0.73960`, exact `0.16077`, MAE `1.18835`.
+- Best saved metrics: Accuracy +/- 1 `0.80566`, exact `0.19225`, MAE `1.08075`, best epoch `10`.
+- CodaBench score: `41.83`.
+- Interpretation: PM1 neighbor-sum overfit the local validation objective and produced only classes `1..3`; keep artifacts only for analysis or ensemble diversity, not standalone submission.
 
 Queued experiments, in order:
 
@@ -89,6 +180,49 @@ Queued experiments, in order:
 4. `existing_tiny_vit_softce_expected_summary_full_e12_m3_s64`
    - TinyViT, summary features, `soft_ce`, expected-value decode, median `3`, batch size `4`.
    - Purpose: transformer sanity/diversity run if the pod remains available overnight.
+
+## Concat Temporal Queue
+
+Armed on the existing RTX PRO 4500 RunPod at `2026-05-06T00:50Z`.
+
+Queue PID:
+
+```text
+21546
+```
+
+Queue script:
+
+```text
+results/subtask1/vision_runs/concat_queue_20260506.sh
+```
+
+Queue log:
+
+```text
+results/subtask1/vision_runs/concat_queue_20260506.log
+```
+
+Purpose: test `--temporal-mode concat`, which uses every Sentinel-2 scene and every band directly instead of temporal summaries. With the current data this is expected to produce roughly `34 scenes * 10 bands = 340` input channels, compared with `40` channels for `summary` mode.
+
+Queued experiments:
+
+1. `existing_unet_concat_softce_smoke_p512_v128_e4_m3_s71`
+   - U-Net, concat temporal mode, `soft_ce`, expected-value decode, median `3`.
+   - Patch-limited smoke: `512` train patches, `128` val patches, batch size `4`.
+   - Purpose: confirm memory, speed, and visual sanity before committing a full run.
+2. `existing_unet_concat_softce_full_e12_m3_s72`
+   - U-Net, concat temporal mode, `soft_ce`, expected-value decode, median `3`.
+   - Full train/val splits, max `12` epochs, patience `4`, batch size `4`.
+   - Purpose: assess whether full temporal information improves over summary-mode U-Net.
+
+Monitor:
+
+```bash
+scripts/runpod_exec.sh 'tail -n 80 results/subtask1/vision_runs/concat_queue_20260506.log'
+```
+
+Do not interpret concat as RGB. It is an all-band, all-scene input mode. The tradeoff is richer temporal information versus much heavier I/O and a wider first convolution.
 
 Monitor queue:
 
@@ -122,9 +256,9 @@ Morning decision gates for VB:
 Two lanes are active:
 
 1. L40S lane: postprocess the existing ResNet/FPN checkpoint, validate, audit, then decide whether it deserves a submission.
-2. Existing RunPod lane: full-data U-Net with PM1 multi-hot BCE and neighbor-sum sigmoid decoding.
+2. Existing RunPod lane: overnight non-PM1 U-Net/ResNet/TinyViT runs. PM1 neighbor-sum is demoted to analysis/ensemble-diversity only.
 
-Current active full-data run on the existing RunPod:
+Completed full-data PM1 run on the existing RunPod:
 
 ```text
 existing_unet_pm1bce_nsum_summary_full_e30_m5
@@ -135,6 +269,13 @@ Monitor:
 ```bash
 scripts/runpod_exec.sh 'tail -n 80 results/subtask1/vision_runs/existing_unet_pm1bce_nsum_summary_full_e30_m5/nohup.log'
 ```
+
+Submission result:
+
+- ZIP: `results/subtask1/submissions/existing_unet_pm1bce_nsum_summary_full_e30_m5.zip`
+- Validation Accuracy +/- 1: `0.80566`
+- CodaBench score: `41.83`
+- Conclusion: do not submit this model family standalone again. The neighbor-sum PM1 objective is locally attractive but leaderboard-poor.
 
 PM1 smoke/subset results on the existing RunPod:
 

@@ -15,6 +15,8 @@ from pathlib import Path
 
 
 SPLIT_COLUMNS = ("patch_id", "row", "col", "patch_size", "n_annotated")
+RAW_LABEL_MIN = 1
+RAW_LABEL_MAX = 5
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,6 +45,12 @@ def parse_args() -> argparse.Namespace:
     infer.add_argument("--out", type=Path, default=Path("results/subtask1/submissions/subtask1_baseline.zip"))
     infer.add_argument("--limit", type=int, default=0, help="Optional max patches for smoke tests.")
     infer.add_argument("--feature-mode", choices=["raw", "raw_temporal"], default=None, help="Override saved feature mode.")
+    infer.add_argument(
+        "--submission-label-offset",
+        type=int,
+        default=1,
+        help="Value added to model classes before writing PNG masks. Use 1 for raw AgriPotential labels 1..5.",
+    )
 
     return parser.parse_args()
 
@@ -114,7 +122,14 @@ def pixel_features(stack, feature_mode: str = "raw"):
 def valid_label_mask(labels):
     import numpy as np
 
-    return np.isfinite(labels) & (labels >= 0) & (labels <= 4)
+    return np.isfinite(labels) & (labels >= RAW_LABEL_MIN) & (labels <= RAW_LABEL_MAX)
+
+
+def shift_raw_labels(labels):
+    import numpy as np
+
+    shifted = labels.astype("int64", copy=False) - RAW_LABEL_MIN
+    return np.clip(shifted, 0, RAW_LABEL_MAX - RAW_LABEL_MIN)
 
 
 def balanced_indices(y_all, valid, pixels_per_patch: int, rng):
@@ -149,14 +164,15 @@ def sample_patch_pixels(stack, labels, pixels_per_patch: int, rng, sampling: str
     valid = np.flatnonzero(valid_label_mask(y_all))
     if valid.size == 0:
         return x_all[:0], y_all[:0]
+    y_shifted = shift_raw_labels(y_all)
     count = min(pixels_per_patch, valid.size)
     if sampling == "class_balanced":
-        chosen = balanced_indices(y_all, valid, count, rng)
+        chosen = balanced_indices(y_shifted, valid, count, rng)
     elif sampling == "uniform":
         chosen = rng.choice(valid, size=count, replace=False)
     else:
         raise ValueError(f"unknown sampling mode: {sampling}")
-    return x_all[chosen], y_all[chosen]
+    return x_all[chosen], y_shifted[chosen]
 
 
 def collect_samples(
@@ -358,7 +374,11 @@ def infer_command(args: argparse.Namespace) -> None:
                 patch_size = int(patch["patch_size"])
                 stack_array = read_patch_stack(raster_sources, patch)
                 x = pixel_features(stack_array, feature_mode)
-                prediction = np.clip(model.predict(x).astype("uint8"), 0, 4).reshape(patch_size, patch_size)
+                prediction = np.clip(
+                    model.predict(x).astype("int16") + args.submission_label_offset,
+                    0,
+                    255,
+                ).astype("uint8").reshape(patch_size, patch_size)
                 zf.writestr(f"{patch['patch_id']}.png", grayscale_png(patch_size, patch_size, prediction))
                 if index % 50 == 0:
                     print(f"predicted {index}/{len(rows)}")

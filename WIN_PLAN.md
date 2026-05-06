@@ -62,15 +62,19 @@ email by May 28.
 
 ### 1.4 Diagnosis: why are NB00 and the leaderboard so far apart?
 
-Plausible causes for the val 0.72 vs test 0.40 gap, ranked by how much they would change strategy:
+**Confirmed since last update (2026-05-06):**
+
+0. **Label offset bug (CONFIRMED, HIGH IMPACT).** The official dataset tutorial (`agripotential_tutorial.ipynb`, cell 21) states raw labels are `0=nodata/unlabelled, 1-5=very low to very high`. Our `valid_label_mask` uses `labels >= 0 AND labels <= 4`, which **includes raw 0 (nodata) as class 0** and **excludes raw 5 (Very High) from training entirely**. Every model trained to date has never seen a Very High supervision signal. This directly explains the near-zero class 4 recall across all submitted models (TinyViT full-data: 0.0245). Fix: `valid = (labels >= 1) & (labels <= 5)` then `labels -= 1`. Must be applied before the next retraining run.
+
+Plausible causes for the remaining val 0.72 vs test 0.40 gap, ranked by how much they would change strategy:
 
 1. **Geographic / domain shift between the train+val region and the test region.** 6329 train
    patches cover the same raster, but `test.csv` may pull from a very different location or
    acquisition window. NB1's "spatial distribution by majority class" plot is the place to
    verify this; nobody has run it end-to-end.
-2. **Class prior shift.** The constant-class-2 baseline scores 39.52, so class 2 alone covers
-   ~40% of test pixels with ±1 tolerance. If train is heavier on classes 1/2/3 and test is
-   heavier on extremes, a model tuned to val will under-predict the tails on test.
+2. **Class prior shift.** Constant-class probes show class 1 is the best constant predictor
+   on test (46.58), not class 0 or 2. Class 2 is nearly absent on test (algebra gives ~1.76%).
+   If train over-represents class 2 and the model learns that prior, it will lose on test.
 3. **No-data / cloud handling.** Sentinel-2 rasters often have nodata sentinel values; if those
    leak into the temporal mean/std features, train and test get systematically different
    feature scales.
@@ -252,12 +256,14 @@ training runs.
 
 | Risk | Likelihood | Mitigation |
 |---|---|---|
+| **Label offset bug corrupts all future training** (CONFIRMED) | **Certain if unpatched** | Apply `valid = (labels >= 1) & (labels <= 5); labels -= 1` in every script before any new training run. All pre-fix checkpoints are best-effort artifacts; do not treat them as baselines for corrected-label comparisons. |
+| Label fix changes class 4 score adversely | Low | After fix, Very High (formerly excluded) will be in training. On test, CodaBench scoring denominator behaviour for nodata pixels is still unknown — monitor after first post-fix submission. |
 | Layer A produces no leaderboard improvement (val→test shift dominates everything) | Medium | Run NB1 EDA *first*; if test patches are spatially distinct, build a within-train spatial CV that mimics it before training Layer C models. |
 | RunPod data missing (Mode B redownload) | Medium | Mode B path is documented in `Next.md`; budget ~6 hr for the 185 GB redownload; cuts Day 1 in half. Have Layer A ready to go from cached features if available. |
 | U-Net training does not converge in 30 epochs | Low | NB3 default (`summary` mode, base_ch=32) fits in <8 hr on a single GPU; have NB3 with `concat` mode as fallback if `summary` underfits. |
 | CodaBench daily limit hit | Low | We need ≤4 submissions; budget is 10/day. |
-| Final ZIP fails validation 30 min before deadline | Low | Pre-validate every ZIP with `validate_submission_zip.py` before submission. Keep the 40.16 ZIP loaded in CodaBench as the floor at all times. |
-| Subtask 2 band order remains unconfirmed past May 8 | Medium | Default to `m-sakka/agripotential` order (B1..B9 then B11/B12) and document the assumption in the report; do not block. |
+| Final ZIP fails validation 30 min before deadline | Low | Pre-validate every ZIP with `validate_submission_zip.py` before submission. Keep the 50.63 ZIP on the leaderboard as the floor at all times. |
+| Subtask 2 band order remains unconfirmed past May 8 | Medium | Tutorial confirms AgriPotential bands start at B2; assume same order for DACIA5 (`B2,B3,B4,B5,B6,B7,B8,B8A,B11,B12`) and document the assumption in the report. |
 
 ## 6. Decision log entries to add when actions land
 

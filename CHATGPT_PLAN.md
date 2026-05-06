@@ -1,6 +1,6 @@
 # AI4Agri Competition Execution Plan
 
-Last updated: 2026-05-05
+Last updated: 2026-05-06
 
 ## Goal
 
@@ -10,9 +10,18 @@ Current strategy:
 
 1. Treat Subtask 1 score `50.63` as the current submitted floor.
 2. Spend remaining Subtask 1 submissions only on candidates with a credible path above `50.63`.
-3. Prefer inference-only postprocessing of the submitted ResNet/FPN checkpoint before more retraining.
-4. Keep HGB and smaller U-Net runs as fallback/ensemble evidence, not as the main optimization path.
+3. Restart Subtask 1 training under the corrected raw label convention before trusting any new validation comparison.
+4. Prefer corrected-label smoke runs before any full retraining or submission.
 5. Submit only after ZIP validation, candidate audit, visual review, and non-collapsed prediction checks pass.
+6. Do not submit PM1 neighbor-sum U-Net standalone again; its full-data validation Accuracy +/- 1 did not transfer to CodaBench.
+
+Critical correction found on `2026-05-06`:
+
+- AgriPotential raw labels are `1..5`; raw `0` is unlabelled/nodata.
+- Training/evaluation must ignore raw `0` and shift raw `1..5` to model classes `0..4`.
+- Corrected inference should write raw submission labels `1..5` by adding `+1` to model predictions.
+- Previous runs trained on raw `0..4`, included nodata as class `0`, and excluded raw class `5`; their validation metrics are deprecated.
+- Sentinel-2 band index `0` is `B2`, not `B1`; likely order is `B2,B3,B4,B5,B6,B7,B8,B8A,B11,B12`.
 
 Related docs:
 
@@ -101,7 +110,7 @@ Interpretation: none is a standalone submit candidate against the `50.63` floor.
   - test: `800`
 - Patch size: `128 x 128`.
 - Input metadata: `34` Sentinel-2 image rows.
-- Confirmed CodaBench format: ZIP root contains PNG masks named `<patch_id>.png`; values are class ids `0..4`; optional method PDF must be named `report.pdf`.
+- Confirmed CodaBench format: ZIP root contains PNG masks named `<patch_id>.png`; corrected submissions should write raw class ids `1..5`; optional method PDF must be named `report.pdf`.
 - Added downloader can fetch CSVs, label rasters, and optional Sentinel-2 image rasters into `data/subtask1`.
 - Constant-mask CodaBench ZIP has been generated and validated locally:
   - `results/subtask1/submissions/constant_class_2.zip`
@@ -170,6 +179,19 @@ Interpretation: none is a standalone submit candidate against the `50.63` floor.
   - file: `results/subtask1/submissions/l40s_tiny_vit_summary_soft_full_e30_s52.zip`
   - score: `50.63`
   - improvement over previous `47.6` floor: `+3.03`
+- Full-data PM1 neighbor-sum U-Net CodaBench submission completed:
+  - file: `results/subtask1/submissions/existing_unet_pm1bce_nsum_summary_full_e30_m5.zip`
+  - validation Accuracy +/- 1: `0.80566`
+  - score: `41.83`
+  - regression versus current `50.63` floor: `-8.80`
+  - conclusion: PM1 neighbor-sum was badly miscalibrated to leaderboard despite strong validation Accuracy +/- 1. Keep only for error analysis or ensemble-diversity experiments; do not use as a standalone submission path.
+- Concat temporal queue armed on the existing RTX PRO 4500 pod:
+  - queue script: `results/subtask1/vision_runs/concat_queue_20260506.sh`
+  - queue log: `results/subtask1/vision_runs/concat_queue_20260506.log`
+  - queue PID at launch: `21546`
+  - purpose: test `--temporal-mode concat`, which uses all Sentinel-2 scenes and all 10 bands directly, roughly `340` input channels instead of the `40` channels used by summary mode.
+  - queued smoke: `existing_unet_concat_softce_smoke_p512_v128_e4_m3_s71`
+  - queued full run: `existing_unet_concat_softce_full_e12_m3_s72`
 - Still needed: decide whether to spend remaining Subtask 1 submissions on ensemble/postprocess attempts above the `50.63` floor.
 - Overnight experiment suite completed on RunPod:
   - run root: `results/subtask1/experiments/20260504T180650Z/overnight`
@@ -588,6 +610,15 @@ Needed output:
 
 ## Decision Log
 
+### 2026-05-06
+
+- **CRITICAL: Label offset bug confirmed from official tutorial and fixed in code.** Raw `viticulture.tif` labels are `0=nodata, 1-5=very low to very high`. Older `valid_label_mask` logic used `labels >= 0 AND labels <= 4`, which included raw 0 (nodata) as class 0 and excluded raw 5 (Very High) from training entirely. All models trained before `2026-05-06` never saw a Very High label. Fixed behavior: `valid = (labels >= 1) & (labels <= 5)` followed by `labels -= 1` to remap 1-5 -> 0-4 internally; inference writes raw `1..5` by default.
+- **Band order confirmed from tutorial.** Bands start at B2 (index 0): `B2, B3, B4, B5, B6, B7, B8, B8A, B11, B12`. Current `BAND_NAMES` is wrong for interpretability (off by one) but does not affect model correctness.
+- **Class 4 recall weakness explained.** The consistently near-zero class 4 (Very High) recall across all submitted models is a direct consequence of the label offset bug; Very High pixels were excluded from training supervision rather than trained as a distinct class.
+- **Constant-class CodaBench probes completed.** Scores: class 0 → 44.82, class 1 → 46.58 (best constant), class 2 → 39.52, class 4 → 15.66. Class 1 is the best constant predictor on the test set. Class 3 probe not yet submitted.
+- **Test class distribution algebra.** From Acc±1 algebra on constant-class scores, the test set has approximately: P(class 0) + P(class 1) ≈ 44.82%, class 2 nearly absent (1.76%), ~37.76% unexplained (likely class 5 nodata or a scoring exclusion). Best naive prediction: class 1.
+- **Concat temporal queue armed** on existing RTX PRO 4500 pod (PID 21546). Tests `--temporal-mode concat` (~340 input channels instead of 40). Smoke: `existing_unet_concat_softce_smoke_p512_v128_e4_m3_s71`; full: `existing_unet_concat_softce_full_e12_m3_s72`.
+
 ### 2026-05-05
 
 - Existing U-Net CE summary rand e10 (`existing_unet_ce_summary_rand_e10_p1024_v256_m5.zip`) submitted: score `45.96`. Below current floor `47.6`; floor unchanged.
@@ -651,3 +682,6 @@ Needed output:
 - [X] What is the exact Subtask 2 prediction/submission artifact format?
 - [ ] What is the confirmed Sentinel-2 band order for DACIA5 12-band patch TIFFs?
 - [X] What is the confirmed label token in DACIA5 patch filenames?
+- [X] **CRITICAL — Label offset fix:** Update `valid_label_mask` in `scripts/subtask1_baseline.py` and all vision training scripts to use `labels >= 1 AND labels <= 5` and then subtract 1. All training runs before this fix were missing the Very High class entirely.
+- [ ] Submit constant-class-3 probe to complete the test distribution algebra (one submission remaining in the constant-class series).
+- [ ] Does CodaBench Acc±1 scoring exclude class 5 (raw nodata, value 0) pixels from the denominator, or does it score them? This determines whether our constant-class algebra is exact or approximate.

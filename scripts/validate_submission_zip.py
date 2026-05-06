@@ -2,7 +2,7 @@
 """Validate a candidate AI4Agri submission ZIP.
 
 Subtask 1 CodaBench submissions are root-level PNG masks named after test
-``patch_id`` values, with integer class ids 0..4. An optional ``report.pdf`` is
+``patch_id`` values, with integer raw class ids 1..5. An optional ``report.pdf`` is
 accepted.
 """
 
@@ -44,8 +44,8 @@ def parse_args() -> argparse.Namespace:
         default=[],
         help="Allowed root-level extension such as .csv, .txt, or .npy. Repeat for multiple extensions.",
     )
-    parser.add_argument("--min-class", type=int, default=0, help="Minimum allowed class id.")
-    parser.add_argument("--max-class", type=int, default=4, help="Maximum allowed class id.")
+    parser.add_argument("--min-class", type=int, default=1, help="Minimum allowed class id.")
+    parser.add_argument("--max-class", type=int, default=5, help="Maximum allowed class id.")
     parser.add_argument(
         "--expected-count",
         type=int,

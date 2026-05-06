@@ -34,7 +34,7 @@ Current scripts:
 - `package_subtask2_submission.py`: create a reviewable DACIA5 source/report ZIP without raw data, model binaries, or feature caches.
 - `subtask1_baseline.py`: train/infer the sampled-pixel AgriPotential baseline. It keeps rasters open across patches, shuffles split rows, defaults to class-balanced pixel sampling, and uses raw plus temporal-summary pixel features.
 - `train_subtask2_baseline.py`: direct experimental DACIA5 trainer that assumes the last filename token is the crop label; use only after label semantics are confirmed.
-- `validate_submission_zip.py`: configurable ZIP sanity checker for candidate submissions. Use `--subtask1-codabench` for confirmed AgriPotential rules: root-level `<patch_id>.png` masks, optional `report.pdf`, and class ids `0..4`.
+- `validate_submission_zip.py`: configurable ZIP sanity checker for candidate submissions. Use `--subtask1-codabench` for confirmed AgriPotential rules: root-level `<patch_id>.png` masks, optional `report.pdf`, and corrected raw class ids `1..5`.
 
 Common local commands:
 

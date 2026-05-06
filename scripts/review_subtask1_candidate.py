@@ -29,7 +29,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--zip-path", type=Path, default=None, help="Candidate ZIP; defaults to submissions/<run-id>.zip.")
     parser.add_argument("--expected-ids-file", type=Path, default=None, help="Defaults to <data-dir>/test.csv when present.")
     parser.add_argument("--min-visuals", type=int, default=1, help="Minimum visuals required for each review prefix.")
-    parser.add_argument("--allow-missing-extremes", action="store_true", help="Warn instead of failing if classes 0 or 4 are absent.")
+    parser.add_argument("--min-class", type=int, default=1, help="Minimum raw submission class id.")
+    parser.add_argument("--max-class", type=int, default=5, help="Maximum raw submission class id.")
+    parser.add_argument("--allow-missing-extremes", action="store_true", help="Warn instead of failing if min or max class is absent.")
     parser.add_argument("--max-flat-fraction", type=float, default=0.10, help="Fail if more than this fraction of PNG masks contain one class.")
     parser.add_argument("--report-json", type=Path, default=None, help="Optional path for machine-readable audit output.")
     return parser.parse_args()
@@ -50,7 +52,7 @@ def count_visuals(visual_dir: Path) -> dict[str, int]:
     }
 
 
-def validate_zip(zip_path: Path, expected_ids_file: Path | None) -> tuple[int, str]:
+def validate_zip(zip_path: Path, expected_ids_file: Path | None, min_class: int, max_class: int) -> tuple[int, str]:
     command = [
         sys.executable,
         str(SCRIPT_DIR / "validate_submission_zip.py"),
@@ -58,6 +60,10 @@ def validate_zip(zip_path: Path, expected_ids_file: Path | None) -> tuple[int, s
         str(zip_path),
         "--subtask1-codabench",
         "--check-class-values",
+        "--min-class",
+        str(min_class),
+        "--max-class",
+        str(max_class),
     ]
     if expected_ids_file and expected_ids_file.exists():
         command.extend(["--expected-ids-file", str(expected_ids_file)])
@@ -188,12 +194,12 @@ def main() -> None:
     prediction_count = 0
     pixel_summary: dict[str, object] = {}
     if zip_path.exists():
-        returncode, zip_validation_output = validate_zip(zip_path, expected_ids_file)
+        returncode, zip_validation_output = validate_zip(zip_path, expected_ids_file, args.min_class, args.max_class)
         add_check(checks, "zip_validation", returncode == 0, zip_validation_output)
         class_presence, prediction_count = zip_class_presence(zip_path)
         present_classes = sorted(class_presence)
         add_check(checks, "zip_not_collapsed", len(present_classes) >= 2, f"classes present: {present_classes}")
-        extremes_ok = 0 in class_presence and 4 in class_presence
+        extremes_ok = args.min_class in class_presence and args.max_class in class_presence
         add_check(
             checks,
             "zip_extreme_classes",
@@ -205,7 +211,7 @@ def main() -> None:
         add_check(
             checks,
             "zip_pixel_classes",
-            set(pixel_counts) == {0, 1, 2, 3, 4},
+            set(pixel_counts) == set(range(args.min_class, args.max_class + 1)),
             f"pixel counts: {pixel_counts}",
         )
         flat_fraction = float(pixel_summary["flat_png_fraction"])

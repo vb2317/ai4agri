@@ -62,6 +62,12 @@ def parse_args() -> argparse.Namespace:
     infer.add_argument("--out", type=Path, default=None)
     infer.add_argument("--num-workers", type=int, default=2)
     infer.add_argument("--visual-limit", type=int, default=20)
+    infer.add_argument(
+        "--submission-label-offset",
+        type=int,
+        default=1,
+        help="Value added to model classes before writing PNG masks. Use 1 for raw AgriPotential labels 1..5.",
+    )
     infer.set_defaults(decode=None, median_size=None)
 
     smoke = subparsers.add_parser("self-test", help="Run a synthetic forward/metric smoke check without data files.")
@@ -361,7 +367,8 @@ def infer_command(args: argparse.Namespace) -> None:
 
     with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for patch_id, mask in predict_dataset(model, loader, args.device, decode, median_size):
-            zf.writestr(f"{patch_id}.png", grayscale_png(mask.shape[1], mask.shape[0], mask))
+            submission_mask = np.clip(mask.astype("int16") + args.submission_label_offset, 0, 255).astype("uint8")
+            zf.writestr(f"{patch_id}.png", grayscale_png(mask.shape[1], mask.shape[0], submission_mask))
 
     infer_visuals(args, args.checkpoint, run_id, limit=args.visual_limit)
     print(f"Wrote {out_path}")
