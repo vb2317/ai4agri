@@ -119,6 +119,8 @@ main() {
     pull-results)
       mkdir -p results
       rsync -rtv --no-owner --no-group --no-perms \
+        --exclude='.ipynb_checkpoints' \
+        --exclude='subtask1/checkpoints/' \
         -e "$ssh_cmd" \
         "${remote}:${remote_project}/results/" ./results/
       ;;

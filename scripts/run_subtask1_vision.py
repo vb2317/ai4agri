@@ -22,7 +22,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from ai4agri.subtask1.data import AgriPotentialVisionDataset, collate_patches
+from ai4agri.subtask1.data import AgriPotentialVisionDataset, collate_patches, label_mapping_metadata
 from ai4agri.subtask1.metrics import (
     decode_logits,
     median_smooth,
@@ -242,6 +242,15 @@ def jsonable_args(args: argparse.Namespace) -> dict[str, object]:
     return payload
 
 
+def output_label_metadata(submission_label_offset: int = 1) -> dict[str, object]:
+    return {
+        "submission_label_offset": submission_label_offset,
+        "model_output_labels": "0..4",
+        "submission_output_labels": f"{submission_label_offset}..{submission_label_offset + 4}",
+        "codabench_expected_raw_labels": "1..5",
+    }
+
+
 def train_command(args: argparse.Namespace) -> None:
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
@@ -298,7 +307,14 @@ def train_command(args: argparse.Namespace) -> None:
     started = time.monotonic()
 
     config = jsonable_args(args)
-    config.update({"run_id": run_id, "input_channels": train_ds.input_channels})
+    config.update(
+        {
+            "run_id": run_id,
+            "input_channels": train_ds.input_channels,
+            "label_mapping": label_mapping_metadata(),
+            "output_label_mapping": output_label_metadata(),
+        }
+    )
     save_json(paths["run_dir"] / "config.json", config)
     train_log = paths["run_dir"] / "train.log"
     train_log.write_text("$ " + " ".join(sys.argv) + "\n\n")
@@ -328,6 +344,8 @@ def train_command(args: argparse.Namespace) -> None:
                     "base_channels": args.base_channels,
                     "decode": args.decode,
                     "median_size": args.median_size,
+                    "label_mapping": label_mapping_metadata(),
+                    "output_label_mapping": output_label_metadata(),
                     "config": config,
                 },
                 paths["run_dir"] / "best.pt",
@@ -340,6 +358,8 @@ def train_command(args: argparse.Namespace) -> None:
                     "run_id": run_id,
                     "best_epoch": epoch,
                     "elapsed_seconds": round(time.monotonic() - started, 3),
+                    "label_mapping": label_mapping_metadata(),
+                    "output_label_mapping": output_label_metadata(),
                     **val_metrics,
                 },
             )
@@ -426,6 +446,20 @@ def infer_command(args: argparse.Namespace) -> None:
         for patch_id, mask in predict_dataset(model, loader, args.device, decode, median_size):
             submission_mask = to_submission_labels(mask, args.submission_label_offset)
             zf.writestr(f"{patch_id}.png", grayscale_png(mask.shape[1], mask.shape[0], submission_mask))
+
+    save_json(
+        out_path.with_suffix(out_path.suffix + ".json"),
+        {
+            "run_id": run_id,
+            "checkpoint": str(args.checkpoint),
+            "split": args.split,
+            "label_mapping": label_mapping_metadata(),
+            "output_label_mapping": output_label_metadata(args.submission_label_offset),
+            "decode": decode,
+            "median_size": median_size,
+            "limit": args.limit,
+        },
+    )
 
     infer_visuals(args, args.checkpoint, run_id, limit=args.visual_limit)
     print(f"Wrote {out_path}")

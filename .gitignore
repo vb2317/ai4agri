@@ -1,4 +1,8 @@
 data/
+results/subtask1
+results/subtask2
+results/subtask1/checkpoints/
+results/subtask2/checkpoints/
 results/subtask1/submissions/
 results/subtask2/submissions/
 results/subtask1/baseline/

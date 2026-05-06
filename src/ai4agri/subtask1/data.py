@@ -17,6 +17,7 @@ BANDS_PER_SCENE = 10
 RAW_LABEL_MIN = 1
 RAW_LABEL_MAX = 5
 IGNORE_INDEX = 255
+LABEL_MAPPING_VERSION = "raw1-5_to_model0-4_ignore0_v1"
 
 
 @dataclass(frozen=True)
@@ -120,6 +121,20 @@ def remap_raw_labels(labels: np.ndarray) -> np.ndarray:
     valid = (raw >= RAW_LABEL_MIN) & (raw <= RAW_LABEL_MAX)
     mapped[valid] = raw[valid] - RAW_LABEL_MIN
     return mapped
+
+
+def label_mapping_metadata() -> dict[str, object]:
+    return {
+        "version": LABEL_MAPPING_VERSION,
+        "raw_label_min": RAW_LABEL_MIN,
+        "raw_label_max": RAW_LABEL_MAX,
+        "raw_ignore_values": [0],
+        "model_label_min": 0,
+        "model_label_max": RAW_LABEL_MAX - RAW_LABEL_MIN,
+        "ignore_index": IGNORE_INDEX,
+        "input_mapping": "raw labels 1..5 are shifted to model classes 0..4; raw 0 is ignored",
+        "submission_mapping": "model classes 0..4 are written as raw labels 1..5 by adding offset 1",
+    }
 
 
 class AgriPotentialVisionDataset(Dataset):
@@ -265,6 +280,10 @@ class AgriPotentialVisionDataset(Dataset):
             return None
         try:
             with np.load(path) as payload:
+                if "y" in payload.files:
+                    version = str(payload["label_mapping_version"].item()) if "label_mapping_version" in payload.files else ""
+                    if version != LABEL_MAPPING_VERSION:
+                        raise ValueError("stale cached label mapping")
                 x = payload["x"].astype("float32", copy=False)
                 y = payload["y"].astype("int64", copy=False) if "y" in payload.files else None
                 return x, y
@@ -281,6 +300,7 @@ class AgriPotentialVisionDataset(Dataset):
             payload: dict[str, np.ndarray] = {"x": x.astype("float16", copy=False)}
             if y is not None:
                 payload["y"] = y.astype("uint8", copy=False)
+                payload["label_mapping_version"] = np.array(LABEL_MAPPING_VERSION)
             with temp_path.open("wb") as file:
                 np.savez(file, **payload)
             temp_path.replace(path)
