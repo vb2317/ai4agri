@@ -34,6 +34,11 @@ from ai4agri.subtask1.metrics import (
 from ai4agri.subtask1.models import build_model
 from ai4agri.subtask1.png import grayscale_png
 
+INTERNAL_LABEL_MIN = 0
+INTERNAL_LABEL_MAX = 4
+RAW_LABEL_MIN = 1
+RAW_LABEL_MAX = 5
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -384,6 +389,27 @@ def predict_dataset(model, loader, device: str, decode: str, median_size: int):
             yield patch_id, mask
 
 
+def to_submission_labels(mask: np.ndarray, offset: int) -> np.ndarray:
+    internal = np.asarray(mask, dtype="int16")
+    min_seen = int(internal.min())
+    max_seen = int(internal.max())
+    if min_seen < INTERNAL_LABEL_MIN or max_seen > INTERNAL_LABEL_MAX:
+        raise ValueError(
+            f"inference produced internal labels outside "
+            f"[{INTERNAL_LABEL_MIN}, {INTERNAL_LABEL_MAX}]: [{min_seen}, {max_seen}]"
+        )
+    submission = internal + offset
+    expected_min = INTERNAL_LABEL_MIN + offset
+    expected_max = INTERNAL_LABEL_MAX + offset
+    if expected_min != RAW_LABEL_MIN or expected_max != RAW_LABEL_MAX:
+        raise ValueError(
+            f"submission-label-offset={offset} would write labels "
+            f"[{expected_min}, {expected_max}], expected raw AgriPotential labels "
+            f"[{RAW_LABEL_MIN}, {RAW_LABEL_MAX}]"
+        )
+    return submission.astype("uint8", copy=False)
+
+
 def load_checkpoint_model(args: argparse.Namespace, checkpoint_path: Path):
     checkpoint = torch.load(checkpoint_path, map_location=args.device)
     input_channels = int(checkpoint.get("input_channels") or AgriPotentialVisionDataset(args.data_dir, args.split, args.temporal_mode).input_channels)
@@ -418,7 +444,7 @@ def infer_command(args: argparse.Namespace) -> None:
 
     with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for patch_id, mask in predict_dataset(model, loader, args.device, decode, median_size):
-            submission_mask = np.clip(mask.astype("int16") + args.submission_label_offset, 0, 255).astype("uint8")
+            submission_mask = to_submission_labels(mask, args.submission_label_offset)
             zf.writestr(f"{patch_id}.png", grayscale_png(mask.shape[1], mask.shape[0], submission_mask))
 
     save_json(

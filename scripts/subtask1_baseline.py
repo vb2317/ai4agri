@@ -17,6 +17,8 @@ from pathlib import Path
 SPLIT_COLUMNS = ("patch_id", "row", "col", "patch_size", "n_annotated")
 RAW_LABEL_MIN = 1
 RAW_LABEL_MAX = 5
+INTERNAL_LABEL_MIN = 0
+INTERNAL_LABEL_MAX = RAW_LABEL_MAX - RAW_LABEL_MIN
 LABEL_MAPPING_VERSION = "raw1-5_to_model0-4_ignore0_v1"
 
 
@@ -130,7 +132,30 @@ def shift_raw_labels(labels):
     import numpy as np
 
     shifted = labels.astype("int64", copy=False) - RAW_LABEL_MIN
-    return np.clip(shifted, 0, RAW_LABEL_MAX - RAW_LABEL_MIN)
+    return np.clip(shifted, INTERNAL_LABEL_MIN, INTERNAL_LABEL_MAX)
+
+
+def to_submission_labels(labels, offset: int):
+    import numpy as np
+
+    internal = np.asarray(labels, dtype="int16")
+    min_seen = int(internal.min())
+    max_seen = int(internal.max())
+    if min_seen < INTERNAL_LABEL_MIN or max_seen > INTERNAL_LABEL_MAX:
+        raise ValueError(
+            f"inference produced internal labels outside "
+            f"[{INTERNAL_LABEL_MIN}, {INTERNAL_LABEL_MAX}]: [{min_seen}, {max_seen}]"
+        )
+    submission = internal + offset
+    expected_min = INTERNAL_LABEL_MIN + offset
+    expected_max = INTERNAL_LABEL_MAX + offset
+    if expected_min != RAW_LABEL_MIN or expected_max != RAW_LABEL_MAX:
+        raise ValueError(
+            f"submission-label-offset={offset} would write labels "
+            f"[{expected_min}, {expected_max}], expected raw AgriPotential labels "
+            f"[{RAW_LABEL_MIN}, {RAW_LABEL_MAX}]"
+        )
+    return submission.astype("uint8", copy=False)
 
 
 def label_mapping_metadata() -> dict[str, object]:
@@ -401,11 +426,8 @@ def infer_command(args: argparse.Namespace) -> None:
                 patch_size = int(patch["patch_size"])
                 stack_array = read_patch_stack(raster_sources, patch)
                 x = pixel_features(stack_array, feature_mode)
-                prediction = np.clip(
-                    model.predict(x).astype("int16") + args.submission_label_offset,
-                    0,
-                    255,
-                ).astype("uint8").reshape(patch_size, patch_size)
+                internal_prediction = model.predict(x).astype("int16").reshape(patch_size, patch_size)
+                prediction = to_submission_labels(internal_prediction, args.submission_label_offset)
                 zf.writestr(f"{patch['patch_id']}.png", grayscale_png(patch_size, patch_size, prediction))
                 if index % 50 == 0:
                     print(f"predicted {index}/{len(rows)}")
