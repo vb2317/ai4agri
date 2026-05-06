@@ -71,60 +71,59 @@ Deprecated runs:
 - All submitted and trained models before this fix, including TinyViT `50.63`, ResNet/FPN `47.6`, U-Net CE `45.96`, and PM1 `41.83`, were trained/evaluated with the wrong raw label convention.
 - Keep `50.63` as the leaderboard floor, but do not use old validation metrics to choose architecture without rerunning under corrected labels.
 
-## Corrected-Label Full Run
+## Corrected-Label GPU-Max Runs
 
-Started on existing RTX PRO 4500 RunPod at `2026-05-06T04:29:00Z` after killing all stale queues/runs.
+Started on existing RTX PRO 4500 RunPod at `2026-05-06T04:36:19Z` after killing stale and duplicate runs.
 
-Run id:
+Operational changes:
+
+- Added local feature caching via `--cache-dir`; summary tensors are cached under `/tmp/ai4agri_subtask1_summary_cache`.
+- Cache size after warmup: about `8.9G` for full train+val summary tensors.
+- Added persistent DataLoader workers and higher prefetching.
+- U-Net summary training now runs from cache in seconds per epoch instead of repeatedly reading 185G of network-hosted rasters.
+
+Completed corrected PM1 run:
 
 ```text
-corrected_resnet_fpn_summary_full_e30_s73
+corrected_unet_pm1bce_nsum_summary_full_e30_m5_s73_b32_cache
 ```
 
-Why this strategy: among the pre-fix non-PM1 full-data runs, `l40s_resnet_fpn_summary_e30` had the strongest validation Accuracy +/- 1 (`0.78984`). PM1 had higher local validation but scored `41.83` on CodaBench and is not a reliable standalone path.
+Best visible validation:
 
-Command:
+- Accuracy +/- 1: `0.8302` at epoch `7`.
+- Later best saved metrics should be confirmed from `metrics.json` before submission.
+- This run writes corrected raw-label submissions (`1..5`) because inference defaults to `--submission-label-offset 1`.
 
-```bash
-python scripts/run_subtask1_vision.py train \
-  --data-dir data/subtask1 \
-  --run-id corrected_resnet_fpn_summary_full_e30_s73 \
-  --model resnet_fpn \
-  --temporal-mode summary \
-  --epochs 30 \
-  --batch-size 4 \
-  --patience 6 \
-  --visual-limit 24 \
-  --loss soft_ce \
-  --decode expected \
-  --median-size 3 \
-  --seed 73 \
-  --num-workers 4 \
-  --write-test-visuals \
-  --test-visual-limit 24
-```
+Active runs:
+
+- `corrected_unet_pm1bce_softnsum_summary_full_e30_m5_s74_b64_cache_parallel`
+  - PM1 BCE, softmax neighbor-sum decode, median `5`, batch size `64`.
+- `corrected_unet_pm1bce_nsum_summary_full_e30_m3_s75_b32_cache`
+  - PM1 BCE, sigmoid neighbor-sum decode, median `3`, batch size `32`.
+
+Killed/cancelled:
+
+- `corrected_resnet_fpn_summary_full_e30_s73`: cancelled when PM1 strategy was restored.
+- `corrected_unet_pm1bce_softnsum_summary_full_e30_m5_s74_b32_cache`: duplicate of the batch-64 soft-neighbor run; killed to avoid wasting GPU.
 
 Monitor:
 
 ```bash
-scripts/runpod_exec.sh 'tail -n 80 results/subtask1/vision_runs/corrected_resnet_fpn_summary_full_e30_s73/nohup.log'
+scripts/runpod_exec.sh 'ps -eo pid,etime,stat,cmd | grep run_subtask1_vision | grep -v grep; nvidia-smi'
 ```
 
-Generate corrected raw-label ZIP after training:
+Run logs:
 
 ```bash
-scripts/runpod_exec.sh '.venv/bin/python scripts/run_subtask1_vision.py infer \
-  --data-dir data/subtask1 \
-  --run-id corrected_resnet_fpn_summary_full_e30_s73 \
-  --model resnet_fpn \
-  --temporal-mode summary \
-  --checkpoint results/subtask1/vision_runs/corrected_resnet_fpn_summary_full_e30_s73/best.pt \
-  --decode expected \
-  --median-size 3 \
-  --submission-label-offset 1 \
-  --num-workers 4 \
-  --visual-limit 24'
+scripts/runpod_exec.sh 'tail -n 80 results/subtask1/vision_runs/corrected_pm1_queue_gpu_max_20260506.log'
+scripts/runpod_exec.sh 'tail -n 80 results/subtask1/vision_runs/corrected_unet_pm1bce_softnsum_summary_full_e30_m5_s74_b64_cache_parallel.nohup'
 ```
+
+Submission gate for these corrected PM1 runs:
+
+- Pull results locally.
+- Check `metrics.json`, `metrics_history.json`, visuals, class coverage, and ZIP validation.
+- Do not submit unless corrected-label validation and visual review plausibly beat the `50.63` floor.
 
 ## Overnight Run Plan
 

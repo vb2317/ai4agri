@@ -53,6 +53,8 @@ def parse_args() -> argparse.Namespace:
     train.add_argument("--patience", type=int, default=8)
     train.add_argument("--write-test-visuals", action="store_true")
     train.add_argument("--test-visual-limit", type=int, default=20)
+    train.add_argument("--cache-dir", type=Path, default=None, help="Optional feature cache directory for decoded patch tensors.")
+    train.add_argument("--precache", action="store_true", help="Build the feature cache before training starts.")
 
     infer = subparsers.add_parser("infer", help="Infer masks from a saved checkpoint and write a CodaBench ZIP.")
     add_common_model_args(infer)
@@ -114,8 +116,18 @@ def make_loader(dataset: AgriPotentialVisionDataset, batch_size: int, workers: i
         shuffle=shuffle,
         num_workers=workers,
         pin_memory=torch.cuda.is_available(),
+        persistent_workers=workers > 0,
+        prefetch_factor=4 if workers > 0 else None,
         collate_fn=collate_patches,
     )
+
+
+def warm_feature_cache(dataset: AgriPotentialVisionDataset, batch_size: int, workers: int, name: str) -> None:
+    if dataset.cache_dir is None:
+        return
+    loader = make_loader(dataset, batch_size, workers, shuffle=False)
+    for _ in tqdm(loader, desc=f"cache:{name}", leave=False):
+        pass
 
 
 def parse_class_weights(value: str, device: str) -> torch.Tensor | None:
@@ -239,6 +251,7 @@ def train_command(args: argparse.Namespace) -> None:
         augment=True,
         random_state=args.seed,
         shuffle_rows=bool(args.patch_limit),
+        cache_dir=args.cache_dir,
     )
     val_ds = AgriPotentialVisionDataset(
         args.data_dir,
@@ -249,7 +262,22 @@ def train_command(args: argparse.Namespace) -> None:
         augment=False,
         random_state=args.seed + 1,
         shuffle_rows=bool(args.val_patch_limit),
+        cache_dir=args.cache_dir,
     )
+    if args.precache:
+        warm_train_ds = AgriPotentialVisionDataset(
+            args.data_dir,
+            "train",
+            args.temporal_mode,
+            label_name=args.label_name,
+            patch_limit=args.patch_limit,
+            augment=False,
+            random_state=args.seed,
+            shuffle_rows=bool(args.patch_limit),
+            cache_dir=args.cache_dir,
+        )
+        warm_feature_cache(warm_train_ds, args.batch_size, args.num_workers, "train")
+        warm_feature_cache(val_ds, args.batch_size, args.num_workers, "val")
     train_loader = make_loader(train_ds, args.batch_size, args.num_workers, shuffle=True)
     val_loader = make_loader(val_ds, args.batch_size, args.num_workers, shuffle=False)
 
