@@ -250,6 +250,29 @@ Morning decision gates for VB:
 - Submit only if ZIP validation passes, visuals are coherent, predictions are not collapsed, and the candidate is plausibly stronger than the submitted TinyViT.
 - If L40S access is available in the morning, prioritize Claude exporting L40S artifacts and postprocessing/ensembling there; it remains the better pod for TinyViT and ResNet exploration.
 
+## VB Task: SAM vs TinyViT Output Review
+
+Run `notebooks/11_sam_vs_tinyvit_output_analysis.ipynb` before using the SAM decoder in any ensemble.
+
+Purpose:
+
+- Explain why `l40s_sam_decoder_summary_pm1_full_b16_e24_s64` underperformed the full-data TinyViT.
+- Measure whether SAM has real complementary correct pixels or only noisy disagreement.
+- Test TinyViT/SAM validation probability averaging and expected-value decoding before spending a submission.
+
+Current diagnosis before notebook review:
+
+- TinyViT is the submitted floor at `50.63`, with validation Accuracy +/- 1 `0.76609`.
+- SAM decoder validation Accuracy +/- 1 was `0.74070`, with class-2 recall `0.0`.
+- The SAM run used a promptless SAM-style encoder trained from scratch, not pretrained RGB SAM.
+- The `pm1_ce` loss may have helped tolerance-aware neighboring labels but likely softened exact class separation too much.
+
+VB decision rule:
+
+- Do not submit SAM standalone unless CodaBench proves otherwise.
+- Use SAM in an ensemble only if the notebook's validation sweep beats TinyViT alone and the gain is not just a tiny exact-accuracy fluctuation.
+- If SAM class 2 remains collapsed in the notebook tables, the next SAM run must change loss/class weighting; do not only train longer.
+
 ## Best Next Candidate
 
 Two lanes are active:
@@ -400,6 +423,107 @@ Use these only after the postprocess check:
 - Weighted ResNet/FPN or U-Net run if class 4 recall remains the main weakness.
 - Ensemble ResNet/FPN with TinyViT or HGB only if the second model is genuinely different and passes audit.
 - Subtask 2 notebook/report cleanup after Subtask 1 submissions stop improving.
+
+## Pooling And Hidden-Window Notes
+
+Current model downsampling behavior:
+
+- `unet`: explicit `2x2` max pooling three times, so hidden resolution goes `128 -> 64 -> 32 -> 16`.
+- `resnet_fpn`: ImageNet-style ResNet stem, with `7x7 stride-2` conv followed by ResNet's `3x3 stride-2` max pool, then more downsampling in later ResNet stages. This is more aggressive early downsampling than the U-Net.
+- `tiny_vit`: no max pool; patch embedding is an `8x8` stride-8 convolution.
+- `sam_decoder`: no max pool; patch embedding is a `4x4` stride-4 convolution.
+
+Heuristic from train+val label clusters:
+
+- Median connected cluster area is about `736` pixels, roughly `27x27`.
+- 75th percentile is about `2746` pixels, roughly `52x52`.
+- 90th percentile is about `7906` pixels, roughly `89x89`.
+- Class-level 90th percentile equivalent square sizes are approximately class 0 `116x116`, class 1 `77x77`, class 2 `67x67`, class 3 `68x68`, class 4 `78x78`.
+
+Proposed ResNet variant:
+
+- Add `resnet_fpn_dense`.
+- Change first conv from `7x7 stride=2` to `3x3 stride=1`.
+- Remove/disable the early ResNet max pool.
+- Keep the FPN lateral decoder.
+- Optionally add dilation in later stages if memory permits.
+
+Purpose: preserve small and medium field boundaries longer in the hidden layers. This is different from changing the CSV/input patch window, which remains `128x128`.
+
+## Active Bigger Model Run
+
+Started on L40S at `2026-05-05T17:35:00Z`:
+
+- Run id: `l40s_sam_decoder_summary_pm1_full_b16_e24_s64`
+- Remote Python PID at launch: `9766`.
+- Model: `sam_decoder`, a promptless SAM-style ViT encoder with a custom dense decoder that accepts the existing Sentinel summary tensor channels.
+- Loss: `pm1_ce`, which spreads target probability mass over labels within +/-1 so the objective matches the leaderboard tolerance where, for example, `0` predicted as `1` still counts.
+- Config: summary temporal features, full `train.csv` and `val.csv`, batch size `16`, max `24` epochs, patience `5`, `--base-channels 64`, seed `64`, median smoothing `3`.
+- GPU check after launch: about `8GB` allocated on the L40S; `396` train batches per epoch.
+
+Monitor:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'tail -n 80 results/subtask1/vision_runs/l40s_sam_decoder_summary_pm1_full_b16_e24_s64/nohup.log'
+```
+
+## Overnight Plan
+
+Started a remote overnight queue at `2026-05-05T18:29:25Z` (`2026-05-05 23:59 IST`). It waits for the active SAM-style run to finish, then keeps the L40S busy with sequential experiments.
+
+Queue log:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'tail -n 120 results/subtask1/vision_runs/overnight_queue_20260505.log'
+```
+
+Sequence:
+
+1. Finish active `l40s_sam_decoder_summary_pm1_full_b16_e24_s64`.
+   - Current best at planning time: Accuracy +/- 1 `0.74070` at epoch `4`; below the `50.63` submitted TinyViT floor, but useful exploration for pm1-aware loss and SAM-style decoder behavior.
+2. Run `l40s_resnet_fpn_dense_summary_soft_full_b8_e24_s70`.
+   - Purpose: test the hidden-window hypothesis by using a dense ResNet/FPN stem: `3x3 stride=1`, no early maxpool, FPN decoder preserved.
+   - This is the highest-priority overnight candidate because the submitted TinyViT still has weak class 4 recall and dense ResNet may preserve field boundaries better.
+3. If time remains, run `l40s_tiny_vit_seasonal_soft_full_b8_e20_s65`.
+   - Purpose: full-data seasonal TinyViT to test temporal-view diversity beyond the small 1536-patch seasonal probe.
+
+VB morning checklist for `2026-05-06 08:00 IST`:
+
+1. Check GPU/process status:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'nvidia-smi && ps -eo pid,etime,stat,cmd | grep run_subtask1_vision | grep -v grep || true'
+```
+
+2. Check queue and latest metrics:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'tail -n 160 results/subtask1/vision_runs/overnight_queue_20260505.log; for r in l40s_sam_decoder_summary_pm1_full_b16_e24_s64 l40s_resnet_fpn_dense_summary_soft_full_b8_e24_s70 l40s_tiny_vit_seasonal_soft_full_b8_e20_s65; do echo --- $r; cat results/subtask1/vision_runs/$r/metrics.json 2>/dev/null || true; done'
+```
+
+3. Pull only completed candidate artifacts:
+
+```bash
+scripts/runpod_sync.sh --env-file .env.l40s.claude pull \
+  /workspace/ai4agri/results/subtask1/vision_runs/<run_id>/ \
+  ./results/subtask1/vision_runs/<run_id>/
+scripts/runpod_sync.sh --env-file .env.l40s.claude pull \
+  /workspace/ai4agri/results/subtask1/visuals/<run_id>/ \
+  ./results/subtask1/visuals/<run_id>/
+scripts/runpod_sync.sh --env-file .env.l40s.claude pull \
+  /workspace/ai4agri/results/subtask1/val_preds/<run_id>_val_probs.npz \
+  ./results/subtask1/val_preds/
+```
+
+4. Candidate decision rule:
+
+- Do not submit anything below the `50.63` floor unless it is part of an ensemble/postprocess plan.
+- Consider ZIP generation and audit only if full-val Accuracy +/- 1 is at least near TinyViT (`>= 0.76`) or the class recalls show clear complementary value, especially class 4.
+- If all queued jobs are done and no candidate is compelling, stop the L40S pod to avoid spend.
 
 ## RunPod Commands
 

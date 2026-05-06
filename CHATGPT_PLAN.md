@@ -80,6 +80,88 @@ Goal: collect transformer validation probabilities and visuals for ensemble anal
 
 Interpretation: none is a standalone submit candidate against the `50.63` floor. The weighted-CE TinyViT is the most useful ensemble-diversity probe because it recovers class 4 recall `0.5405` and class 2 recall `0.0782`, while the soft-CE variants mostly miss class 2.
 
+### Active SAM-Style Bigger Model
+
+Started on the L40S at `2026-05-05T17:35:00Z`.
+
+- Run id: `l40s_sam_decoder_summary_pm1_full_b16_e24_s64`.
+- Code adds `sam_decoder`: a promptless SAM-style ViT encoder plus custom dense decoder for multispectral summary tensors, not pretrained RGB SAM.
+- Code adds `pm1_ce`: a metric-aware loss that assigns target probability mass to labels within +/-1, matching the leaderboard tolerance.
+- Command: `python scripts/run_subtask1_vision.py train --data-dir data/subtask1 --run-id l40s_sam_decoder_summary_pm1_full_b16_e24_s64 --model sam_decoder --temporal-mode summary --epochs 24 --batch-size 16 --patience 5 --visual-limit 20 --loss pm1_ce --median-size 3 --base-channels 64 --seed 64 --num-workers 8 --write-test-visuals --test-visual-limit 20`.
+- Smoke tests passed for `sam_decoder`, `pm1_ce`, and batch size `16`.
+- Initial GPU allocation is about `8GB` on L40S, with `396` train batches per epoch.
+
+### SAM Decoder vs TinyViT Analysis
+
+Added notebook: `notebooks/11_sam_vs_tinyvit_output_analysis.ipynb`.
+
+Purpose: diagnose why `l40s_sam_decoder_summary_pm1_full_b16_e24_s64` underperformed `l40s_tiny_vit_summary_soft_full_e30_s52`, and decide whether SAM is useful for an eventual ensemble.
+
+Current interpretation:
+
+- TinyViT is the current submitted floor at CodaBench `50.63`, with validation Accuracy +/- 1 `0.76609`.
+- SAM decoder reached validation Accuracy +/- 1 `0.74070`, below TinyViT, and collapsed class 2 recall to `0.0`.
+- The SAM implementation is promptless and trained from scratch on Sentinel summary tensors; it does not use pretrained RGB SAM features.
+- `pm1_ce` gives target mass to adjacent labels, matching the leaderboard tolerance, but may reduce class separation and boundary sharpness when overused.
+- SAM should not be submitted standalone. It is only useful if probability-level analysis shows complementary correct pixels or an ensemble sweep beats TinyViT alone.
+
+VB task:
+
+1. Run `notebooks/11_sam_vs_tinyvit_output_analysis.ipynb`.
+2. Check the per-class complementarity table, especially `sam_only_pm1` for classes where TinyViT is weak.
+3. Check the TinyViT/SAM ensemble sweep. Consider a SAM ensemble only if validation Accuracy +/- 1 beats TinyViT-alone by a meaningful margin.
+4. If SAM class 2 remains collapsed, do not rerun the same recipe longer. Change the loss/class weighting or deprioritize SAM behind dense ResNet/FPN and seasonal TinyViT.
+
+### Pooling And Hidden-Window Follow-Up
+
+Clarification: hidden-layer windowing/downsampling is not only in U-Net.
+
+- `unet` uses explicit `2x2` max-pool operations three times (`128 -> 64 -> 32 -> 16`).
+- `resnet_fpn` uses the ResNet18 stem: `7x7 stride-2` conv, then `3x3 stride-2` max pool, then additional stage downsampling. This may be too aggressive for dense mask boundaries.
+- `tiny_vit` uses `8x8` stride-8 patch embedding, not max pooling.
+- `sam_decoder` uses `4x4` stride-4 patch embedding, not max pooling.
+
+Train+val label cluster heuristic:
+
+- Median connected component area is about `736` px, roughly `27x27`.
+- 75th percentile is about `2746` px, roughly `52x52`.
+- 90th percentile is about `7906` px, roughly `89x89`.
+- Class-level 90th percentile equivalent square sizes are class 0 `116x116`, class 1 `77x77`, class 2 `67x67`, class 3 `68x68`, class 4 `78x78`.
+
+Next architecture candidate: add `resnet_fpn_dense`, replacing the ResNet stem with `3x3 stride-1` and removing the early max pool while keeping FPN laterals. Consider later-stage dilation if memory permits. Goal is to preserve field boundaries and avoid early `4x` spatial loss before layer1.
+
+### Overnight Queue: 2026-05-05 To 2026-05-06
+
+Remote queue started at `2026-05-05T18:29:25Z` (`2026-05-05 23:59 IST`) to keep the L40S busy for the next roughly 8 hours.
+
+Queue log:
+
+```bash
+scripts/runpod_exec.sh --env-file .env.l40s.claude \
+  'tail -n 120 results/subtask1/vision_runs/overnight_queue_20260505.log'
+```
+
+Run order:
+
+1. Finish `l40s_sam_decoder_summary_pm1_full_b16_e24_s64`.
+   - Planning-time best: Accuracy +/- 1 `0.74070` at epoch `4`, below the `50.63` submitted floor.
+   - Still useful for testing whether pm1-aware soft labels and SAM-style custom decoder produce complementary errors.
+2. Run `l40s_resnet_fpn_dense_summary_soft_full_b8_e24_s70`.
+   - Implements the hidden-window follow-up: dense ResNet/FPN stem with `3x3 stride=1` and no early max pool.
+   - Priority: high. It directly tests whether avoiding early `4x` spatial loss improves segmentation boundary quality and class recall.
+3. Run `l40s_tiny_vit_seasonal_soft_full_b8_e20_s65` if time remains.
+   - Full-data seasonal TinyViT; priority is ensemble diversity because the 1536-patch seasonal probe had a class-3-heavy profile.
+
+VB morning checklist for `2026-05-06 08:00 IST`:
+
+- Check active process/GPU:
+  `scripts/runpod_exec.sh --env-file .env.l40s.claude 'nvidia-smi && ps -eo pid,etime,stat,cmd | grep run_subtask1_vision | grep -v grep || true'`
+- Check queue and metrics:
+  `scripts/runpod_exec.sh --env-file .env.l40s.claude 'tail -n 160 results/subtask1/vision_runs/overnight_queue_20260505.log; for r in l40s_sam_decoder_summary_pm1_full_b16_e24_s64 l40s_resnet_fpn_dense_summary_soft_full_b8_e24_s70 l40s_tiny_vit_seasonal_soft_full_b8_e20_s65; do echo --- $r; cat results/subtask1/vision_runs/$r/metrics.json 2>/dev/null || true; done'`
+- Pull targeted artifacts for completed runs only: run dir, visuals dir, and `<run_id>_val_probs.npz`.
+- Generate a submission ZIP and run candidate audit only if validation is near the TinyViT full-data run (`accuracy_pm1 >= 0.76`) or class recalls show clear complementary value, especially class 4.
+- Stop the L40S pod if the queue is complete and there is no active training/inference.
+
 ## Current State
 
 ### Access And Remote
