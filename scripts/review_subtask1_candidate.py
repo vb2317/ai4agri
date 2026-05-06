@@ -208,11 +208,14 @@ def main() -> None:
         )
         pixel_summary = zip_pixel_summary(zip_path)
         pixel_counts = pixel_summary["pixel_counts"]
+        expected_classes = set(range(args.min_class, args.max_class + 1))
+        actual_classes = set(pixel_counts)
+        out_of_range = actual_classes - expected_classes
         add_check(
             checks,
             "zip_pixel_classes",
-            set(pixel_counts) == set(range(args.min_class, args.max_class + 1)),
-            f"pixel counts: {pixel_counts}",
+            len(out_of_range) == 0,
+            f"pixel counts: {pixel_counts}" + (f"; OUT OF RANGE values: {sorted(out_of_range)}" if out_of_range else ""),
         )
         flat_fraction = float(pixel_summary["flat_png_fraction"])
         add_check(
