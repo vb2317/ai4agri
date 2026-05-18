@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UPAHAR Section 12 Capability Demonstrator</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar" aria-label="Dashboard controls">
+        <div>
+          <p class="eyebrow">UPAHAR Section 12 demonstrator</p>
+          <h1>Parcel Intelligence Workbench</h1>
+        </div>
+        <div class="topbar-controls">
+          <label>
+            Season
+            <select id="seasonSelect">
+              <option value="kharif-2025">Kharif 2025 imagery</option>
+              <option value="rabi-2025">Rabi 2025 imagery</option>
+            </select>
+          </label>
+          <label>
+            District
+            <select id="districtSelect">
+              <option value="raipur">Raipur</option>
+              <option value="dhamtari">Dhamtari</option>
+              <option value="mahasamund">Mahasamund</option>
+            </select>
+          </label>
+          <div class="export-menu secondary-controls" aria-label="Report export controls">
+            <button class="control-button export-action" type="button" data-export="PDF">PDF</button>
+            <button class="control-button export-action" type="button" data-export="CSV">CSV</button>
+            <button class="control-button export-action" type="button" data-export="XLSX">XLSX</button>
+            <button class="control-button export-action" type="button" data-export="GeoJSON">GeoJSON</button>
+          </div>
+        </div>
+      </header>
+
+      <section id="reviewerMode" class="reviewer-mode" aria-label="Section 12 reviewer mode">
+        <div class="reviewer-heading">
+          <div>
+            <p class="eyebrow">Review path</p>
+            <h2>Imagery to parcel decision</h2>
+          </div>
+        </div>
+        <div id="reviewerSteps" class="reviewer-steps"></div>
+      </section>
+
+      <section class="dashboard-grid" aria-label="Agriculture intelligence dashboard">
+        <aside id="layerPanel" class="layer-panel" aria-label="Map layers">
+          <div class="panel-heading">
+            <p class="eyebrow">OGC layer stack</p>
+            <h2>Map Layers</h2>
+            <div class="rfp-badge-row" data-rfp-surface="layers"></div>
+          </div>
+          <div id="layerControls" class="layer-controls"></div>
+
+          <div id="epochControl" class="epoch-control">
+            <div class="panel-heading">
+              <p class="eyebrow">Multi-date imagery</p>
+              <h2>Season Epoch</h2>
+              <div class="rfp-badge-row" data-rfp-surface="epoch"></div>
+            </div>
+            <input id="epochSlider" type="range" min="0" max="3" value="2" />
+            <div class="epoch-labels">
+              <span>Early</span>
+              <span>Mid</span>
+              <span>Peak</span>
+              <span>Late</span>
+            </div>
+            <p id="epochText" class="muted-text"></p>
+          </div>
+
+          <div id="standardsPanel" class="standards-box">
+            <h2>Open Interfaces</h2>
+            <div class="rfp-badge-row" data-rfp-surface="standards"></div>
+            <div class="tag-list">
+              <span>WMS</span>
+              <span>WFS</span>
+              <span>WCS</span>
+              <span>GeoJSON</span>
+              <span>GeoTIFF</span>
+              <span>REST API</span>
+            </div>
+          </div>
+        </aside>
+
+        <section id="mapStage" class="map-stage" aria-label="Web GIS map">
+          <div class="map-toolbar">
+            <div>
+              <p class="eyebrow">Web-GIS viewer</p>
+              <h2 id="mapTitle">Raipur block crop intelligence</h2>
+              <div class="rfp-badge-row" data-rfp-surface="map"></div>
+            </div>
+            <div id="mapModeControls" class="map-mode-controls" aria-label="Web GIS workflow mode"></div>
+            <div class="legend" id="legend"></div>
+          </div>
+          <div class="map-wrap">
+            <div id="satelliteBasemap" class="satellite-basemap" aria-hidden="true"></div>
+            <svg id="mapSvg" viewBox="0 0 1000 606" role="img" aria-label="Geospatial parcel overlay on Chhattisgarh satellite imagery"></svg>
+            <div id="imageryAttribution" class="map-attribution"></div>
+          </div>
+          <div class="map-footer">
+            <span id="mapStatus">Peak season layer set active</span>
+            <span id="imageryStatus">Real Chhattisgarh imagery | demo parcel overlay</span>
+          </div>
+          <div id="imageryCompliance" class="imagery-compliance"></div>
+        </section>
+
+        <aside id="insightPanel" class="insight-panel" aria-label="Insights">
+          <section id="detailPanel" class="detail-panel" aria-label="Selected parcel details">
+            <div class="panel-heading">
+              <p class="eyebrow">Parcel query</p>
+              <h2 id="parcelTitle">Select a parcel</h2>
+              <div class="rfp-badge-row" data-rfp-surface="parcel"></div>
+            </div>
+            <div class="tab-row" role="tablist" aria-label="Parcel workflows">
+              <button class="tab-button active" type="button" data-panel="parcel">Parcel</button>
+              <button class="tab-button" type="button" data-panel="advisory">Advisory</button>
+              <button class="tab-button" type="button" data-panel="field">Evidence</button>
+            </div>
+            <div class="rfp-badge-row" data-rfp-surface="advisory"></div>
+            <div id="parcelDetails" class="parcel-details">
+              <p class="muted-text">Click any parcel on the map to inspect crop, confidence, stress, NDVI/EVI, production estimate, advisory status, and validation evidence.</p>
+            </div>
+          </section>
+
+          <section id="procurementPanel" class="procurement-panel" aria-label="Paddy procurement planning">
+            <div class="panel-heading">
+              <p class="eyebrow">MSP planning</p>
+              <h2>Paddy Procurement Load</h2>
+              <div class="rfp-badge-row" data-rfp-surface="procurement"></div>
+            </div>
+            <div id="procurementSummary" class="procurement-summary"></div>
+            <div id="procurementList" class="procurement-list"></div>
+          </section>
+
+          <div class="rfp-badge-row quiet-trace" data-rfp-surface="metrics"></div>
+          <div id="metricGrid" class="metric-grid compact-metrics"></div>
+        </aside>
+      </section>
+
+      <section class="sam-focus-grid" aria-label="SAM boundary annotation workflow">
+        <section id="samPanel" class="sam-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">Boundary annotation workflow</p>
+            <h2>SAM-Assisted Parcel Delineation</h2>
+            <div class="rfp-badge-row quiet-trace" data-rfp-surface="sam"></div>
+          </div>
+          <div id="samWorkflow" class="sam-workflow"></div>
+        </section>
+      </section>
+
+      <section class="keynote-only ml-grid" aria-label="AI4Agri machine learning capability">
+        <section id="mlPanel" class="ml-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">AI4Agri ML capability</p>
+            <h2>Temporal Crop Intelligence Pipeline</h2>
+            <div class="rfp-badge-row" data-rfp-surface="ml"></div>
+          </div>
+          <div id="mlCapabilityGrid" class="ml-capability-grid"></div>
+        </section>
+      </section>
+
+      <section class="keynote-only bottom-grid" aria-label="Tender evidence and field validation">
+        <section id="evidencePanel" class="evidence-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">Tender evidence</p>
+            <h2>Why This Demonstrates Delivery Capability</h2>
+            <div class="rfp-badge-row" data-rfp-surface="evidence"></div>
+          </div>
+          <div id="evidenceList" class="evidence-list"></div>
+        </section>
+
+        <section id="fieldPanel" class="field-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">Ground truth and mobile workflow</p>
+            <h2>Field Validation Feed</h2>
+            <div class="rfp-badge-row" data-rfp-surface="field"></div>
+          </div>
+          <div id="fieldFeed" class="field-feed"></div>
+        </section>
+
+        <section id="coveragePanel" class="compliance-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">RFP mapping</p>
+            <h2>Section 12 Coverage Matrix</h2>
+            <div class="rfp-badge-row" data-rfp-surface="coverage"></div>
+          </div>
+          <div id="complianceList" class="compliance-list"></div>
+        </section>
+      </section>
+
+      <section class="keynote-only workflow-grid" aria-label="Reports, mobile workflow, and integrations">
+        <section id="reportPanel" class="report-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">Reports and exports</p>
+            <h2>Operational Report Queue</h2>
+            <div class="rfp-badge-row" data-rfp-surface="reports"></div>
+          </div>
+          <div id="reportQueue" class="report-queue"></div>
+        </section>
+
+        <section id="mobilePanel" class="mobile-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">Mobile app surface</p>
+            <h2>Farmer and Field Officer Flow</h2>
+            <div class="rfp-badge-row" data-rfp-surface="mobile"></div>
+          </div>
+          <div id="mobileFlow" class="mobile-flow"></div>
+        </section>
+
+        <section id="integrationPanel" class="integration-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">API-first architecture</p>
+            <h2>Integration Readiness</h2>
+            <div class="rfp-badge-row" data-rfp-surface="integrations"></div>
+          </div>
+          <div id="integrationGrid" class="integration-grid"></div>
+        </section>
+      </section>
+    </main>
+
+    <div id="requirementOverlay" class="requirement-overlay" hidden></div>
+    <aside id="requirementDrawer" class="requirement-drawer" aria-hidden="true" aria-label="Source requirement">
+      <div class="drawer-header">
+        <div>
+          <p id="drawerEyebrow" class="eyebrow"></p>
+          <h2 id="drawerTitle">Source requirement</h2>
+        </div>
+        <button id="drawerClose" class="drawer-close" type="button" aria-label="Close requirement drawer">Close</button>
+      </div>
+      <div id="drawerBody" class="drawer-body"></div>
+    </aside>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./data.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

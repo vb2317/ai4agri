@@ -1,0 +1,54 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Python runtime/cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local environments
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Node/frontend caches if tooling is added later
+node_modules/
+dist/
+build/
+.vite/
+.parcel-cache/
+
+# Local server/runtime output
+*.log
+*.pid
+tmp/
+temp/
+
+# Large/generated geospatial and ML artifacts
+backend/models/
+backend/tiles/
+backend/data/generated/
+*.tif
+*.tiff
+*.geotiff
+*.gpkg
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+*.qix
+*.sbn
+*.sbx
+*.zip
+

@@ -1,0 +1,80 @@
+# Section 12 Outline
+
+- 12. Scope of work | pages 22-22 | level 1
+- 12.1. Brief of Scope of Work | pages 22-25 | level 2
+- 12.2. The indicative scope of work defined to deliver the following applications/ modules/system (but not limited to): | pages 25-25 | level 2
+- 12.2.1. Satellite Imagery Procurement and Specification | pages 25-26 | level 3
+- 12.2.2. Field Survey for Ground Truth Data Collection | pages 26-27 | level 3
+- 12.2.3. Georeferencing of Cadastral Maps | pages 27-27 | level 3
+- 12.2.4. Crop Acreage &amp; Production Monitoring System | pages 27-27 | level 3
+- 12.2.5. Crop Identification: | pages 27-28 | level 3
+- 12.2.6. Crop Health Monitoring | pages 28-29 | level 3
+- 12.2.7. Crop acreage estimation: | pages 29-30 | level 3
+- 12.2.8. Crop Yield Modeling and Production Estimation | pages 30-31 | level 3
+- 12.2.9. Support for MSP Procurement Planning | pages 31-31 | level 3
+- 12.2.10. Drought and Dry Spell Monitoring | pages 31-31 | level 3
+- 12.3. Drone-Satellite Imagery based (hybrid) disaster monitoring | pages 31-31 | level 2
+- 12.3.1. Flood Mapping and Monitoring (In case of requirement) | pages 31-32 | level 3
+- 12.3.2. Crop Loss Assessment (In case of requirement) | pages 32-32 | level 3
+- 12.4. Advisories | pages 32-32 | level 2
+- 12.4.1. Advisory to department | pages 32-33 | level 3
+- 12.4.2. Advisory to extension functionaries | pages 33-33 | level 3
+- 12.4.3. Advisory to farmers: | pages 33-33 | level 3
+- 12.4.4. Subject for advisory: | pages 33-33 | level 3
+- 12.4.5. Integration with Farmer Registration Module and allied services | pages 34-35 | level 3
+- 12.5. Paddy Procurement Module: | pages 35-35 | level 2
+- 12.5.1. Mobile App for digital tokens | pages 35-36 | level 3
+- 12.5.2. Block Chain | pages 36-36 | level 3
+- 12.5.3. Reports Requirement | pages 36-36 | level 3
+- 12.6. Database Management | pages 36-37 | level 2
+- 12.7. Establishment of Data Analytics Center (Command and Control Unit) | pages 37-37 | level 2
+- 12.7.1. Facilities | pages 37-37 | level 3
+- 12.7.1.1. Design Considerations: | pages 37-37 | level 4
+- 12.7.2. Overview of Requirements: (But not limited to) | pages 38-38 | level 3
+- 12.7.3. Data Analysis Center (But not limited to) | pages 38-38 | level 3
+- 12.7.4. Conference Room: | pages 38-39 | level 3
+- 12.7.5. In-Charge Officials Rooms: | pages 39-39 | level 3
+- 12.8. Data Analytics Centre (DAC) | pages 39-39 | level 2
+- 12.8.1. Functional Requirements | pages 39-40 | level 3
+- 12.8.2. Core Responsibilities of the System Integrator for DAC (but not limited to) | pages 40-41 | level 3
+- 12.8.3. Geospatial Infrastructure Layer (GIS Server + OGC Services) | pages 41-42 | level 3
+- 12.8.4. Integration with Web -GIS Portal | pages 42-42 | level 3
+- 12.8.5. Spatial Indexing, Tiling &amp; High -Performance Map Rendering | pages 42-42 | level 3
+- 12.8.6. Digital Web Platform | pages 42-43 | level 3
+- 12.8.7. Mobile Platform | pages 43-44 | level 3
+- 12.8.7.1. Mobile Application | pages 44-45 | level 4
+- 12.9. Integrations | pages 45-46 | level 2
+- 12.10. Post Award of work to Selected bidder | pages 46-46 | level 2
+- 12.10.1. Preparation of Inception Report | pages 46-46 | level 3
+- 12.10.2. Deployment of Resources | pages 46-47 | level 3
+- 12.10.3. Preparation of Detailed Project Plan | pages 47-47 | level 3
+- 12.10.4. Design of System Architecture | pages 47-49 | level 3
+- 12.11. Cloud Hosting Requirement | pages 49-49 | level 2
+- 12.11.1. Cloud Hosting Requirements | pages 49-49 | level 3
+- 12.12. Help Desk | pages 49-50 | level 2
+- 12.13. Standards &amp; Interoperability | pages 50-51 | level 2
+- 12.14. API Approach | pages 51-51 | level 2
+- 12. Timelines | pages 53-53 | level 1
+- 12.15. Testing | pages 53-53 | level 2
+- 12.15.1. Unit Testing | pages 53-53 | level 3
+- 12.15.2. Performance and Load Testing: | pages 53-54 | level 3
+- 12.15.3. User Acceptance Testing (UAT): | pages 54-54 | level 3
+- 12.15.4. Security Testing: | pages 54-56 | level 3
+- 12.16. Change orders/ Alterations/ Variations | pages 56-57 | level 2
+- 12.16.1. Change orders | pages 57-57 | level 3
+- 12.17. Deployment of the Application | pages 57-58 | level 2
+- 12.18. Application Testing and Certification | pages 58-58 | level 2
+- 12.19. Security and Performance Testing | pages 58-59 | level 2
+- 12.20. Change Management and Capacity Building | pages 59-59 | level 2
+- 12.21. Go-live of the Application | pages 59-59 | level 2
+- 12.21.1. Partial Go-Live | pages 59-60 | level 3
+- 12.21.2. Project Go-Live | pages 60-60 | level 3
+- 12.22. Training &amp; Handholding | pages 60-60 | level 2
+- 12.23. Operation and Maintenance for 4 years | pages 60-60 | level 2
+- 12.24. Exit Management | pages 60-61 | level 2
+- 12.25. Others | pages 61-61 | level 2
+- 12.26. Functional Requirement Specification (FRS) - Indicative | pages 61-64 | level 2
+- 12.27. Summary Reports of Deliverables | pages 64-64 | level 2
+- 12.27.1. Design &amp; Development of Web &amp; Mobile Applications (but not limited to) | pages 64-65 | level 3
+- 12.27.2. Data processing service on the remote sensing applications | pages 65-66 | level 3
+- 12.27.4. Submission Timelines | pages 66-67 | level 3
