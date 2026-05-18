@@ -17,7 +17,31 @@ For a clean share, send the designer this folder plus access to the repo root. T
 - `handoff/designer/design_brief.md` - product and design brief.
 - `handoff/designer/rfp_brief.md` - RFP requirements that matter for the UI.
 
-## Run The Current UI
+## Start The Current UI
+
+### Easiest On Mac
+
+Double-click:
+
+```text
+Start UPAHAR Demo.command
+```
+
+This starts the local demo server and opens the browser automatically. Keep the terminal window open while reviewing the app. Close it or press `Control-C` to stop the server.
+
+If Python 3 is not available, the script opens the static preview automatically.
+
+### Zero-Dependency Static Preview
+
+Double-click:
+
+```text
+Open Static Preview.command
+```
+
+This opens `app/index.html` directly in the browser. It is enough for visual review of the main UI, RFP badges, parcel panels, and layout. Backend-only SAM/API behavior may be limited.
+
+### Manual Developer Path
 
 From the repo root:
 
@@ -60,4 +84,3 @@ The interface should communicate:
 - Preserve the RFP traceability model: requirement badge -> demo surface -> source drawer.
 - Keep mock/demo data visibly honest. Do not imply production Chhattisgarh deployment.
 - Prefer quiet, dense, operational UI over decorative storytelling.
-
