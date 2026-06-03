@@ -65,9 +65,9 @@ The app is intentionally local-first. It reads from the backend when running loc
 4. SAM boundary workflow: prompt/candidate/QC/publish-to-map story.
 5. Mobile/tablet fit: controls, badges, map, drawer, and selected parcel content.
 
-## Design Goal
+## Design Context
 
-Make the current artifact feel like a serious government tender-review product demo, not a hackathon dashboard.
+The current artifact is a government tender-review product demo rather than a farmer-facing app or marketing site.
 
 The interface should communicate:
 
@@ -77,10 +77,9 @@ The interface should communicate:
 - clear distinction between shown/demo/planned capabilities;
 - readiness for field, WebGIS, and DAC users.
 
-## Guardrails
+## Current Product Shape
 
-- Do not turn this into a marketing landing page.
-- Keep the map and selected parcel workflow as the main product surface.
-- Preserve the RFP traceability model: requirement badge -> demo surface -> source drawer.
-- Keep mock/demo data visibly honest. Do not imply production Chhattisgarh deployment.
-- Prefer quiet, dense, operational UI over decorative storytelling.
+- The map and selected parcel workflow are the main product surface.
+- The RFP traceability model is: requirement badge -> demo surface -> source drawer.
+- The data includes mock/demo content and is labeled as such in the UI.
+- The product context is operational, geospatial, and evidence-oriented.

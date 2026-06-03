@@ -1,48 +1,68 @@
 const UPAHAR_DEMO_DATA = {
   basemap: {
-    provider: "Esri World Imagery Wayback",
-    service: "WMTS",
-    aoi: "Chhattisgarh demo AOI: Raipur-Tilda-Arang agriculture corridor",
-    attribution: "Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
-    sourceUrl: "https://www.esri.com/arcgis-blog/products/arcgis-living-atlas/mapping/use-world-imagery-wayback/",
-    tileUrl: "https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/GoogleMapsCompatible/MapServer/tile/{tileSet}/{z}/{y}/{x}",
+    provider: "Satellite imagery",
+    service: "COG/STAC with WMTS fallback",
+    aoi: "Madhya Pradesh demo AOI: Narmadapuram-Sehore insured agriculture corridor",
+    attribution: "Sentinel-2 signal: Copernicus/ESA. Visual basemap: Esri World Imagery.",
+    sourceUrl: "https://dataspace.copernicus.eu/explore-data/data-collections/sentinel-data/sentinel-2",
+    tileUrl: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     zoom: 16,
     tileSize: 256,
-    displayMetersPerPixel: 2.23,
-    center: { lat: 21.32, lon: 81.81 },
-    rfpSpatialRequirement: "<=3 m optical imagery",
-    rfpTemporalRequirement: "5-7 day optical cadence with four crop-stage dates per season",
-    rfpBandRequirement: "Blue, Green, Red, NIR minimum; SAR fallback in cloudy periods",
-    complianceNote: "This demo uses real same-area Wayback imagery at <=3 m display scale. Final tender compliance still requires procured source metadata for acquisition date, native GSD, spectral bands, and cadence."
+    displayMetersPerPixel: 10,
+    center: { lat: 22.70, lon: 77.73 },
+    rfpSpatialRequirement: "Sentinel-2 10 m MSI operational imagery",
+    rfpTemporalRequirement: "5-day revisit with four crop-stage dates per season",
+    rfpBandRequirement: "B2/B3/B4/B8 visible+NIR, red-edge/SWIR indices, and SAR fallback when cloudy",
+    complianceNote: "This insurer demo moves the operational analytic stack to Sentinel-2. The visible basemap remains a fallback until Sentinel-2 COG/XYZ tiles are rendered into backend/tiles."
+  },
+  insurer: {
+    name: "Aviral General Insurance",
+    geography: "Madhya Pradesh pilot portfolio",
+    product: "PMFBY plus parametric crop-loss workflow",
+    riskCrop: "Soybean",
+    heroStats: [
+      { label: "Insured exposure", value: "₹184Cr", detail: "Kharif portfolio in pilot AOI" },
+      { label: "Claims pre-flagged", value: "1,426", detail: "Satellite-first triage queue" },
+      { label: "Field visits saved", value: "62%", detail: "Low-risk packets auto-routed" },
+      { label: "Review window", value: "5 days", detail: "How often fields are re-checked" }
+    ],
+    claimSummary: [
+      { label: "Soybean area", value: "108.6 ha" },
+      { label: "Exposure at risk", value: "₹42.8Cr" },
+      { label: "Open claim packets", value: "3,650" }
+    ]
   },
   epochs: [
-    { label: "Early season", date: "2025-06-26", tileSet: "48925", note: "Sowing emergence and first crop signature separation" },
-    { label: "Mid season", date: "2025-07-31", tileSet: "49999", note: "Canopy development, moisture stress, and acreage stabilization" },
-    { label: "Peak season", date: "2025-09-04", tileSet: "52304", note: "Maximum vegetation signal and procurement planning baseline" },
-    { label: "Late season", date: "2025-10-23", tileSet: "20512", note: "Harvest readiness, yield finalization, and loss assessment" }
+    { label: "Early season", date: "2025-06-24", tileSet: "48925", note: "Sowing emergence, insured acreage activation, and first crop signature separation" },
+    { label: "Mid season", date: "2025-07-29", tileSet: "49999", note: "Canopy development, moisture stress, and claim watchlist formation" },
+    { label: "Peak season", date: "2025-09-02", tileSet: "52304", note: "Maximum vegetation signal, yield expectation, and loss-baseline freeze" },
+    { label: "Late season", date: "2025-10-17", tileSet: "20512", note: "Harvest readiness, claim liability finalization, and loss assessment" }
   ],
   layers: [
-    { id: "crop", label: "Crop classification", kind: "polygon", active: true, service: "WMS/WFS", requirements: ["12.2.5", "12.2.7"] },
-    { id: "stress", label: "Crop health and stress", kind: "polygon", active: true, service: "WMS", requirements: ["12.2.6", "12.2.10", "12.3"] },
-    { id: "yield", label: "Acreage and yield intensity", kind: "polygon", active: false, service: "WCS", requirements: ["12.2.7", "12.2.8"] },
+    { id: "crop", label: "Insured crop classification", kind: "polygon", active: true, service: "WMS/WFS", requirements: ["12.2.5", "12.2.7"] },
+    { id: "stress", label: "Loss and stress severity", kind: "polygon", active: true, service: "WMS", requirements: ["12.2.6", "12.2.10", "12.3"] },
+    { id: "yield", label: "Liability and yield intensity", kind: "polygon", active: false, service: "WCS", requirements: ["12.2.7", "12.2.8"] },
+    { id: "lgnd", label: "LGND changed-chip search", kind: "embedding", active: false, service: "LGND API", requirements: ["12.2.6", "12.3", "12.14"] },
     { id: "sam", label: "SAM boundary candidates", kind: "polygon", active: false, service: "GeoJSON/GPKG", requirements: ["12.2.3", "12.8"] },
-    { id: "gt", label: "Ground truth validation", kind: "point", active: true, service: "WFS", requirements: ["12.2.2"] },
-    { id: "procurement", label: "Procurement centers", kind: "point", active: true, service: "REST", requirements: ["12.2.9", "12.5"] }
+    { id: "gt", label: "Field loss validation", kind: "point", active: true, service: "WFS", requirements: ["12.2.2"] },
+    { id: "procurement", label: "Claim service hubs", kind: "point", active: true, service: "REST", requirements: ["12.2.9", "12.5"] }
   ],
   metrics: [
-    { id: "acreage", label: "Mapped acreage", value: "64.8L ha", detail: "Kharif, Rabi, and summer coverage model", trend: "+6.4%", requirements: ["12.2.4", "12.2.7"] },
-    { id: "confidence", label: "Crop ID confidence", value: "87.4%", detail: "Demo target aligned to 85% RFP threshold", trend: ">=85%", requirements: ["12.2.5"] },
-    { id: "stress", label: "Stress alerts", value: "142", detail: "Moisture, pest, drought, and delayed sowing", trend: "31 high", requirements: ["12.2.6", "12.2.10", "12.3"] },
-    { id: "yield", label: "Yield forecast", value: "5.2 Mt", detail: "Acreage plus vegetation and weather signal", trend: "-3.1%", requirements: ["12.2.8"] },
-    { id: "gt", label: "GT coverage", value: "1.6%", detail: "Stratified sample of sown area", trend: "30% holdout", requirements: ["12.2.2"] },
-    { id: "advisories", label: "Advisories", value: "18.4K", detail: "Department, extension, and farmer messages", trend: "weekly", requirements: ["12.4"] }
+    { id: "exposure", label: "Insured exposure", value: "₹184Cr", detail: "Madhya Pradesh pilot crop portfolio", trend: "₹42.8Cr at risk", requirements: ["12.2.4", "12.2.7"] },
+    { id: "confidence", label: "Crop ID confidence", value: "87.4%", detail: "Sentinel-2 temporal classifier confidence", trend: ">=85%", requirements: ["12.2.5"] },
+    { id: "stress", label: "Loss alerts", value: "142", detail: "Moisture, pest, drought, and delayed sowing", trend: "31 severe", requirements: ["12.2.6", "12.2.10", "12.3"] },
+    { id: "yield", label: "Liability forecast", value: "₹27.6Cr", detail: "Expected payout exposure under stress", trend: "-3.1% yield", requirements: ["12.2.8"] },
+    { id: "gt", label: "Field validation", value: "1.6%", detail: "Stratified loss assessment sample", trend: "30% holdout", requirements: ["12.2.2"] },
+    { id: "lgnd", label: "LGND matches", value: "83", detail: "Changed chips queued for analyst review", trend: "top-k scan", requirements: ["12.3", "12.14"] }
   ],
   crops: {
-    Paddy: { color: "#3f8f57", short: "PD" },
-    Maize: { color: "#c9a227", short: "MZ" },
-    Pulses: { color: "#9a6cc2", short: "PL" },
+    Soybean: { color: "#58d68d", short: "SY" },
+    Paddy: { color: "#4ecdc4", short: "PD" },
+    Maize: { color: "#f2c94c", short: "MZ" },
+    Gram: { color: "#c084fc", short: "GR" },
+    Wheat: { color: "#f5d36f", short: "WH" },
     Fallow: { color: "#9ca3af", short: "FL" },
-    Vegetables: { color: "#2f8ca3", short: "VG" }
+    Pending: { color: "#20a4ad", short: "ML" }
   },
   stressColors: {
     Low: "#4f9d69",
@@ -50,309 +70,45 @@ const UPAHAR_DEMO_DATA = {
     High: "#c55a4a",
     Severe: "#8f2f38"
   },
-  parcels: [
-    {
-      id: "KH-RAI-001",
-      village: "Bhatapara",
-      crop: "Paddy",
-      acreage: 42.6,
-      confidence: 91,
-      stress: "Low",
-      stressScore: 18,
-      yield: 4.4,
-      production: 187.4,
-      stage: "Panicle initiation",
-      sowingWindow: "12-20 Jun",
-      harvestWindow: "20-30 Oct",
-      moisture: "Adequate",
-      riskCause: "Normal canopy trajectory",
-      validation: "GT-1042",
-      advisory: "Maintain current irrigation interval; monitor late-season leaf folder risk.",
-      ndvi: [0.28, 0.48, 0.71, 0.62],
-      geometry: [
-        [81.8000866, 21.3201399],
-        [81.801653, 21.3202599],
-        [81.8022323, 21.3192004],
-        [81.8019748, 21.318121],
-        [81.800344, 21.318101],
-        [81.7994428, 21.3190205]
-      ],
-      epochStates: [
-        { cropClass: "Fallow", confidence: 64, stress: "Low", stressScore: 18, ndvi: 0.28, evi: 0.18, stateNote: "Bare/wet preparation signal before stable paddy emergence" },
-        { cropClass: "Paddy", confidence: 82, stress: "Low", stressScore: 20, ndvi: 0.48, evi: 0.32, stateNote: "Phenology curve separates paddy from fallow and maize" },
-        { cropClass: "Paddy", confidence: 91, stress: "Low", stressScore: 18, ndvi: 0.71, evi: 0.49, stateNote: "Peak vegetation confirms high-confidence paddy extent" },
-        { cropClass: "Paddy", confidence: 90, stress: "Low", stressScore: 21, ndvi: 0.62, evi: 0.42, stateNote: "Late-season decline remains inside normal harvest trajectory" }
-      ]
-    },
-    {
-      id: "KH-RAI-002",
-      village: "Bhatapara",
-      crop: "Maize",
-      acreage: 31.8,
-      confidence: 84,
-      stress: "Moderate",
-      stressScore: 47,
-      yield: 3.1,
-      production: 98.6,
-      stage: "Vegetative",
-      sowingWindow: "18-26 Jun",
-      harvestWindow: "08-18 Oct",
-      moisture: "Declining",
-      riskCause: "Mid-season moisture and nitrogen signal",
-      validation: "GT-1088",
-      advisory: "Schedule field inspection for water stress and nutrient deficiency confirmation.",
-      ndvi: [0.22, 0.42, 0.58, 0.46],
-      geometry: [
-        [81.8031765, 21.31998],
-        [81.8053222, 21.32002],
-        [81.805966, 21.3190205],
-        [81.8054295, 21.3179211],
-        [81.8033481, 21.318081],
-        [81.80264, 21.3191405]
-      ],
-      epochStates: [
-        { cropClass: "Fallow", confidence: 58, stress: "Low", stressScore: 16, ndvi: 0.22, evi: 0.14, stateNote: "Early season signal is ambiguous before maize canopy closure" },
-        { cropClass: "Maize", confidence: 75, stress: "Moderate", stressScore: 41, ndvi: 0.42, evi: 0.27, stateNote: "Mid-season spectral rise supports maize with moisture caution" },
-        { cropClass: "Maize", confidence: 84, stress: "Moderate", stressScore: 47, ndvi: 0.58, evi: 0.37, stateNote: "Classifier stabilizes on maize but stress remains above watch threshold" },
-        { cropClass: "Maize", confidence: 81, stress: "Moderate", stressScore: 52, ndvi: 0.46, evi: 0.29, stateNote: "Late-season decline indicates harvest approach and water stress" }
-      ]
-    },
-    {
-      id: "KH-RAI-003",
-      village: "Tilda",
-      crop: "Pulses",
-      acreage: 26.4,
-      confidence: 78,
-      stress: "High",
-      stressScore: 72,
-      yield: 1.2,
-      production: 31.7,
-      stage: "Flowering",
-      sowingWindow: "25 Jun-05 Jul",
-      harvestWindow: "25 Sep-05 Oct",
-      moisture: "Low",
-      riskCause: "Spectral deviation and pest-risk cluster",
-      validation: "GT-1121",
-      advisory: "Issue pest scouting advisory; spectral deviation indicates possible infestation.",
-      ndvi: [0.19, 0.34, 0.41, 0.27],
-      geometry: [
-        [81.8075967, 21.3203398],
-        [81.8098069, 21.3203798],
-        [81.8102575, 21.3189406],
-        [81.8093563, 21.3177012],
-        [81.8073392, 21.318181],
-        [81.8069959, 21.3194603]
-      ],
-      epochStates: [
-        { cropClass: "Fallow", confidence: 55, stress: "Low", stressScore: 12, ndvi: 0.19, evi: 0.12, stateNote: "Weak early greenness before pulses become separable" },
-        { cropClass: "Pulses", confidence: 68, stress: "Moderate", stressScore: 44, ndvi: 0.34, evi: 0.21, stateNote: "Pulses candidate appears, but spectral separation is incomplete" },
-        { cropClass: "Pulses", confidence: 78, stress: "High", stressScore: 72, ndvi: 0.41, evi: 0.24, stateNote: "Peak-season curve underperforms expected vigor; pest scouting required" },
-        { cropClass: "Pulses", confidence: 73, stress: "High", stressScore: 78, ndvi: 0.27, evi: 0.16, stateNote: "Late drop supports crop stress or damage assessment workflow" }
-      ]
-    },
-    {
-      id: "KH-RAI-004",
-      village: "Tilda",
-      crop: "Paddy",
-      acreage: 55.1,
-      confidence: 94,
-      stress: "Low",
-      stressScore: 12,
-      yield: 4.8,
-      production: 264.5,
-      stage: "Grain filling",
-      sowingWindow: "10-18 Jun",
-      harvestWindow: "22 Oct-02 Nov",
-      moisture: "Adequate",
-      riskCause: "High confidence paddy extent",
-      validation: "Model-only",
-      advisory: "Expected strong procurement availability; align token capacity before harvest.",
-      ndvi: [0.31, 0.55, 0.76, 0.68],
-      geometry: [
-        [81.8101717, 21.31998],
-        [81.8119741, 21.3201999],
-        [81.8125749, 21.3187407],
-        [81.8116737, 21.3170815],
-        [81.8098713, 21.3174214],
-        [81.8093134, 21.3189406]
-      ],
-      epochStates: [
-        { cropClass: "Paddy", confidence: 70, stress: "Low", stressScore: 16, ndvi: 0.31, evi: 0.2, stateNote: "Early paddy signature appears after field wetting" },
-        { cropClass: "Paddy", confidence: 88, stress: "Low", stressScore: 13, ndvi: 0.55, evi: 0.36, stateNote: "Canopy expansion confirms paddy extent for acreage rollup" },
-        { cropClass: "Paddy", confidence: 94, stress: "Low", stressScore: 12, ndvi: 0.76, evi: 0.52, stateNote: "Strong peak-season paddy signal supports procurement forecast" },
-        { cropClass: "Paddy", confidence: 93, stress: "Low", stressScore: 15, ndvi: 0.68, evi: 0.46, stateNote: "Late-season stability maintains paddy supply estimate" }
-      ]
-    },
-    {
-      id: "KH-RAI-005",
-      village: "Arang",
-      crop: "Vegetables",
-      acreage: 18.7,
-      confidence: 82,
-      stress: "Moderate",
-      stressScore: 54,
-      yield: 8.3,
-      production: 155.2,
-      stage: "Harvest window",
-      sowingWindow: "Staggered",
-      harvestWindow: "Rolling",
-      moisture: "Variable",
-      riskCause: "Localized irrigation variability",
-      validation: "Model-only",
-      advisory: "Personalized irrigation advisory recommended from soil moisture estimate.",
-      ndvi: [0.27, 0.46, 0.62, 0.49],
-      geometry: [
-        [81.8123603, 21.3239578],
-        [81.8143559, 21.3241177],
-        [81.8149138, 21.3225786],
-        [81.8141199, 21.3211394],
-        [81.8121029, 21.3213792],
-        [81.811502, 21.3228584]
-      ],
-      epochStates: [
-        { cropClass: "Vegetables", confidence: 63, stress: "Low", stressScore: 22, ndvi: 0.27, evi: 0.17, stateNote: "Small-field mixed crop signal appears earlier than cereal fields" },
-        { cropClass: "Vegetables", confidence: 76, stress: "Moderate", stressScore: 42, ndvi: 0.46, evi: 0.31, stateNote: "Staggered growth pattern suggests vegetable block, not single cereal crop" },
-        { cropClass: "Vegetables", confidence: 82, stress: "Moderate", stressScore: 54, ndvi: 0.62, evi: 0.4, stateNote: "Localized irrigation variability drives advisory generation" },
-        { cropClass: "Vegetables", confidence: 79, stress: "Moderate", stressScore: 58, ndvi: 0.49, evi: 0.32, stateNote: "Rolling harvest keeps class stable with variable moisture" }
-      ]
-    },
-    {
-      id: "KH-RAI-006",
-      village: "Arang",
-      crop: "Paddy",
-      acreage: 48.9,
-      confidence: 89,
-      stress: "High",
-      stressScore: 69,
-      yield: 3.7,
-      production: 180.9,
-      stage: "Tillering",
-      sowingWindow: "16-24 Jun",
-      harvestWindow: "26 Oct-05 Nov",
-      moisture: "Waterlogged",
-      riskCause: "Flood-waterlogging anomaly",
-      validation: "GT-1190",
-      advisory: "Flood-waterlogging anomaly detected; prioritize ground validation.",
-      ndvi: [0.29, 0.52, 0.64, 0.38],
-      geometry: [
-        [81.8144847, 21.3200999],
-        [81.8165231, 21.31998],
-        [81.8170596, 21.3184009],
-        [81.8159009, 21.3169616],
-        [81.814034, 21.3175613],
-        [81.8135834, 21.3191005]
-      ],
-      epochStates: [
-        { cropClass: "Paddy", confidence: 67, stress: "Low", stressScore: 18, ndvi: 0.29, evi: 0.19, stateNote: "Early wet field pattern consistent with paddy establishment" },
-        { cropClass: "Paddy", confidence: 86, stress: "Moderate", stressScore: 38, ndvi: 0.52, evi: 0.34, stateNote: "Mid-season paddy class stabilizes; moisture anomaly begins" },
-        { cropClass: "Paddy", confidence: 89, stress: "High", stressScore: 69, ndvi: 0.64, evi: 0.39, stateNote: "Waterlogging anomaly triggers disaster and GT validation path" },
-        { cropClass: "Paddy", confidence: 76, stress: "High", stressScore: 74, ndvi: 0.38, evi: 0.22, stateNote: "Late NDVI drop supports crop-loss assessment workflow" }
-      ]
-    },
-    {
-      id: "KH-RAI-007",
-      village: "Abhanpur",
-      crop: "Maize",
-      acreage: 34.2,
-      confidence: 86,
-      stress: "Low",
-      stressScore: 22,
-      yield: 3.4,
-      production: 116.3,
-      stage: "Cob formation",
-      sowingWindow: "20-28 Jun",
-      harvestWindow: "12-20 Oct",
-      moisture: "Adequate",
-      riskCause: "Stable phenology curve",
-      validation: "Model-only",
-      advisory: "Normal crop growth; next advisory at late-season harvest window.",
-      ndvi: [0.24, 0.43, 0.61, 0.55],
-      geometry: [
-        [81.816609, 21.3219389],
-        [81.8184114, 21.321799],
-        [81.818862, 21.3201799],
-        [81.8175746, 21.3189206],
-        [81.8160296, 21.3196402],
-        [81.8157507, 21.3210994]
-      ],
-      epochStates: [
-        { cropClass: "Fallow", confidence: 60, stress: "Low", stressScore: 16, ndvi: 0.24, evi: 0.15, stateNote: "Early vegetation is too weak for confident crop assignment" },
-        { cropClass: "Maize", confidence: 77, stress: "Low", stressScore: 21, ndvi: 0.43, evi: 0.28, stateNote: "Maize class emerges from temporal texture and canopy rise" },
-        { cropClass: "Maize", confidence: 86, stress: "Low", stressScore: 22, ndvi: 0.61, evi: 0.39, stateNote: "Peak-season profile confirms maize with healthy canopy" },
-        { cropClass: "Maize", confidence: 84, stress: "Low", stressScore: 24, ndvi: 0.55, evi: 0.34, stateNote: "Late-season signal remains consistent with harvest readiness" }
-      ]
-    },
-    {
-      id: "KH-RAI-008",
-      village: "Abhanpur",
-      crop: "Fallow",
-      acreage: 22.9,
-      confidence: 88,
-      stress: "Severe",
-      stressScore: 91,
-      yield: 0.2,
-      production: 4.6,
-      stage: "Unsown/failed",
-      sowingWindow: "Missed",
-      harvestWindow: "Not expected",
-      moisture: "Severe deficit",
-      riskCause: "Failed crop or unsown fallow signature",
-      validation: "GT-1233",
-      advisory: "Likely failed or unsown patch; flag for compensation and farmer verification.",
-      ndvi: [0.16, 0.18, 0.22, 0.19],
-      geometry: [
-        [81.818111, 21.3246574],
-        [81.8203855, 21.3244975],
-        [81.8206215, 21.3225786],
-        [81.8194414, 21.3214592],
-        [81.8176175, 21.3219789],
-        [81.8172098, 21.323618]
-      ],
-      epochStates: [
-        { cropClass: "Fallow", confidence: 72, stress: "Moderate", stressScore: 42, ndvi: 0.16, evi: 0.09, stateNote: "Low greenness suggests unsown or delayed sowing condition" },
-        { cropClass: "Fallow", confidence: 81, stress: "High", stressScore: 68, ndvi: 0.18, evi: 0.1, stateNote: "No expected canopy rise; dry-spell flag is raised" },
-        { cropClass: "Fallow", confidence: 88, stress: "Severe", stressScore: 91, ndvi: 0.22, evi: 0.12, stateNote: "Persistent low vegetation supports failed/unsown classification" },
-        { cropClass: "Fallow", confidence: 90, stress: "Severe", stressScore: 88, ndvi: 0.19, evi: 0.1, stateNote: "Late-season persistence routes parcel to compensation verification" }
-      ]
-    }
-  ],
+  parcels: [],
   groundTruth: [
-    { id: "GT-1042", lon: 81.8011165, lat: 21.3191804, crop: "Paddy", status: "Validated", split: "Training", gps: "1.8 m", officer: "VAA Raipur-04" },
-    { id: "GT-1088", lon: 81.804421, lat: 21.3190605, crop: "Maize", status: "Validated", split: "Validation holdout", gps: "2.1 m", officer: "VAA Tilda-02" },
-    { id: "GT-1121", lon: 81.8087555, lat: 21.3190605, crop: "Pulses", status: "QC review", split: "Validation holdout", gps: "2.7 m", officer: "VAA Tilda-07" },
-    { id: "GT-1190", lon: 81.8109871, lat: 21.3186607, crop: "Paddy", status: "Pending revisit", split: "Training", gps: "3.4 m", officer: "VAA Arang-03" },
-    { id: "GT-1233", lon: 81.8151498, lat: 21.3186207, crop: "Fallow", status: "Validated", split: "Validation holdout", gps: "1.5 m", officer: "VAA Abhanpur-01" }
+    { id: "GT-1042", lon: 77.7211165, lat: 22.6991804, crop: "Paddy", status: "Validated", split: "Training", gps: "1.8 m", officer: "VAA Narmadapuram-04" },
+    { id: "GT-1088", lon: 77.7244210, lat: 22.6990605, crop: "Soybean", status: "Validated", split: "Validation holdout", gps: "2.1 m", officer: "VAA Itarsi-02" },
+    { id: "GT-1121", lon: 77.7287555, lat: 22.6990605, crop: "Gram", status: "QC review", split: "Validation holdout", gps: "2.7 m", officer: "VAA Itarsi-07" },
+    { id: "GT-1190", lon: 77.7309871, lat: 22.6986607, crop: "Paddy", status: "Pending revisit", split: "Training", gps: "3.4 m", officer: "VAA Seoni Malwa-03" },
+    { id: "GT-1233", lon: 77.7351498, lat: 22.6986207, crop: "Fallow", status: "Validated", split: "Validation holdout", gps: "1.5 m", officer: "VAA Babai-01" }
   ],
   procurementCenters: [
-    { id: "PC-RAI-12", name: "Bhatapara PACS", lon: 81.8040133, lat: 21.3219589, load: 82, arrivals: "18.2K q", tokens: 1260, risk: "High", status: "High demand" },
-    { id: "PC-TIL-04", name: "Tilda Procurement Yard", lon: 81.8126822, lat: 21.3202199, load: 64, arrivals: "12.7K q", tokens: 870, risk: "Normal", status: "Normal" },
-    { id: "PC-ABH-08", name: "Abhanpur Society", lon: 81.8176818, lat: 21.3188606, load: 91, arrivals: "21.5K q", tokens: 1520, risk: "High", status: "Add token slots" }
+    { id: "CLM-BAN-12", name: "Bankhedi Claim Desk", lon: 77.7240133, lat: 22.7019589, load: 82, arrivals: "₹14.2Cr exposure", tokens: 1260, risk: "High", status: "Desk surge" },
+    { id: "CLM-ITA-04", name: "Itarsi Survey Cell", lon: 77.7326822, lat: 22.7002199, load: 64, arrivals: "₹9.8Cr exposure", tokens: 870, risk: "Normal", status: "Normal triage" },
+    { id: "CLM-BAB-08", name: "Babai Loss Unit", lon: 77.7376818, lat: 22.6988606, load: 91, arrivals: "₹18.8Cr exposure", tokens: 1520, risk: "High", status: "Add survey teams" }
   ],
   advisoryTemplates: {
-    department: "Prioritize {village} for {riskCause}. Current {crop} acreage is {acreage} ha with {confidence}% model confidence and {stress} stress. Schedule validation where confidence or stress risk requires intervention.",
-    extension: "Visit parcel {id} during the current {stage} stage. Confirm crop condition, moisture status ({moisture}), and farmer-reported symptoms. Upload geo-tagged image evidence and close the QC loop.",
-    farmer: "Your {crop} parcel is in {stage}. Current advisory: {advisory} Expected harvest window: {harvestWindow}. Keep field photos ready if an officer requests validation."
+    department: "Prioritize {village} for {riskCause}. Current insured {crop} acreage is {acreage} ha with {confidence}% model confidence and {stress} stress. Route high-risk packets to survey teams before payout review.",
+    extension: "Visit parcel {id} during the current {stage} stage. Confirm crop condition, moisture status ({moisture}), and farmer-reported symptoms. Upload geo-tagged image evidence and close the claim QC loop.",
+    farmer: "Your insured {crop} parcel is in {stage}. Current advisory: {advisory} Expected harvest window: {harvestWindow}. Keep field photos ready if an officer requests claim validation."
   },
   mobileFlow: [
     { step: "01", title: "Pin or walk parcel boundary", body: "Farmer or VAA captures GPS boundary, draws polygon on satellite basemap, or verifies cadastral import.", requirements: ["12.2.3", "12.8.7"] },
     { step: "02", title: "Validate crop and stage", body: "Mobile app compares farmer crop claim with satellite crop classification and NDVI/EVI trend.", requirements: ["12.2.2", "12.2.5", "12.8.7"] },
-    { step: "03", title: "Upload field evidence", body: "Geo-tagged photos, short videos, notes, pest/disease observations, and damage records sync to DAC.", requirements: ["12.2.2", "12.3", "12.8.7"] },
-    { step: "04", title: "Receive advisory", body: "Parcel-specific sowing, stress, irrigation, pest, weather, harvest, and disaster advisories are pushed back.", requirements: ["12.4", "12.8.7"] }
+    { step: "03", title: "Upload field evidence", body: "Geo-tagged photos, short videos, notes, pest/disease observations, and damage records sync to the insurer command center.", requirements: ["12.2.2", "12.3", "12.8.7"] },
+    { step: "04", title: "Receive claim guidance", body: "Parcel-specific sowing, stress, irrigation, pest, weather, harvest, disaster, and claim-status guidance are pushed back.", requirements: ["12.4", "12.8.7"] }
   ],
   integrations: [
     { name: "AgriStack / NFR", status: "Planned API", detail: "UFID, farmer registry, demographic sync", requirements: ["12.4", "12.9"] },
-    { name: "Land Records / Bhuiyan", status: "Planned API", detail: "Khasra, parcel geometry, ownership link", requirements: ["12.2.3", "12.9"] },
+    { name: "MP Land Records / Khasra", status: "Planned API", detail: "Khasra, parcel geometry, ownership link", requirements: ["12.2.3", "12.9"] },
     { name: "Soil Health Card", status: "Planned API", detail: "Soil parameters for nutrient advisory", requirements: ["12.4", "12.9"] },
     { name: "IMD / AWS Weather", status: "Planned API", detail: "Rainfall, temperature, humidity, wind", requirements: ["12.2.8", "12.4", "12.9"] },
-    { name: "Food Dept / MARKFED", status: "Planned API", detail: "MSP, procurement center, arrivals", requirements: ["12.2.9", "12.5", "12.9"] },
+    { name: "Insurer Core / Claims", status: "Planned API", detail: "Policy ID, premium, claim packet, payout status", requirements: ["12.2.9", "12.5", "12.9"] },
+    { name: "LGND Embeddings API", status: "Planned API", detail: "Collections, indexes, changed chips, geometry search", requirements: ["12.3", "12.14"] },
     { name: "Disaster Systems", status: "Planned API", detail: "Flood, drought, crop loss, compensation", requirements: ["12.3", "12.9"] }
   ],
   reports: [
-    { name: "Crop acreage estimation", cadence: "Two times per season", formats: "PDF, CSV, GeoJSON", status: "Ready", requirements: ["12.2.7", "12.27"] },
-    { name: "Crop yield estimation", cadence: "Two times per season", formats: "PDF, XLSX", status: "Ready", requirements: ["12.2.8", "12.27"] },
+    { name: "Insured acreage estimation", cadence: "Two times per season", formats: "PDF, CSV, GeoJSON", status: "Ready", requirements: ["12.2.7", "12.27"] },
+    { name: "Yield and liability estimate", cadence: "Two times per season", formats: "PDF, XLSX", status: "Ready", requirements: ["12.2.8", "12.27"] },
     { name: "Crop stress and health", cadence: "Weekly", formats: "PDF, GeoTIFF", status: "Scheduled", requirements: ["12.2.6", "12.27"] },
     { name: "Drought / flood / crop loss", cadence: "Event occurrence", formats: "PDF, GeoJSON, GeoTIFF", status: "Event-driven", requirements: ["12.2.10", "12.3", "12.27"] },
-    { name: "Pest and disease advisory", cadence: "Fortnight/event", formats: "PDF, CSV", status: "Scheduled", requirements: ["12.4", "12.27"] }
+    { name: "Claim triage packet", cadence: "Daily during event", formats: "PDF, CSV, JSON", status: "Scheduled", requirements: ["12.3", "12.4", "12.27"] }
   ],
   evidence: [
     {
@@ -371,8 +127,8 @@ const UPAHAR_DEMO_DATA = {
       requirements: ["12.2.7", "12.2.8", "12.4", "12.8"]
     },
     {
-      title: "Tender-safe positioning",
-      body: "Chhattisgarh parcels, procurement centers, and farmer records are demo data; AI4Agri artifacts are used as technical proof of capability.",
+      title: "Insurer-safe positioning",
+      body: "Madhya Pradesh parcels, claims centers, and farmer records are demo data; AI4Agri artifacts are used as technical proof of capability.",
       requirements: ["12.1", "12.9", "12.23/12.24"]
     }
   ],
@@ -406,6 +162,43 @@ const UPAHAR_DEMO_DATA = {
       requirements: ["12.2.2", "12.2.5", "12.15/12.19"]
     }
   ],
+  lgndFlow: [
+    {
+      step: "01",
+      title: "Create MP Sentinel-2 AOI collection",
+      endpoint: "create_collection",
+      body: "Create a LGND collection for the insured Narmadapuram-Sehore AOI and Kharif date range. The collection generates embeddings from open Sentinel-2 imagery and keeps chips tied to capture timestamps.",
+      status: "Credential required"
+    },
+    {
+      step: "02",
+      title: "Build a vector index",
+      endpoint: "indexes",
+      body: "Once the collection is READY, build the LGND index so every 128 px or 256 px Sentinel-2 chip can be searched by location, similarity, or concept.",
+      status: "Planned"
+    },
+    {
+      step: "03",
+      title: "Filter insured parcels by geometry",
+      endpoint: "filter-by-geometry",
+      body: "Submit claim cluster polygons or parcel envelopes to retrieve intersecting chip IDs, sorted by acquisition date, and attach them to the claim packet.",
+      status: "Demo flow"
+    },
+    {
+      step: "04",
+      title: "Run changed-chip search",
+      endpoint: "search-changed-chips",
+      body: "Compare past healthy-crop chips against current stressed or bare-soil chips. Results return changed chip pairs with scores for analyst triage.",
+      status: "Demo flow"
+    },
+    {
+      step: "05",
+      title: "Route to field survey or fast close",
+      endpoint: "claims API",
+      body: "High-score changed chips trigger survey assignment; stable chips support low-risk auto-close or lower-priority review in the insurer core system.",
+      status: "Product path"
+    }
+  ],
   samWorkflow: [
     { step: "01", title: "Clip same-area high-res imagery", body: "Prepare a georeferenced high-resolution chip for one village/block AOI and preserve CRS, acquisition date, native GSD, and provider attribution." },
     { step: "02", title: "Prompt SAM / SamGeo", body: "Use point or box prompts over visible field edges to produce candidate masks. SAM is an annotation accelerator, not the crop classifier." },
@@ -413,9 +206,9 @@ const UPAHAR_DEMO_DATA = {
     { step: "04", title: "Attach temporal ML state", body: "Join approved parcel boundaries to Sentinel-2 temporal features, then publish crop, confidence, stress, NDVI/EVI, and production estimates." }
   ],
   samBoundaryDemo: {
-    label: "Boundary annotation accelerator",
-    headline: "SAM/SamGeo produces candidate parcel boundaries; crop class comes later from temporal ML.",
-    body: "For the demo, the cyan overlay represents SAM-assisted candidate boundaries over the same-area imagery. A human QC step approves geometry before crop identification, stress scoring, and production estimation are attached.",
+    label: "Field detection",
+    headline: "Detect field boundaries from the imagery, then save the ones you want.",
+    body: "Tap Detect fields to outline every field in view, review the candidates, and save the ones that matter. Crop type and risk are added when you run analysis.",
     stages: [
       {
         id: "chip",
@@ -463,7 +256,7 @@ const UPAHAR_DEMO_DATA = {
       title: "Brief scope and UPAHAR platform framing",
       pages: "22-25",
       summary: "Design, develop, integrate, operate, and maintain UPAHAR as a unified agriculture platform with documentation, data acquisition, decision support, advisory, and reporting services.",
-      demoSurface: "Whole static dashboard and tender-safe capability positioning",
+      demoSurface: "Whole static dashboard and insurer-safe capability positioning",
       evidence: "The dashboard presents the platform shape while clearly labelling state-specific records and integrations as demo data.",
       evidenceType: "Demo positioning",
       status: "shown",
@@ -471,11 +264,11 @@ const UPAHAR_DEMO_DATA = {
     },
     {
       section: "12.2.1",
-      title: "Satellite imagery procurement and specification",
+      title: "Satellite imagery source and specification",
       pages: "25-26",
       summary: "Use multi-date imagery for each season, including early, mid, peak, and late crop stages, with agricultural coverage and preprocessing discipline.",
-      demoSurface: "Season epoch slider, same-area Wayback imagery, Sentinel-2 temporal index positioning, and remote-sensing evidence cards",
-      evidence: "The demo uses Chhattisgarh AOI imagery dates at a <=3 m display scale and explicitly separates Sentinel-2 temporal indices from final procured 3 m imagery compliance.",
+      demoSurface: "Season epoch slider, Sentinel-2 temporal index positioning, LGND collection flow, and remote-sensing evidence cards",
+      evidence: "The demo positions Sentinel-2 as the insurer-grade temporal analytic source and keeps the visible basemap labelled as a fallback until Sentinel-2 tiles are rendered locally.",
       evidenceType: "Shown imagery workflow",
       status: "shown",
       sourceExcerpt: "The RFP asks for four multi-date imagery sets per crop season across key growth stages, with preprocessing and coverage controls."
@@ -500,7 +293,7 @@ const UPAHAR_DEMO_DATA = {
       evidence: "Demo parcel polygons are geospatially aligned to visible same-area imagery while the integration card labels official land-record linkage as planned.",
       evidenceType: "Aligned demo geometry",
       status: "mocked",
-      sourceExcerpt: "The RFP expects use of geo-referenced cadastral maps from DLR Chhattisgarh in vector formats."
+      sourceExcerpt: "The RFP expects use of geo-referenced cadastral maps from the official land-records authority in vector formats."
     },
     {
       section: "12.2.4",
@@ -559,14 +352,14 @@ const UPAHAR_DEMO_DATA = {
     },
     {
       section: "12.2.9",
-      title: "Support for MSP procurement planning",
+      title: "Claim and portfolio planning",
       pages: "31",
-      summary: "Use paddy acreage and production estimates to support procurement planning and institutional load management.",
-      demoSurface: "Paddy procurement load panel and procurement center map markers",
-      evidence: "The procurement panel turns paddy acreage and production into PACS load, forecast supply, token capacity, and center-level risk.",
+      summary: "Use crop acreage, stress, and production estimates to support insurer claim triage and branch workload planning.",
+      demoSurface: "Exposure and claim load panel with service-center map markers",
+      evidence: "The claim panel turns insured acreage and stress into claim desk load, exposure, open claim packets, and center-level risk.",
       evidenceType: "Shown workflow",
       status: "shown",
-      sourceExcerpt: "The RFP connects remote-sensing crop estimates to MSP procurement planning and paddy availability assessment."
+      sourceExcerpt: "The source RFP connects remote-sensing crop estimates to operational planning; this insurer version maps the same evidence pattern to claim workload."
     },
     {
       section: "12.2.10",
@@ -603,14 +396,14 @@ const UPAHAR_DEMO_DATA = {
     },
     {
       section: "12.5",
-      title: "Paddy procurement module",
+      title: "Claims workflow module",
       pages: "35-36",
-      summary: "Provide a unified interface for farmer onboarding, procurement tracking, society-level activities, and digital token workflows.",
-      demoSurface: "Paddy procurement load panel and mobile digital-token narrative",
-      evidence: "The demo shows procurement center load and token capacity with planned Food Department and MARKFED integration.",
+      summary: "Provide a unified interface for farmer policy lookup, claim evidence, survey assignment, and payout workflow status.",
+      demoSurface: "Exposure and claim load panel plus mobile claim evidence narrative",
+      evidence: "The demo shows claim-center load and open claim packets with planned insurer-core integration.",
       evidenceType: "Mocked operational workflow",
       status: "mocked",
-      sourceExcerpt: "Section 12.5 describes the paddy procurement module, digital tokens, reports, and institutional support delivery tracking."
+      sourceExcerpt: "Section 12.5 describes an operational module pattern; this insurer dashboard reuses that pattern for crop-insurance claims."
     },
     {
       section: "12.7",
@@ -651,7 +444,7 @@ const UPAHAR_DEMO_DATA = {
       pages: "45-46",
       summary: "Integrate with satellite verification, Digital Crop Survey, Farmer Database/AgriStack, and future state or central systems.",
       demoSurface: "Integration Readiness cards",
-      evidence: "Integration cards identify AgriStack, land records, soil, weather, Food/MARKFED, and disaster systems as planned APIs.",
+      evidence: "Integration cards identify AgriStack, land records, soil, weather, insurer-core claims, LGND, and disaster systems as planned APIs.",
       evidenceType: "Planned integration map",
       status: "planned",
       sourceExcerpt: "Section 12.9 requires APIs and future integration support for relevant government and allied systems."
@@ -705,7 +498,7 @@ const UPAHAR_DEMO_DATA = {
       title: "Operation, maintenance, and exit management",
       pages: "60-61",
       summary: "Operate and maintain the integrated system, then support structured exit and handover.",
-      demoSurface: "Coverage matrix, report queue, and tender-safe delivery posture",
+      demoSurface: "Coverage matrix, report queue, and insurer-safe delivery posture",
       evidence: "The matrix identifies what is shown, mocked, or planned so delivery and handover gaps are explicit.",
       evidenceType: "Planned delivery control",
       status: "planned",
@@ -737,6 +530,7 @@ const UPAHAR_DEMO_DATA = {
     procurement: ["12.2.9", "12.5"],
     evidence: ["12.1", "12.2.5", "12.15/12.19"],
     ml: ["12.2.1", "12.2.5", "12.2.6", "12.2.8", "12.15/12.19"],
+    lgnd: ["12.2.1", "12.2.6", "12.3", "12.14"],
     sam: ["12.2.3", "12.8", "12.13"],
     coverage: ["12.1", "12.23/12.24"],
     reports: ["12.27"],
@@ -747,26 +541,26 @@ const UPAHAR_DEMO_DATA = {
     {
       id: "imagery",
       step: "01",
-      title: "Satellite imagery to crop map",
-      body: "Use the epoch control and crop layer to show multi-date imagery turning into the parcel crop map.",
+      title: "Sentinel-2 to crop-risk map",
+      body: "Use the epoch control and crop layer to show 5-day Sentinel-2 season imagery turning into the parcel risk map.",
       target: "mapStage",
       requirements: ["12.2.1", "12.2.5", "12.8"],
       epochIndex: 2,
       panel: "parcel",
-      parcelId: "KH-RAI-001",
-      layers: { crop: true, stress: false, yield: false, sam: false, gt: false, procurement: false }
+      parcelId: "MP-NAR-001",
+      layers: { crop: true, stress: false, yield: false, lgnd: false, sam: false, gt: false, procurement: false }
     },
     {
-      id: "sam-boundaries",
+      id: "lgnd-scan",
       step: "02",
-      title: "SAM-assisted boundaries",
-      body: "Show SAM/SamGeo as a prompted boundary accelerator, followed by human QC before crop ML is attached.",
-      target: "samPanel",
-      requirements: ["12.2.3", "12.8", "12.13"],
+      title: "LGND change discovery",
+      body: "Show how a Sentinel-2 AOI collection becomes a changed-chip search lane for claim triage.",
+      target: "lgndPanel",
+      requirements: ["12.2.1", "12.3", "12.14"],
       epochIndex: 2,
       panel: "parcel",
-      parcelId: "KH-RAI-002",
-      layers: { crop: false, stress: false, yield: false, sam: true, gt: false, procurement: false }
+      parcelId: "MP-NAR-002",
+      layers: { crop: false, stress: true, yield: false, lgnd: true, sam: false, gt: false, procurement: false }
     },
     {
       id: "confidence",
@@ -776,8 +570,8 @@ const UPAHAR_DEMO_DATA = {
       target: "detailPanel",
       requirements: ["12.2.5", "12.2.7"],
       panel: "parcel",
-      parcelId: "KH-RAI-001",
-      layers: { crop: true, stress: false, yield: true, sam: false, gt: true, procurement: false }
+      parcelId: "MP-NAR-001",
+      layers: { crop: true, stress: false, yield: true, lgnd: false, sam: false, gt: true, procurement: false }
     },
     {
       id: "health",
@@ -787,8 +581,8 @@ const UPAHAR_DEMO_DATA = {
       target: "detailPanel",
       requirements: ["12.2.2", "12.2.6", "12.2.10", "12.3"],
       panel: "field",
-      parcelId: "KH-RAI-006",
-      layers: { crop: false, stress: true, yield: false, sam: false, gt: true, procurement: false }
+      parcelId: "MP-NAR-006",
+      layers: { crop: false, stress: true, yield: false, lgnd: false, sam: false, gt: true, procurement: false }
     },
     {
       id: "advisory",
@@ -798,19 +592,19 @@ const UPAHAR_DEMO_DATA = {
       target: "detailPanel",
       requirements: ["12.4"],
       panel: "advisory",
-      parcelId: "KH-RAI-006",
-      layers: { crop: false, stress: true, yield: false, sam: false, gt: true, procurement: false }
+      parcelId: "MP-NAR-006",
+      layers: { crop: false, stress: true, yield: false, lgnd: false, sam: false, gt: true, procurement: false }
     },
     {
-      id: "procurement",
+      id: "claims",
       step: "06",
-      title: "MSP procurement planning",
-      body: "Show paddy area, forecast supply, token capacity, and PACS load as procurement planning evidence.",
+      title: "Claim workload planning",
+      body: "Show insured crop area, exposure, open claims, and claim desk load as claim-planning evidence.",
       target: "procurementPanel",
       requirements: ["12.2.9", "12.5"],
       panel: "parcel",
-      parcelId: "KH-RAI-004",
-      layers: { crop: true, stress: false, yield: true, sam: false, gt: false, procurement: true }
+      parcelId: "MP-NAR-004",
+      layers: { crop: true, stress: false, yield: true, lgnd: false, sam: false, gt: false, procurement: true }
     }
   ]
 };

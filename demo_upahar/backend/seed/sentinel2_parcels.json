@@ -1,0 +1,663 @@
+{
+  "meta": {
+    "source": "demo-synthetic",
+    "note": "Per-parcel temporal indices derived deterministically from curated demo parcels. Exercises the ML + UI pipeline before real Sentinel-2 ingestion.",
+    "aoi": "Madhya Pradesh demo AOI: Narmadapuram-Sehore insured agriculture corridor",
+    "center": {
+      "lat": 22.75,
+      "lon": 77.73
+    },
+    "season": "kharif-2025",
+    "generatedAt": "2026-06-02T10:27:13+00:00",
+    "epochs": [
+      {
+        "label": "Early season",
+        "date": "2025-06-24"
+      },
+      {
+        "label": "Mid season",
+        "date": "2025-07-29"
+      },
+      {
+        "label": "Peak season",
+        "date": "2025-09-02"
+      },
+      {
+        "label": "Late season",
+        "date": "2025-10-17"
+      }
+    ],
+    "bands": [
+      "B02",
+      "B03",
+      "B04",
+      "B08"
+    ],
+    "indices": [
+      "ndvi",
+      "evi",
+      "ndwi",
+      "ndre",
+      "gcvi"
+    ],
+    "processingLevel": "L2A (target)"
+  },
+  "parcels": [
+    {
+      "id": "MP-NAR-001",
+      "village": "Bankhedi",
+      "areaHa": 42.6,
+      "centroid": {
+        "lon": 77.72095558333332,
+        "lat": 22.74914045
+      },
+      "weakLabel": "Paddy",
+      "labelSource": "curated-demo (not field-verified)",
+      "timeSeries": [
+        {
+          "date": "2025-06-24",
+          "label": "Early season",
+          "cloudPct": 6.0,
+          "validPixelPct": 94.0,
+          "ndvi": 0.28,
+          "evi": 0.18,
+          "ndwi": 0.266,
+          "ndre": 0.167,
+          "gcvi": 1.136,
+          "stressScore": 18.0,
+          "stateNote": "Bare/wet preparation signal before stable paddy emergence"
+        },
+        {
+          "date": "2025-07-29",
+          "label": "Mid season",
+          "cloudPct": 15.0,
+          "validPixelPct": 85.0,
+          "ndvi": 0.48,
+          "evi": 0.32,
+          "ndwi": 0.156,
+          "ndre": 0.315,
+          "gcvi": 2.376,
+          "stressScore": 20.0,
+          "stateNote": "Phenology curve separates paddy from fallow and soybean"
+        },
+        {
+          "date": "2025-09-02",
+          "label": "Peak season",
+          "cloudPct": 24.0,
+          "validPixelPct": 76.0,
+          "ndvi": 0.71,
+          "evi": 0.49,
+          "ndwi": 0.029,
+          "ndre": 0.485,
+          "gcvi": 3.802,
+          "stressScore": 18.0,
+          "stateNote": "Peak vegetation confirms high-confidence paddy extent"
+        },
+        {
+          "date": "2025-10-17",
+          "label": "Late season",
+          "cloudPct": 21.0,
+          "validPixelPct": 79.0,
+          "ndvi": 0.62,
+          "evi": 0.42,
+          "ndwi": 0.079,
+          "ndre": 0.419,
+          "gcvi": 3.244,
+          "stressScore": 21.0,
+          "stateNote": "Late-season decline remains inside normal harvest trajectory"
+        }
+      ],
+      "summary": {
+        "ndviPeak": 0.71,
+        "ndviPeakDate": "2025-09-02",
+        "ndviMin": 0.28,
+        "ndviAuc": 1.64,
+        "ndviAmplitude": 0.43,
+        "greenUpEpochs": 2,
+        "ndwiMin": 0.029,
+        "ndreMax": 0.485,
+        "gcviMax": 3.802,
+        "lateSeasonDecline": 0.09
+      }
+    },
+    {
+      "id": "MP-NAR-002",
+      "village": "Bankhedi",
+      "areaHa": 31.8,
+      "centroid": {
+        "lon": 77.72431371666667,
+        "lat": 22.749027183333336
+      },
+      "weakLabel": "Soybean",
+      "labelSource": "curated-demo (not field-verified)",
+      "timeSeries": [
+        {
+          "date": "2025-06-24",
+          "label": "Early season",
+          "cloudPct": 6.0,
+          "validPixelPct": 94.0,
+          "ndvi": 0.22,
+          "evi": 0.14,
+          "ndwi": 0.299,
+          "ndre": 0.123,
+          "gcvi": 0.764,
+          "stressScore": 16.0,
+          "stateNote": "Early season signal is ambiguous before soybean canopy closure"
+        },
+        {
+          "date": "2025-07-29",
+          "label": "Mid season",
+          "cloudPct": 15.0,
+          "validPixelPct": 85.0,
+          "ndvi": 0.42,
+          "evi": 0.27,
+          "ndwi": 0.189,
+          "ndre": 0.271,
+          "gcvi": 2.004,
+          "stressScore": 41.0,
+          "stateNote": "Mid-season spectral rise supports soybean with moisture caution"
+        },
+        {
+          "date": "2025-09-02",
+          "label": "Peak season",
+          "cloudPct": 24.0,
+          "validPixelPct": 76.0,
+          "ndvi": 0.58,
+          "evi": 0.37,
+          "ndwi": 0.101,
+          "ndre": 0.389,
+          "gcvi": 2.996,
+          "stressScore": 47.0,
+          "stateNote": "Classifier stabilizes on soybean but stress remains above watch threshold"
+        },
+        {
+          "date": "2025-10-17",
+          "label": "Late season",
+          "cloudPct": 21.0,
+          "validPixelPct": 79.0,
+          "ndvi": 0.46,
+          "evi": 0.29,
+          "ndwi": 0.167,
+          "ndre": 0.3,
+          "gcvi": 2.252,
+          "stressScore": 52.0,
+          "stateNote": "Late-season decline indicates harvest approach and water stress"
+        }
+      ],
+      "summary": {
+        "ndviPeak": 0.58,
+        "ndviPeakDate": "2025-09-02",
+        "ndviMin": 0.22,
+        "ndviAuc": 1.34,
+        "ndviAmplitude": 0.36,
+        "greenUpEpochs": 3,
+        "ndwiMin": 0.101,
+        "ndreMax": 0.389,
+        "gcviMax": 2.996,
+        "lateSeasonDecline": 0.12
+      }
+    },
+    {
+      "id": "MP-NAR-003",
+      "village": "Itarsi",
+      "areaHa": 26.4,
+      "centroid": {
+        "lon": 77.72855875,
+        "lat": 22.749167116666666
+      },
+      "weakLabel": "Gram",
+      "labelSource": "curated-demo (not field-verified)",
+      "timeSeries": [
+        {
+          "date": "2025-06-24",
+          "label": "Early season",
+          "cloudPct": 6.0,
+          "validPixelPct": 94.0,
+          "ndvi": 0.19,
+          "evi": 0.12,
+          "ndwi": 0.316,
+          "ndre": 0.101,
+          "gcvi": 0.578,
+          "stressScore": 12.0,
+          "stateNote": "Weak early greenness before gram become separable"
+        },
+        {
+          "date": "2025-07-29",
+          "label": "Mid season",
+          "cloudPct": 15.0,
+          "validPixelPct": 85.0,
+          "ndvi": 0.34,
+          "evi": 0.21,
+          "ndwi": 0.233,
+          "ndre": 0.212,
+          "gcvi": 1.508,
+          "stressScore": 44.0,
+          "stateNote": "Gram candidate appears, but spectral separation is incomplete"
+        },
+        {
+          "date": "2025-09-02",
+          "label": "Peak season",
+          "cloudPct": 24.0,
+          "validPixelPct": 76.0,
+          "ndvi": 0.41,
+          "evi": 0.24,
+          "ndwi": 0.194,
+          "ndre": 0.263,
+          "gcvi": 1.942,
+          "stressScore": 72.0,
+          "stateNote": "Peak-season curve underperforms expected vigor; pest scouting required"
+        },
+        {
+          "date": "2025-10-17",
+          "label": "Late season",
+          "cloudPct": 21.0,
+          "validPixelPct": 79.0,
+          "ndvi": 0.27,
+          "evi": 0.16,
+          "ndwi": 0.271,
+          "ndre": 0.16,
+          "gcvi": 1.074,
+          "stressScore": 78.0,
+          "stateNote": "Late drop supports crop stress or damage assessment workflow"
+        }
+      ],
+      "summary": {
+        "ndviPeak": 0.41,
+        "ndviPeakDate": "2025-09-02",
+        "ndviMin": 0.19,
+        "ndviAuc": 0.98,
+        "ndviAmplitude": 0.22,
+        "greenUpEpochs": 2,
+        "ndwiMin": 0.194,
+        "ndreMax": 0.263,
+        "gcviMax": 1.942,
+        "lateSeasonDecline": 0.14
+      }
+    },
+    {
+      "id": "MP-NAR-004",
+      "village": "Itarsi",
+      "areaHa": 55.1,
+      "centroid": {
+        "lon": 77.73092985,
+        "lat": 22.74872735
+      },
+      "weakLabel": "Paddy",
+      "labelSource": "curated-demo (not field-verified)",
+      "timeSeries": [
+        {
+          "date": "2025-06-24",
+          "label": "Early season",
+          "cloudPct": 6.0,
+          "validPixelPct": 94.0,
+          "ndvi": 0.31,
+          "evi": 0.2,
+          "ndwi": 0.249,
+          "ndre": 0.189,
+          "gcvi": 1.322,
+          "stressScore": 16.0,
+          "stateNote": "Early paddy signature appears after field wetting"
+        },
+        {
+          "date": "2025-07-29",
+          "label": "Mid season",
+          "cloudPct": 15.0,
+          "validPixelPct": 85.0,
+          "ndvi": 0.55,
+          "evi": 0.36,
+          "ndwi": 0.117,
+          "ndre": 0.367,
+          "gcvi": 2.81,
+          "stressScore": 13.0,
+          "stateNote": "Canopy expansion confirms paddy extent for acreage rollup"
+        },
+        {
+          "date": "2025-09-02",
+          "label": "Peak season",
+          "cloudPct": 24.0,
+          "validPixelPct": 76.0,
+          "ndvi": 0.76,
+          "evi": 0.52,
+          "ndwi": 0.002,
+          "ndre": 0.522,
+          "gcvi": 4.112,
+          "stressScore": 12.0,
+          "stateNote": "Strong peak-season paddy signal supports yield baseline and low claim pressure"
+        },
+        {
+          "date": "2025-10-17",
+          "label": "Late season",
+          "cloudPct": 21.0,
+          "validPixelPct": 79.0,
+          "ndvi": 0.68,
+          "evi": 0.46,
+          "ndwi": 0.046,
+          "ndre": 0.463,
+          "gcvi": 3.616,
+          "stressScore": 15.0,
+          "stateNote": "Late-season stability maintains paddy supply estimate"
+        }
+      ],
+      "summary": {
+        "ndviPeak": 0.76,
+        "ndviPeakDate": "2025-09-02",
+        "ndviMin": 0.31,
+        "ndviAuc": 1.805,
+        "ndviAmplitude": 0.45,
+        "greenUpEpochs": 3,
+        "ndwiMin": 0.002,
+        "ndreMax": 0.522,
+        "gcviMax": 4.112,
+        "lateSeasonDecline": 0.08
+      }
+    },
+    {
+      "id": "MP-NAR-005",
+      "village": "Seoni Malwa",
+      "areaHa": 18.7,
+      "centroid": {
+        "lon": 77.7332258,
+        "lat": 22.75267185
+      },
+      "weakLabel": "Wheat",
+      "labelSource": "curated-demo (not field-verified)",
+      "timeSeries": [
+        {
+          "date": "2025-06-24",
+          "label": "Early season",
+          "cloudPct": 6.0,
+          "validPixelPct": 94.0,
+          "ndvi": 0.27,
+          "evi": 0.17,
+          "ndwi": 0.271,
+          "ndre": 0.16,
+          "gcvi": 1.074,
+          "stressScore": 22.0,
+          "stateNote": "Small-field mixed crop signal appears earlier than cereal fields"
+        },
+        {
+          "date": "2025-07-29",
+          "label": "Mid season",
+          "cloudPct": 15.0,
+          "validPixelPct": 85.0,
+          "ndvi": 0.46,
+          "evi": 0.31,
+          "ndwi": 0.167,
+          "ndre": 0.3,
+          "gcvi": 2.252,
+          "stressScore": 42.0,
+          "stateNote": "Staggered growth pattern suggests vegetable block, not single cereal crop"
+        },
+        {
+          "date": "2025-09-02",
+          "label": "Peak season",
+          "cloudPct": 24.0,
+          "validPixelPct": 76.0,
+          "ndvi": 0.62,
+          "evi": 0.4,
+          "ndwi": 0.079,
+          "ndre": 0.419,
+          "gcvi": 3.244,
+          "stressScore": 54.0,
+          "stateNote": "Localized irrigation variability drives advisory generation"
+        },
+        {
+          "date": "2025-10-17",
+          "label": "Late season",
+          "cloudPct": 21.0,
+          "validPixelPct": 79.0,
+          "ndvi": 0.49,
+          "evi": 0.32,
+          "ndwi": 0.15,
+          "ndre": 0.323,
+          "gcvi": 2.438,
+          "stressScore": 58.0,
+          "stateNote": "Rolling harvest keeps class stable with variable moisture"
+        }
+      ],
+      "summary": {
+        "ndviPeak": 0.62,
+        "ndviPeakDate": "2025-09-02",
+        "ndviMin": 0.27,
+        "ndviAuc": 1.46,
+        "ndviAmplitude": 0.35,
+        "greenUpEpochs": 3,
+        "ndwiMin": 0.079,
+        "ndreMax": 0.419,
+        "gcviMax": 3.244,
+        "lateSeasonDecline": 0.13
+      }
+    },
+    {
+      "id": "MP-NAR-006",
+      "village": "Seoni Malwa",
+      "areaHa": 48.9,
+      "centroid": {
+        "lon": 77.73526428333334,
+        "lat": 22.748684033333333
+      },
+      "weakLabel": "Paddy",
+      "labelSource": "curated-demo (not field-verified)",
+      "timeSeries": [
+        {
+          "date": "2025-06-24",
+          "label": "Early season",
+          "cloudPct": 6.0,
+          "validPixelPct": 94.0,
+          "ndvi": 0.29,
+          "evi": 0.19,
+          "ndwi": 0.26,
+          "ndre": 0.175,
+          "gcvi": 1.198,
+          "stressScore": 18.0,
+          "stateNote": "Early wet field pattern consistent with paddy establishment"
+        },
+        {
+          "date": "2025-07-29",
+          "label": "Mid season",
+          "cloudPct": 15.0,
+          "validPixelPct": 85.0,
+          "ndvi": 0.52,
+          "evi": 0.34,
+          "ndwi": 0.134,
+          "ndre": 0.345,
+          "gcvi": 2.624,
+          "stressScore": 38.0,
+          "stateNote": "Mid-season paddy class stabilizes; moisture anomaly begins"
+        },
+        {
+          "date": "2025-09-02",
+          "label": "Peak season",
+          "cloudPct": 24.0,
+          "validPixelPct": 76.0,
+          "ndvi": 0.64,
+          "evi": 0.39,
+          "ndwi": 0.068,
+          "ndre": 0.434,
+          "gcvi": 3.368,
+          "stressScore": 69.0,
+          "stateNote": "Waterlogging anomaly triggers disaster and GT validation path"
+        },
+        {
+          "date": "2025-10-17",
+          "label": "Late season",
+          "cloudPct": 21.0,
+          "validPixelPct": 79.0,
+          "ndvi": 0.38,
+          "evi": 0.22,
+          "ndwi": 0.211,
+          "ndre": 0.241,
+          "gcvi": 1.756,
+          "stressScore": 74.0,
+          "stateNote": "Late NDVI drop supports crop-loss assessment workflow"
+        }
+      ],
+      "summary": {
+        "ndviPeak": 0.64,
+        "ndviPeakDate": "2025-09-02",
+        "ndviMin": 0.29,
+        "ndviAuc": 1.495,
+        "ndviAmplitude": 0.35,
+        "greenUpEpochs": 2,
+        "ndwiMin": 0.068,
+        "ndreMax": 0.434,
+        "gcviMax": 3.368,
+        "lateSeasonDecline": 0.26
+      }
+    },
+    {
+      "id": "MP-NAR-007",
+      "village": "Babai",
+      "areaHa": 34.2,
+      "centroid": {
+        "lon": 77.73720621666666,
+        "lat": 22.750596333333334
+      },
+      "weakLabel": "Soybean",
+      "labelSource": "curated-demo (not field-verified)",
+      "timeSeries": [
+        {
+          "date": "2025-06-24",
+          "label": "Early season",
+          "cloudPct": 6.0,
+          "validPixelPct": 94.0,
+          "ndvi": 0.24,
+          "evi": 0.15,
+          "ndwi": 0.288,
+          "ndre": 0.138,
+          "gcvi": 0.888,
+          "stressScore": 16.0,
+          "stateNote": "Early vegetation is too weak for confident crop assignment"
+        },
+        {
+          "date": "2025-07-29",
+          "label": "Mid season",
+          "cloudPct": 15.0,
+          "validPixelPct": 85.0,
+          "ndvi": 0.43,
+          "evi": 0.28,
+          "ndwi": 0.183,
+          "ndre": 0.278,
+          "gcvi": 2.066,
+          "stressScore": 21.0,
+          "stateNote": "Soybean class emerges from temporal texture and canopy rise"
+        },
+        {
+          "date": "2025-09-02",
+          "label": "Peak season",
+          "cloudPct": 24.0,
+          "validPixelPct": 76.0,
+          "ndvi": 0.61,
+          "evi": 0.39,
+          "ndwi": 0.084,
+          "ndre": 0.411,
+          "gcvi": 3.182,
+          "stressScore": 22.0,
+          "stateNote": "Peak-season profile confirms soybean with healthy canopy"
+        },
+        {
+          "date": "2025-10-17",
+          "label": "Late season",
+          "cloudPct": 21.0,
+          "validPixelPct": 79.0,
+          "ndvi": 0.55,
+          "evi": 0.34,
+          "ndwi": 0.117,
+          "ndre": 0.367,
+          "gcvi": 2.81,
+          "stressScore": 24.0,
+          "stateNote": "Late-season signal remains consistent with harvest readiness"
+        }
+      ],
+      "summary": {
+        "ndviPeak": 0.61,
+        "ndviPeakDate": "2025-09-02",
+        "ndviMin": 0.24,
+        "ndviAuc": 1.435,
+        "ndviAmplitude": 0.37,
+        "greenUpEpochs": 3,
+        "ndwiMin": 0.084,
+        "ndreMax": 0.411,
+        "gcviMax": 3.182,
+        "lateSeasonDecline": 0.06
+      }
+    },
+    {
+      "id": "MP-NAR-008",
+      "village": "Babai",
+      "areaHa": 22.9,
+      "centroid": {
+        "lon": 77.73889778333334,
+        "lat": 22.7531316
+      },
+      "weakLabel": "Fallow",
+      "labelSource": "curated-demo (not field-verified)",
+      "timeSeries": [
+        {
+          "date": "2025-06-24",
+          "label": "Early season",
+          "cloudPct": 6.0,
+          "validPixelPct": 94.0,
+          "ndvi": 0.16,
+          "evi": 0.09,
+          "ndwi": 0.332,
+          "ndre": 0.078,
+          "gcvi": 0.392,
+          "stressScore": 42.0,
+          "stateNote": "Low greenness suggests unsown or delayed sowing condition"
+        },
+        {
+          "date": "2025-07-29",
+          "label": "Mid season",
+          "cloudPct": 15.0,
+          "validPixelPct": 85.0,
+          "ndvi": 0.18,
+          "evi": 0.1,
+          "ndwi": 0.321,
+          "ndre": 0.093,
+          "gcvi": 0.516,
+          "stressScore": 68.0,
+          "stateNote": "No expected canopy rise; dry-spell flag is raised"
+        },
+        {
+          "date": "2025-09-02",
+          "label": "Peak season",
+          "cloudPct": 24.0,
+          "validPixelPct": 76.0,
+          "ndvi": 0.22,
+          "evi": 0.12,
+          "ndwi": 0.299,
+          "ndre": 0.123,
+          "gcvi": 0.764,
+          "stressScore": 91.0,
+          "stateNote": "Persistent low vegetation supports failed/unsown classification"
+        },
+        {
+          "date": "2025-10-17",
+          "label": "Late season",
+          "cloudPct": 21.0,
+          "validPixelPct": 79.0,
+          "ndvi": 0.19,
+          "evi": 0.1,
+          "ndwi": 0.316,
+          "ndre": 0.101,
+          "gcvi": 0.578,
+          "stressScore": 88.0,
+          "stateNote": "Late-season persistence routes parcel to compensation verification"
+        }
+      ],
+      "summary": {
+        "ndviPeak": 0.22,
+        "ndviPeakDate": "2025-09-02",
+        "ndviMin": 0.16,
+        "ndviAuc": 0.575,
+        "ndviAmplitude": 0.06,
+        "greenUpEpochs": 2,
+        "ndwiMin": 0.299,
+        "ndreMax": 0.123,
+        "gcviMax": 0.764,
+        "lateSeasonDecline": 0.03
+      }
+    }
+  ]
+}

@@ -30,7 +30,7 @@ The same intellectual product has wildly different margin profiles depending on 
 The interesting line is the **second one**. We've been writing the deck as if shape 1 (state contracts) is the business. Shape 2 (licensing the engine to the SIs who win the contracts) is half the revenue and three times the margin and might be the actually-correct play. Worth a conversation.
 
 **5. The comparable is Cropin, and it's a humbling number.**
-Cropin has raised ~$140M over a decade and is, by most accounts, in the **$15–25M ARR range** with mixed unit economics. *Confidence: low on the exact revenue number; the shape is right.* That's the optimistic ceiling for "build the company" with patient capital. SatSure is smaller. RMSI is bigger but mostly services revenue. **No Indian agri-EO company is yet a category winner.** That's either the opportunity or the warning sign, depending on how we read it.
+Cropin has raised `~$140M` over a decade and is, by most accounts, in the **$15–25M ARR range** with mixed unit economics. *Confidence: low on the exact revenue number; the shape is right.* That's the optimistic ceiling for "build the company" with patient capital. SatSure is smaller. RMSI is bigger but mostly services revenue. **No Indian agri-EO company is yet a category winner.** That's either the opportunity or the warning sign, depending on how we read it.
 
 ---
 

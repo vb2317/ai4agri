@@ -1,0 +1,701 @@
+{
+  "meta": {
+    "modelVersion": "hgb-temporal-v0.1",
+    "model": "HistGradientBoosting",
+    "imagerySource": "demo-synthetic",
+    "generatedAt": "2026-06-02T16:15:28+00:00",
+    "featureCount": 29,
+    "parcelCount": 8,
+    "validationStatus": "illustrative (synthetic separable demo data)"
+  },
+  "predictions": [
+    {
+      "id": "MP-NAR-001",
+      "village": "Bankhedi",
+      "cropClass": "Paddy",
+      "confidence": 100,
+      "uncertainty": 0.001,
+      "stress": "Low",
+      "stressScore": 28,
+      "changeLabel": "fallow_to_paddy",
+      "gtNeeded": false,
+      "ndviPeak": 0.71,
+      "indexCurve": {
+        "dates": [
+          "2025-06-24",
+          "2025-07-29",
+          "2025-09-02",
+          "2025-10-17"
+        ],
+        "ndvi": [
+          0.28,
+          0.48,
+          0.71,
+          0.62
+        ],
+        "evi": [
+          0.18,
+          0.32,
+          0.49,
+          0.42
+        ],
+        "ndwi": [
+          0.266,
+          0.156,
+          0.029,
+          0.079
+        ]
+      },
+      "imageryDates": [
+        "2025-06-24",
+        "2025-07-29",
+        "2025-09-02",
+        "2025-10-17"
+      ],
+      "cloudScore": 16.5,
+      "modelVersion": "hgb-temporal-v0.1",
+      "validationStatus": "illustrative (synthetic separable demo data)",
+      "epochStates": [
+        {
+          "cropClass": "Fallow",
+          "confidence": 91,
+          "stress": "Low",
+          "stressScore": 28,
+          "ndvi": 0.28,
+          "evi": 0.18,
+          "stateNote": "Bare/wet preparation signal before stable paddy emergence"
+        },
+        {
+          "cropClass": "Paddy",
+          "confidence": 89,
+          "stress": "Low",
+          "stressScore": 28,
+          "ndvi": 0.48,
+          "evi": 0.32,
+          "stateNote": "Phenology curve separates paddy from fallow and soybean"
+        },
+        {
+          "cropClass": "Paddy",
+          "confidence": 95,
+          "stress": "Low",
+          "stressScore": 28,
+          "ndvi": 0.71,
+          "evi": 0.49,
+          "stateNote": "Peak vegetation confirms high-confidence paddy extent"
+        },
+        {
+          "cropClass": "Paddy",
+          "confidence": 88,
+          "stress": "Low",
+          "stressScore": 28,
+          "ndvi": 0.62,
+          "evi": 0.42,
+          "stateNote": "Late-season decline remains inside normal harvest trajectory"
+        }
+      ],
+      "weakLabel": "Paddy"
+    },
+    {
+      "id": "MP-NAR-002",
+      "village": "Bankhedi",
+      "cropClass": "Soybean",
+      "confidence": 100,
+      "uncertainty": 0.0,
+      "stress": "High",
+      "stressScore": 63,
+      "changeLabel": "fallow_to_soybean",
+      "gtNeeded": false,
+      "ndviPeak": 0.58,
+      "indexCurve": {
+        "dates": [
+          "2025-06-24",
+          "2025-07-29",
+          "2025-09-02",
+          "2025-10-17"
+        ],
+        "ndvi": [
+          0.22,
+          0.42,
+          0.58,
+          0.46
+        ],
+        "evi": [
+          0.14,
+          0.27,
+          0.37,
+          0.29
+        ],
+        "ndwi": [
+          0.299,
+          0.189,
+          0.101,
+          0.167
+        ]
+      },
+      "imageryDates": [
+        "2025-06-24",
+        "2025-07-29",
+        "2025-09-02",
+        "2025-10-17"
+      ],
+      "cloudScore": 16.5,
+      "modelVersion": "hgb-temporal-v0.1",
+      "validationStatus": "illustrative (synthetic separable demo data)",
+      "epochStates": [
+        {
+          "cropClass": "Fallow",
+          "confidence": 91,
+          "stress": "High",
+          "stressScore": 63,
+          "ndvi": 0.22,
+          "evi": 0.14,
+          "stateNote": "Early season signal is ambiguous before soybean canopy closure"
+        },
+        {
+          "cropClass": "Soybean",
+          "confidence": 89,
+          "stress": "High",
+          "stressScore": 63,
+          "ndvi": 0.42,
+          "evi": 0.27,
+          "stateNote": "Mid-season spectral rise supports soybean with moisture caution"
+        },
+        {
+          "cropClass": "Soybean",
+          "confidence": 95,
+          "stress": "High",
+          "stressScore": 63,
+          "ndvi": 0.58,
+          "evi": 0.37,
+          "stateNote": "Classifier stabilizes on soybean but stress remains above watch threshold"
+        },
+        {
+          "cropClass": "Soybean",
+          "confidence": 88,
+          "stress": "High",
+          "stressScore": 63,
+          "ndvi": 0.46,
+          "evi": 0.29,
+          "stateNote": "Late-season decline indicates harvest approach and water stress"
+        }
+      ],
+      "weakLabel": "Soybean"
+    },
+    {
+      "id": "MP-NAR-003",
+      "village": "Itarsi",
+      "cropClass": "Gram",
+      "confidence": 100,
+      "uncertainty": 0.0,
+      "stress": "High",
+      "stressScore": 93,
+      "changeLabel": "healthy_to_waterlogged",
+      "gtNeeded": false,
+      "ndviPeak": 0.41,
+      "indexCurve": {
+        "dates": [
+          "2025-06-24",
+          "2025-07-29",
+          "2025-09-02",
+          "2025-10-17"
+        ],
+        "ndvi": [
+          0.19,
+          0.34,
+          0.41,
+          0.27
+        ],
+        "evi": [
+          0.12,
+          0.21,
+          0.24,
+          0.16
+        ],
+        "ndwi": [
+          0.316,
+          0.233,
+          0.194,
+          0.271
+        ]
+      },
+      "imageryDates": [
+        "2025-06-24",
+        "2025-07-29",
+        "2025-09-02",
+        "2025-10-17"
+      ],
+      "cloudScore": 16.5,
+      "modelVersion": "hgb-temporal-v0.1",
+      "validationStatus": "illustrative (synthetic separable demo data)",
+      "epochStates": [
+        {
+          "cropClass": "Fallow",
+          "confidence": 91,
+          "stress": "High",
+          "stressScore": 93,
+          "ndvi": 0.19,
+          "evi": 0.12,
+          "stateNote": "Weak early greenness before gram become separable"
+        },
+        {
+          "cropClass": "Gram",
+          "confidence": 89,
+          "stress": "High",
+          "stressScore": 93,
+          "ndvi": 0.34,
+          "evi": 0.21,
+          "stateNote": "Gram candidate appears, but spectral separation is incomplete"
+        },
+        {
+          "cropClass": "Gram",
+          "confidence": 95,
+          "stress": "High",
+          "stressScore": 93,
+          "ndvi": 0.41,
+          "evi": 0.24,
+          "stateNote": "Peak-season curve underperforms expected vigor; pest scouting required"
+        },
+        {
+          "cropClass": "Gram",
+          "confidence": 88,
+          "stress": "High",
+          "stressScore": 93,
+          "ndvi": 0.27,
+          "evi": 0.16,
+          "stateNote": "Late drop supports crop stress or damage assessment workflow"
+        }
+      ],
+      "weakLabel": "Gram"
+    },
+    {
+      "id": "MP-NAR-004",
+      "village": "Itarsi",
+      "cropClass": "Paddy",
+      "confidence": 99,
+      "uncertainty": 0.022,
+      "stress": "Low",
+      "stressScore": 22,
+      "changeLabel": "stable_season",
+      "gtNeeded": false,
+      "ndviPeak": 0.76,
+      "indexCurve": {
+        "dates": [
+          "2025-06-24",
+          "2025-07-29",
+          "2025-09-02",
+          "2025-10-17"
+        ],
+        "ndvi": [
+          0.31,
+          0.55,
+          0.76,
+          0.68
+        ],
+        "evi": [
+          0.2,
+          0.36,
+          0.52,
+          0.46
+        ],
+        "ndwi": [
+          0.249,
+          0.117,
+          0.002,
+          0.046
+        ]
+      },
+      "imageryDates": [
+        "2025-06-24",
+        "2025-07-29",
+        "2025-09-02",
+        "2025-10-17"
+      ],
+      "cloudScore": 16.5,
+      "modelVersion": "hgb-temporal-v0.1",
+      "validationStatus": "illustrative (synthetic separable demo data)",
+      "epochStates": [
+        {
+          "cropClass": "Paddy",
+          "confidence": 90,
+          "stress": "Low",
+          "stressScore": 22,
+          "ndvi": 0.31,
+          "evi": 0.2,
+          "stateNote": "Early paddy signature appears after field wetting"
+        },
+        {
+          "cropClass": "Paddy",
+          "confidence": 88,
+          "stress": "Low",
+          "stressScore": 22,
+          "ndvi": 0.55,
+          "evi": 0.36,
+          "stateNote": "Canopy expansion confirms paddy extent for acreage rollup"
+        },
+        {
+          "cropClass": "Paddy",
+          "confidence": 94,
+          "stress": "Low",
+          "stressScore": 22,
+          "ndvi": 0.76,
+          "evi": 0.52,
+          "stateNote": "Strong peak-season paddy signal supports yield baseline and low claim pressure"
+        },
+        {
+          "cropClass": "Paddy",
+          "confidence": 87,
+          "stress": "Low",
+          "stressScore": 22,
+          "ndvi": 0.68,
+          "evi": 0.46,
+          "stateNote": "Late-season stability maintains paddy supply estimate"
+        }
+      ],
+      "weakLabel": "Paddy"
+    },
+    {
+      "id": "MP-NAR-005",
+      "village": "Seoni Malwa",
+      "cropClass": "Wheat",
+      "confidence": 100,
+      "uncertainty": 0.008,
+      "stress": "High",
+      "stressScore": 70,
+      "changeLabel": "fallow_to_wheat",
+      "gtNeeded": false,
+      "ndviPeak": 0.62,
+      "indexCurve": {
+        "dates": [
+          "2025-06-24",
+          "2025-07-29",
+          "2025-09-02",
+          "2025-10-17"
+        ],
+        "ndvi": [
+          0.27,
+          0.46,
+          0.62,
+          0.49
+        ],
+        "evi": [
+          0.17,
+          0.31,
+          0.4,
+          0.32
+        ],
+        "ndwi": [
+          0.271,
+          0.167,
+          0.079,
+          0.15
+        ]
+      },
+      "imageryDates": [
+        "2025-06-24",
+        "2025-07-29",
+        "2025-09-02",
+        "2025-10-17"
+      ],
+      "cloudScore": 16.5,
+      "modelVersion": "hgb-temporal-v0.1",
+      "validationStatus": "illustrative (synthetic separable demo data)",
+      "epochStates": [
+        {
+          "cropClass": "Fallow",
+          "confidence": 91,
+          "stress": "High",
+          "stressScore": 70,
+          "ndvi": 0.27,
+          "evi": 0.17,
+          "stateNote": "Small-field mixed crop signal appears earlier than cereal fields"
+        },
+        {
+          "cropClass": "Wheat",
+          "confidence": 89,
+          "stress": "High",
+          "stressScore": 70,
+          "ndvi": 0.46,
+          "evi": 0.31,
+          "stateNote": "Staggered growth pattern suggests vegetable block, not single cereal crop"
+        },
+        {
+          "cropClass": "Wheat",
+          "confidence": 95,
+          "stress": "High",
+          "stressScore": 70,
+          "ndvi": 0.62,
+          "evi": 0.4,
+          "stateNote": "Localized irrigation variability drives advisory generation"
+        },
+        {
+          "cropClass": "Wheat",
+          "confidence": 88,
+          "stress": "High",
+          "stressScore": 70,
+          "ndvi": 0.49,
+          "evi": 0.32,
+          "stateNote": "Rolling harvest keeps class stable with variable moisture"
+        }
+      ],
+      "weakLabel": "Wheat"
+    },
+    {
+      "id": "MP-NAR-006",
+      "village": "Seoni Malwa",
+      "cropClass": "Paddy",
+      "confidence": 100,
+      "uncertainty": 0.0,
+      "stress": "High",
+      "stressScore": 95,
+      "changeLabel": "fallow_to_paddy",
+      "gtNeeded": false,
+      "ndviPeak": 0.64,
+      "indexCurve": {
+        "dates": [
+          "2025-06-24",
+          "2025-07-29",
+          "2025-09-02",
+          "2025-10-17"
+        ],
+        "ndvi": [
+          0.29,
+          0.52,
+          0.64,
+          0.38
+        ],
+        "evi": [
+          0.19,
+          0.34,
+          0.39,
+          0.22
+        ],
+        "ndwi": [
+          0.26,
+          0.134,
+          0.068,
+          0.211
+        ]
+      },
+      "imageryDates": [
+        "2025-06-24",
+        "2025-07-29",
+        "2025-09-02",
+        "2025-10-17"
+      ],
+      "cloudScore": 16.5,
+      "modelVersion": "hgb-temporal-v0.1",
+      "validationStatus": "illustrative (synthetic separable demo data)",
+      "epochStates": [
+        {
+          "cropClass": "Fallow",
+          "confidence": 91,
+          "stress": "High",
+          "stressScore": 95,
+          "ndvi": 0.29,
+          "evi": 0.19,
+          "stateNote": "Early wet field pattern consistent with paddy establishment"
+        },
+        {
+          "cropClass": "Paddy",
+          "confidence": 89,
+          "stress": "High",
+          "stressScore": 95,
+          "ndvi": 0.52,
+          "evi": 0.34,
+          "stateNote": "Mid-season paddy class stabilizes; moisture anomaly begins"
+        },
+        {
+          "cropClass": "Paddy",
+          "confidence": 95,
+          "stress": "High",
+          "stressScore": 95,
+          "ndvi": 0.64,
+          "evi": 0.39,
+          "stateNote": "Waterlogging anomaly triggers disaster and GT validation path"
+        },
+        {
+          "cropClass": "Paddy",
+          "confidence": 88,
+          "stress": "High",
+          "stressScore": 95,
+          "ndvi": 0.38,
+          "evi": 0.22,
+          "stateNote": "Late NDVI drop supports crop-loss assessment workflow"
+        }
+      ],
+      "weakLabel": "Paddy"
+    },
+    {
+      "id": "MP-NAR-007",
+      "village": "Babai",
+      "cropClass": "Soybean",
+      "confidence": 100,
+      "uncertainty": 0.0,
+      "stress": "Low",
+      "stressScore": 31,
+      "changeLabel": "fallow_to_soybean",
+      "gtNeeded": false,
+      "ndviPeak": 0.61,
+      "indexCurve": {
+        "dates": [
+          "2025-06-24",
+          "2025-07-29",
+          "2025-09-02",
+          "2025-10-17"
+        ],
+        "ndvi": [
+          0.24,
+          0.43,
+          0.61,
+          0.55
+        ],
+        "evi": [
+          0.15,
+          0.28,
+          0.39,
+          0.34
+        ],
+        "ndwi": [
+          0.288,
+          0.183,
+          0.084,
+          0.117
+        ]
+      },
+      "imageryDates": [
+        "2025-06-24",
+        "2025-07-29",
+        "2025-09-02",
+        "2025-10-17"
+      ],
+      "cloudScore": 16.5,
+      "modelVersion": "hgb-temporal-v0.1",
+      "validationStatus": "illustrative (synthetic separable demo data)",
+      "epochStates": [
+        {
+          "cropClass": "Fallow",
+          "confidence": 91,
+          "stress": "Low",
+          "stressScore": 31,
+          "ndvi": 0.24,
+          "evi": 0.15,
+          "stateNote": "Early vegetation is too weak for confident crop assignment"
+        },
+        {
+          "cropClass": "Soybean",
+          "confidence": 89,
+          "stress": "Low",
+          "stressScore": 31,
+          "ndvi": 0.43,
+          "evi": 0.28,
+          "stateNote": "Soybean class emerges from temporal texture and canopy rise"
+        },
+        {
+          "cropClass": "Soybean",
+          "confidence": 95,
+          "stress": "Low",
+          "stressScore": 31,
+          "ndvi": 0.61,
+          "evi": 0.39,
+          "stateNote": "Peak-season profile confirms soybean with healthy canopy"
+        },
+        {
+          "cropClass": "Soybean",
+          "confidence": 88,
+          "stress": "Low",
+          "stressScore": 31,
+          "ndvi": 0.55,
+          "evi": 0.34,
+          "stateNote": "Late-season signal remains consistent with harvest readiness"
+        }
+      ],
+      "weakLabel": "Soybean"
+    },
+    {
+      "id": "MP-NAR-008",
+      "village": "Babai",
+      "cropClass": "Fallow",
+      "confidence": 100,
+      "uncertainty": 0.0,
+      "stress": "High",
+      "stressScore": 95,
+      "changeLabel": "healthy_to_waterlogged",
+      "gtNeeded": false,
+      "ndviPeak": 0.22,
+      "indexCurve": {
+        "dates": [
+          "2025-06-24",
+          "2025-07-29",
+          "2025-09-02",
+          "2025-10-17"
+        ],
+        "ndvi": [
+          0.16,
+          0.18,
+          0.22,
+          0.19
+        ],
+        "evi": [
+          0.09,
+          0.1,
+          0.12,
+          0.1
+        ],
+        "ndwi": [
+          0.332,
+          0.321,
+          0.299,
+          0.316
+        ]
+      },
+      "imageryDates": [
+        "2025-06-24",
+        "2025-07-29",
+        "2025-09-02",
+        "2025-10-17"
+      ],
+      "cloudScore": 16.5,
+      "modelVersion": "hgb-temporal-v0.1",
+      "validationStatus": "illustrative (synthetic separable demo data)",
+      "epochStates": [
+        {
+          "cropClass": "Fallow",
+          "confidence": 91,
+          "stress": "High",
+          "stressScore": 95,
+          "ndvi": 0.16,
+          "evi": 0.09,
+          "stateNote": "Low greenness suggests unsown or delayed sowing condition"
+        },
+        {
+          "cropClass": "Fallow",
+          "confidence": 89,
+          "stress": "High",
+          "stressScore": 95,
+          "ndvi": 0.18,
+          "evi": 0.1,
+          "stateNote": "No expected canopy rise; dry-spell flag is raised"
+        },
+        {
+          "cropClass": "Fallow",
+          "confidence": 95,
+          "stress": "High",
+          "stressScore": 95,
+          "ndvi": 0.22,
+          "evi": 0.12,
+          "stateNote": "Persistent low vegetation supports failed/unsown classification"
+        },
+        {
+          "cropClass": "Fallow",
+          "confidence": 88,
+          "stress": "High",
+          "stressScore": 95,
+          "ndvi": 0.19,
+          "evi": 0.1,
+          "stateNote": "Late-season persistence routes parcel to compensation verification"
+        }
+      ],
+      "weakLabel": "Fallow"
+    }
+  ]
+}

@@ -4,21 +4,49 @@ let state;
 let cropLegend;
 let requirementIndex;
 const mapViewBox = { width: 1000, height: 606 };
+const productTabs = [
+  {
+    id: "fields",
+    eyebrow: "Step 01",
+    title: "Fields",
+    label: "Fields",
+    body: "Detect field boundaries from the imagery, save them, then read crop and risk.",
+    focus: ["Detect fields", "Save to portfolio", "Run analysis", "Crop & risk"],
+    layers: { crop: true, stress: true, yield: false, lgnd: false, sam: true, gt: false, procurement: false },
+    mapMode: "edit",
+    target: "samPanel"
+  },
+  {
+    id: "lgnd",
+    eyebrow: "Step 02",
+    title: "Similar Field Review",
+    label: "Similar Field Review",
+    body: "For a flagged field, pull up visually similar fields to confirm or dismiss the alert.",
+    focus: ["Flagged field", "Similar fields", "Confirm or dismiss", "Faster review"],
+    layers: { crop: false, stress: true, yield: false, lgnd: true, sam: false, gt: false, procurement: false },
+    mapMode: "predict",
+    target: "lgndPanel"
+  }
+];
 
 function initializeState() {
   state = {
-    activeLayers: Object.fromEntries(data.layers.map((layer) => [layer.id, layer.active])),
+    activeProductTab: "fields",
+    activeLayers: {
+      ...Object.fromEntries(data.layers.map((layer) => [layer.id, false])),
+      ...productTabs.find((tab) => tab.id === "fields").layers
+    },
     epochIndex: Math.min(2, data.epochs.length - 1),
-    selectedParcelId: data.parcels[0].id,
+    selectedParcelId: data.parcels[0]?.id || null,
     selectedPanel: "parcel",
-    mapMode: "edit",
+    mapMode: "predict",
     userParcels: [],
     nextUserParcelNumber: 1,
     selectedModel: "hgb-temporal",
     mlRunning: false,
     activeReviewerStep: data.reviewerSteps[0].id,
     activeSamStage: data.samBoundaryDemo?.stages?.[1]?.id || "prompt",
-    samSourceParcelId: data.parcels[0].id,
+    samSourceParcelId: data.parcels[0]?.id || "AOI",
     samChipCenter: null,
     samDraftPoints: [],
     samTool: "point",
@@ -34,7 +62,13 @@ function initializeState() {
     samBackendNote: "",
     samLoading: false,
     selectedRequirementId: null,
-    highlightTimer: null
+    highlightTimer: null,
+    lgndStatus: { configured: false, checked: false },
+    mlValidation: { available: false },
+    mlPredictions: { available: false, predictions: [] },
+    similar: { available: false, results: [] },
+    similarDecisions: {},
+    similarLoading: false
   };
 
   cropLegend = Object.entries(data.crops).map(([name, crop]) => ({
@@ -55,6 +89,38 @@ async function loadDemoData() {
     // Opening app/index.html directly still works by falling back to app/data.js.
   }
   return window.UPAHAR_DEMO_DATA;
+}
+
+async function loadLgndStatus() {
+  const statusUrl = data.api?.lgndStatus || "/api/lgnd/status";
+  try {
+    const response = await fetch(`${apiBase}${statusUrl}`, { cache: "no-store" });
+    if (response.ok) {
+      return { ...(await response.json()), checked: true };
+    }
+  } catch {
+    // Static file mode has no backend proxy, so LGND remains a documented integration flow.
+  }
+  return {
+    configured: false,
+    checked: true,
+    envVar: "LGND_TOKEN",
+    browserKeyExposure: "never",
+    error: "Backend LGND proxy unavailable"
+  };
+}
+
+async function loadMlArtifact(urlKey, fallbackUrl) {
+  const url = data.api?.[urlKey] || fallbackUrl;
+  try {
+    const response = await fetch(`${apiBase}${url}`, { cache: "no-store" });
+    if (response.ok) {
+      return response.json();
+    }
+  } catch {
+    // Static file mode has no backend; the ML card stays hidden.
+  }
+  return { available: false };
 }
 
 function clamp(value, min, max) {
@@ -108,9 +174,9 @@ function productionEstimate(parcel) {
 
 function modelOptions() {
   return [
-    { id: "hgb-temporal", label: "HGB temporal baseline", detail: "Fast tabular model over NDVI/EVI summaries" },
-    { id: "extratrees-phenology", label: "ExtraTrees phenology", detail: "Robust tree ensemble for noisy parcel features" },
-    { id: "tinyvit-parcel", label: "TinyViT parcel chip", detail: "Vision model simulation for demo comparison" }
+    { id: "hgb-temporal", label: "Standard", detail: "Fast read of crop and stress across the season" },
+    { id: "extratrees-phenology", label: "Robust", detail: "Steadier read for noisy or partly cloudy fields" },
+    { id: "tinyvit-parcel", label: "Detailed", detail: "Closer look for fields under review" }
   ];
 }
 
@@ -125,7 +191,9 @@ function polygonAreaHa(points) {
 function createAnnotatedParcel(mask) {
   const source = selectedSamParcel();
   const id = `ANNO-${String(state.nextUserParcelNumber).padStart(3, "0")}`;
-  const geometry = mask?.chipPoints ? chipPointsToGeometry(mask.chipPoints, source) : mask?.geometry || source.geometry;
+  // Prefer the backend-provided lon/lat geometry (correct for both prompted and
+  // automatic masks); fall back to client conversion only for locally drawn shapes.
+  const geometry = mask?.geometry || (mask?.chipPoints ? chipPointsToGeometry(mask.chipPoints, source) : source.geometry);
   const acreage = Number(polygonAreaHa(geometry).toFixed(1));
   return {
     id,
@@ -193,14 +261,14 @@ function chipPointsToGeometry(points, parcel = selectedSamParcel()) {
 
 function applyDummyPrediction(parcel, index) {
   const modelBias = { "hgb-temporal": 0, "extratrees-phenology": 4, "tinyvit-parcel": 7 }[state.selectedModel] || 0;
-  const crops = ["Paddy", "Maize", "Pulses", "Vegetables"];
+  const crops = ["Soybean", "Paddy", "Gram", "Wheat"];
   const stresses = ["Low", "Moderate", "High"];
   const crop = crops[(index + modelBias) % crops.length];
   const confidence = clamp(76 + ((index * 7 + modelBias) % 19), 0, 97);
   const stress = stresses[(index + Math.floor(modelBias / 4)) % stresses.length];
   const stressScore = { Low: 18, Moderate: 48, High: 72 }[stress];
-  const yieldValue = { Paddy: 4.5, Maize: 3.2, Pulses: 1.3, Vegetables: 8.1 }[crop];
-  const ndviPeak = { Paddy: 0.72, Maize: 0.61, Pulses: 0.43, Vegetables: 0.64 }[crop];
+  const yieldValue = { Soybean: 2.1, Paddy: 4.5, Gram: 1.3, Wheat: 3.8 }[crop];
+  const ndviPeak = { Soybean: 0.64, Paddy: 0.72, Gram: 0.43, Wheat: 0.69 }[crop];
   return {
     ...parcel,
     crop,
@@ -226,8 +294,32 @@ function applyDummyPrediction(parcel, index) {
   };
 }
 
+function aoiFocusParcel() {
+  // No pre-created parcels: the SAM creator frames the AOI so fields can be
+  // detected live from the imagery.
+  const center = data.basemap.center;
+  const dLon = 0.0034;
+  const dLat = 0.0019;
+  return {
+    id: "AOI",
+    village: data.insurer?.geography || "Pilot AOI",
+    crop: "Pending",
+    acreage: 0,
+    geometry: [
+      [center.lon - dLon, center.lat - dLat],
+      [center.lon + dLon, center.lat - dLat],
+      [center.lon + dLon, center.lat + dLat],
+      [center.lon - dLon, center.lat + dLat]
+    ]
+  };
+}
+
 function selectedSamParcel() {
-  return data.parcels.find((item) => item.id === state.samSourceParcelId) || data.parcels[0];
+  return (
+    data.parcels.find((item) => item.id === state.samSourceParcelId) ||
+    data.parcels[0] ||
+    aoiFocusParcel()
+  );
 }
 
 function samChipPolygon(parcel) {
@@ -321,7 +413,7 @@ function samVertexMarkup() {
 
 function samStatusLabel() {
   if (state.samLoading) {
-    return "Running backend";
+    return "Working…";
   }
   if (state.samPublishedParcelId) {
     return "Published";
@@ -335,7 +427,7 @@ function samStatusLabel() {
   if (state.samPrompts.length > 0) {
     return "Prompts placed";
   }
-  return "Awaiting prompts";
+  return "Ready";
 }
 
 function samChipUrl(parcel) {
@@ -366,16 +458,8 @@ function toggleSamMask(maskId) {
   }
 }
 
-function renderRfpBadges(sections = []) {
-  return uniqueRequirements(sections)
-    .map(
-      (section) => `
-        <button class="rfp-badge" type="button" data-requirement="${section}" aria-label="View RFP Section ${section}">
-          RFP ${section}
-        </button>
-      `
-    )
-    .join("");
+function renderRfpBadges() {
+  return "";
 }
 
 function formatTemplate(template, parcel) {
@@ -508,21 +592,104 @@ function renderImageryCompliance() {
       <strong>${epoch.label} | ${epoch.date}</strong>
     </article>
     <article>
-      <span>Spatial gate</span>
-      <strong>${data.basemap.rfpSpatialRequirement} | display ${data.basemap.displayMetersPerPixel} m/px</strong>
-    </article>
-    <article>
-      <span>Sentinel-2 role</span>
-      <strong>5-day 10 m MSI temporal indices, not 3 m parcel proof</strong>
+      <span>Imagery</span>
+      <strong>Satellite, updated through the season</strong>
     </article>
   `;
 }
 
 function renderStaticSurfaceBadges() {
   document.querySelectorAll("[data-rfp-surface]").forEach((container) => {
-    const surface = container.dataset.rfpSurface;
-    container.innerHTML = renderRfpBadges(data.surfaceRequirements[surface]);
+    container.innerHTML = "";
   });
+}
+
+function activeProductTab() {
+  return productTabs.find((tab) => tab.id === state.activeProductTab) || productTabs[0];
+}
+
+function renderProductTabs() {
+  const container = document.querySelector("#productTabs");
+  if (!container) {
+    return;
+  }
+  container.innerHTML = productTabs
+    .map((tab) => {
+      const active = tab.id === state.activeProductTab ? "active" : "";
+      return `
+        <button class="product-tab ${active}" type="button" data-product-tab="${tab.id}">
+          <span>${tab.eyebrow}</span>
+          <strong>${tab.label}</strong>
+          <small>${tab.body}</small>
+        </button>
+      `;
+    })
+    .join("");
+
+  document.body.dataset.productTab = state.activeProductTab;
+  container.querySelectorAll("[data-product-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      applyProductTab(button.dataset.productTab, true);
+    });
+  });
+}
+
+function renderProductFocus() {
+  const tab = activeProductTab();
+  document.querySelector("#productFocusTitle").textContent = tab.title;
+  const container = document.querySelector("#reviewerSteps");
+  container.innerHTML = tab.focus
+    .map(
+      (item, index) => `
+        <article class="reviewer-step product-focus-card ${index === 0 ? "active" : ""}">
+          <span class="reviewer-index">${String(index + 1).padStart(2, "0")}</span>
+          <span class="reviewer-copy">
+            <strong>${item}</strong>
+            <small>${tab.body}</small>
+          </span>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function applyProductTab(tabId, shouldScroll = false) {
+  const tab = productTabs.find((item) => item.id === tabId);
+  if (!tab) {
+    return;
+  }
+  state.activeProductTab = tab.id;
+  Object.keys(state.activeLayers).forEach((layerId) => {
+    state.activeLayers[layerId] = Boolean(tab.layers[layerId]);
+  });
+  state.mapMode = tab.mapMode;
+  if (tab.id === "fields") {
+    state.activeSamStage = state.activeSamStage || "prompt";
+    state.selectedPanel = "parcel";
+  }
+  if (tab.id === "lgnd") {
+    const flagged = [...data.parcels, ...state.userParcels].find((parcel) => parcelEpochState(parcel).stressScore >= 45);
+    state.selectedParcelId = flagged?.id || state.selectedParcelId;
+    // Lazy-load similar fields the first time the review tab opens.
+    if (!state.similar?.available && !state.similarLoading) {
+      refreshSimilarFields();
+    }
+  }
+
+  renderProductTabs();
+  renderProductFocus();
+  renderLayerControls();
+  renderLegend();
+  renderMapModeControls();
+  renderMap();
+  renderParcelDetails();
+  renderSamWorkflow();
+  renderLgndFlow();
+
+  if (shouldScroll) {
+    document.getElementById(tab.target)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    showToast(`${tab.title} active.`);
+  }
 }
 
 function renderTabs() {
@@ -598,12 +765,26 @@ function renderMetrics() {
     .join("");
 }
 
-function renderLegend() {
-  const legend = document.querySelector("#legend");
-  if (state.userParcels.length === 0) {
-    legend.innerHTML = `<span class="legend-item"><i style="background:#20a4ad"></i>Saved parcels appear here</span>`;
+function renderHeroMetrics() {
+  const grid = document.querySelector("#heroMetrics");
+  if (!grid) {
     return;
   }
+  grid.innerHTML = data.insurer.heroStats
+    .map(
+      (metric) => `
+      <article class="hero-metric">
+        <span>${metric.label}</span>
+        <strong>${metric.value}</strong>
+        <p>${metric.detail}</p>
+      </article>
+    `
+    )
+    .join("");
+}
+
+function renderLegend() {
+  const legend = document.querySelector("#legend");
   const entries = state.activeLayers.stress
     ? Object.entries(data.stressColors).map(([label, color]) => ({ label, color }))
     : cropLegend;
@@ -626,8 +807,8 @@ function renderMapModeControls() {
   }
   container.innerHTML = `
     <div class="mode-toggle" role="group" aria-label="Web GIS mode">
-      <button class="${state.mapMode === "edit" ? "active" : ""}" type="button" data-map-mode="edit">Add or update parcels</button>
-      <button class="${state.mapMode === "predict" ? "active" : ""}" type="button" data-map-mode="predict">Run ML predictions</button>
+      <button class="${state.mapMode === "edit" ? "active" : ""}" type="button" data-map-mode="edit">Add parcels</button>
+      <button class="${state.mapMode === "predict" ? "active" : ""}" type="button" data-map-mode="predict">Run claims ML</button>
     </div>
     <div class="model-runner ${state.mapMode === "predict" ? "visible" : ""}">
       <label>
@@ -649,7 +830,7 @@ function renderMapModeControls() {
       state.mapMode = button.dataset.mapMode;
       renderMapModeControls();
       renderMap();
-      showToast(state.mapMode === "edit" ? "Parcel editing mode active." : "ML prediction mode active.");
+      showToast(state.mapMode === "edit" ? "Parcel editing mode active." : "Claims ML mode active.");
     });
   });
 
@@ -669,7 +850,7 @@ function runMlPredictions() {
   state.mlRunning = true;
   renderMapModeControls();
   renderMap();
-  showToast("Running ML predictions. Waiting for model output...");
+  showToast("Analyzing fields…");
   window.setTimeout(() => {
     state.userParcels = state.userParcels.map((parcel, index) => applyDummyPrediction(parcel, index));
     state.mlRunning = false;
@@ -680,7 +861,7 @@ function runMlPredictions() {
     renderLegend();
     renderMap();
     renderParcelDetails();
-    showToast("Dummy ML predictions generated for saved parcels.");
+    showToast("Demo ML predictions generated for saved parcels.");
   }, 3000);
 }
 
@@ -712,8 +893,8 @@ function sparkline(points) {
 function renderParcelDetails() {
   const parcel = selectedParcel();
   if (!parcel) {
-    document.querySelector("#parcelTitle").textContent = "No parcel selected";
-    document.querySelector("#parcelDetails").innerHTML = `<p class="muted-text">Save a boundary from the annotation tool to inspect parcel details.</p>`;
+    document.querySelector("#parcelTitle").textContent = "No field selected";
+    document.querySelector("#parcelDetails").innerHTML = `<p class="muted-text">Detect fields below and save them, then run analysis to see crop and risk here.</p>`;
     return;
   }
   const temporal = parcelEpochState(parcel);
@@ -758,34 +939,30 @@ function renderParcelDetails() {
           <small>Score ${stressScore}/100</small>
         </article>
         <article class="parcel-metric">
-          <span>NDVI / EVI</span>
-          <strong>${temporal.ndvi.toFixed(2)} / ${temporal.evi.toFixed(2)}</strong>
-          <small>${epoch.label} vegetation indices</small>
+          <span>Crop vigor</span>
+          <strong>${Math.round(temporal.ndvi * 100)}%</strong>
+          <small>${epoch.label} greenness</small>
         </article>
         <article class="parcel-metric">
-          <span>Acreage</span>
+          <span>Area</span>
           <strong>${parcel.acreage.toFixed(1)} ha</strong>
-          <small>Aligned demo parcel overlay</small>
+          <small>Insured area</small>
         </article>
         <article class="parcel-metric">
           <span>Yield</span>
           <strong>${parcel.yield.toFixed(1)} t/ha</strong>
-          <small>Forecast yield model output</small>
+          <small>Expected this season</small>
         </article>
         <article class="parcel-metric production">
-          <span>Production estimate</span>
+          <span>Expected production</span>
           <strong>${production.toFixed(1)} t</strong>
-          <small>${parcel.acreage.toFixed(1)} ha x ${parcel.yield.toFixed(1)} t/ha</small>
+          <small>${parcel.acreage.toFixed(1)} ha × ${parcel.yield.toFixed(1)} t/ha</small>
         </article>
         <article class="parcel-metric">
-          <span>Imagery epoch</span>
+          <span>Season</span>
           <strong>${epoch.label}</strong>
           <small>${epoch.date}</small>
         </article>
-      </div>
-      <div class="source-row">
-        <span>Source layers</span>
-        <strong>Wayback high-res view | Sentinel-2 temporal indices | Crop WFS | GT WFS</strong>
       </div>
       ${sparkline(parcel.ndvi)}
       <p class="advisory-text">${temporal.stateNote}. ${parcel.advisory}</p>
@@ -834,18 +1011,9 @@ function renderParcelDetails() {
 }
 
 function renderProcurement() {
-  const paddyArea = data.parcels
-    .filter((parcel) => parcel.crop === "Paddy")
-    .reduce((sum, parcel) => sum + parcel.acreage, 0);
-  const paddyProduction = data.parcels
-    .filter((parcel) => parcel.crop === "Paddy")
-    .reduce((sum, parcel) => sum + parcel.production, 0);
-  const totalTokens = data.procurementCenters.reduce((sum, center) => sum + center.tokens, 0);
-  document.querySelector("#procurementSummary").innerHTML = `
-    <div><span>Paddy area</span><strong>${paddyArea.toFixed(1)} ha</strong></div>
-    <div><span>Forecast supply</span><strong>${paddyProduction.toFixed(0)} t</strong></div>
-    <div><span>Token capacity</span><strong>${totalTokens.toLocaleString()}</strong></div>
-  `;
+  document.querySelector("#procurementSummary").innerHTML = data.insurer.claimSummary
+    .map((item) => `<div><span>${item.label}</span><strong>${item.value}</strong></div>`)
+    .join("");
 
   const list = document.querySelector("#procurementList");
   list.innerHTML = data.procurementCenters
@@ -858,7 +1026,7 @@ function renderProcurement() {
         </div>
         <span class="rfp-badge-row">${renderRfpBadges(data.surfaceRequirements.procurement)}</span>
         <meter min="0" max="100" value="${center.load}"></meter>
-        <small>${center.load}% load | ${center.tokens.toLocaleString()} token slots | ${center.status}</small>
+        <small>${center.load}% workload | ${center.tokens.toLocaleString()} open packets | ${center.status}</small>
       </article>
     `
     )
@@ -899,6 +1067,177 @@ function renderMlCapabilities() {
     .join("");
 }
 
+const changeLegend = {
+  fallow_to_paddy: { label: "Fallow → Paddy", tone: "transition" },
+  fallow_to_soybean: { label: "Fallow → Soybean", tone: "transition" },
+  fallow_to_gram: { label: "Fallow → Gram", tone: "transition" },
+  fallow_to_wheat: { label: "Fallow → Wheat", tone: "transition" },
+  healthy_to_waterlogged: { label: "Healthy → Waterlogged", tone: "loss" },
+  healthy_to_stressed: { label: "Healthy → Stressed", tone: "loss" },
+  canopy_to_harvest: { label: "Canopy → Harvest decline", tone: "neutral" },
+  stable_season: { label: "Stable season", tone: "stable" }
+};
+
+function changeLegendEntry(key) {
+  return changeLegend[key] || { label: key.replace(/_/g, " "), tone: "neutral" };
+}
+
+function renderMlValidation() {
+  const container = document.querySelector("#mlValidationCard");
+  if (!container) {
+    return;
+  }
+  const validation = state.mlValidation || {};
+  const predictions = state.mlPredictions?.predictions || [];
+  if (!validation.available) {
+    container.innerHTML = `
+      <article class="ml-validation status-planned">
+        <div class="ml-validation-head">
+          <strong>Model validation</strong>
+          <span class="ml-status-pill planned">Artifact pending</span>
+        </div>
+        <p class="muted-text">Run <code>backend/scripts/ingest_sentinel2.py</code> then <code>run_ml_predictions.py</code> to populate crop/stress predictions and this validation card.</p>
+      </article>
+    `;
+    return;
+  }
+
+  const classes = validation.classes || [];
+  const matrix = validation.confusionMatrix || [];
+  const recall = validation.perClassRecall || {};
+  const matrixRows = classes
+    .map((cropClass, rowIndex) => {
+      const cells = (matrix[rowIndex] || [])
+        .map((value, colIndex) => `<td class="${rowIndex === colIndex ? "diag" : ""}">${value}</td>`)
+        .join("");
+      const recallValue = recall[cropClass]?.recall;
+      return `<tr><th>${cropClass}</th>${cells}<td class="recall">${recallValue == null ? "—" : Math.round(recallValue * 100) + "%"}</td></tr>`;
+    })
+    .join("");
+
+  // Temporal change legend: class transition, confidence/stress deltas, GT-needed.
+  const changeCounts = predictions.reduce((acc, prediction) => {
+    acc[prediction.changeLabel] = (acc[prediction.changeLabel] || 0) + 1;
+    return acc;
+  }, {});
+  const changeChips = Object.entries(changeCounts)
+    .map(([key, count]) => {
+      const entry = changeLegendEntry(key);
+      return `<span class="change-chip tone-${entry.tone}">${entry.label}<small>${count}</small></span>`;
+    })
+    .join("");
+  const gtNeeded = predictions.filter((prediction) => prediction.gtNeeded).length;
+
+  const overall = Math.round((validation.overallAccuracy || 0) * 100);
+  const sample = validation.sampleSize || predictions.length;
+  container.innerHTML = `
+    <article class="ml-validation status-demo">
+      <div class="ml-validation-metrics">
+        <div><span>Crop type match</span><strong>${overall}%</strong></div>
+        <div><span>Fields checked</span><strong>${sample}</strong></div>
+        <div><span>Needs a field check</span><strong>${gtNeeded}</strong></div>
+      </div>
+      <div class="change-legend" aria-label="What changed this season">
+        <span class="change-legend-label">Changed this season</span>
+        ${changeChips}
+      </div>
+    </article>
+  `;
+}
+
+async function loadSimilarFields() {
+  const url = data.api?.similarFields || "/api/review/similar";
+  try {
+    const response = await fetch(`${apiBase}${url}?limit=9`, { cache: "no-store" });
+    if (response.ok) {
+      return response.json();
+    }
+  } catch {
+    // Static file mode has no backend; the review tab shows a quiet empty state.
+  }
+  return { available: false, results: [] };
+}
+
+async function refreshSimilarFields() {
+  state.similarLoading = true;
+  renderLgndFlow();
+  state.similar = await loadSimilarFields();
+  state.similarDecisions = {};
+  state.similarLoading = false;
+  renderLgndFlow();
+}
+
+function renderLgndFlow() {
+  const container = document.querySelector("#lgndFlow");
+  if (!container) {
+    return;
+  }
+  const review = state.similar || { available: false, results: [] };
+  const decisions = state.similarDecisions || {};
+
+  if (state.similarLoading) {
+    container.innerHTML = `<div class="review-empty"><strong>Finding similar fields…</strong><p>Scanning the field library for the closest matches.</p></div>`;
+    return;
+  }
+  if (!review.available || !review.results.length) {
+    container.innerHTML = `
+      <div class="review-empty">
+        <strong>No similar fields to review right now</strong>
+        <p>When the model flags a field, its closest visual matches appear here for a quick confirm-or-dismiss.</p>
+        <button type="button" class="review-refresh" data-review-action="refresh">Find similar fields</button>
+      </div>`;
+    container.querySelector("[data-review-action='refresh']")?.addEventListener("click", refreshSimilarFields);
+    return;
+  }
+
+  const reviewed = Object.keys(decisions).length;
+  const cards = review.results
+    .map((item) => {
+      const decision = decisions[item.id];
+      return `
+        <article class="review-card ${decision || ""}">
+          <div class="review-thumb" style="background-image:url('${apiBase}${item.thumb}')"></div>
+          <div class="review-card-body">
+            <strong>${item.similarity}% similar</strong>
+            <span>${item.date || "recent"}</span>
+          </div>
+          <div class="review-actions">
+            <button type="button" data-review-id="${item.id}" data-review-action="confirm">${decision === "confirm" ? "Confirmed" : "Confirm"}</button>
+            <button type="button" data-review-id="${item.id}" data-review-action="dismiss">${decision === "dismiss" ? "Dismissed" : "Dismiss"}</button>
+          </div>
+        </article>`;
+    })
+    .join("");
+
+  container.innerHTML = `
+    <div class="review-intro">
+      <div>
+        <strong>Closest matches to the flagged field</strong>
+        <p>Confirm the ones that look like the same problem, dismiss the rest. ${reviewed}/${review.results.length} reviewed.</p>
+      </div>
+      <div class="review-query">
+        <div class="review-thumb" style="background-image:url('${apiBase}${review.query.thumb}')"></div>
+        <span>Flagged field</span>
+      </div>
+    </div>
+    <div class="review-grid">${cards}</div>
+    <button type="button" class="review-refresh" data-review-action="refresh">Refresh matches</button>
+  `;
+
+  container.querySelector("[data-review-action='refresh']")?.addEventListener("click", refreshSimilarFields);
+  container.querySelectorAll("[data-review-id]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.reviewId;
+      const action = button.dataset.reviewAction;
+      state.similarDecisions[id] = state.similarDecisions[id] === action ? undefined : action;
+      if (!state.similarDecisions[id]) {
+        delete state.similarDecisions[id];
+      }
+      renderLgndFlow();
+    });
+  });
+}
+
 function renderSamWorkflow() {
   const container = document.querySelector("#samWorkflow");
   const demo = data.samBoundaryDemo;
@@ -927,7 +1266,7 @@ function renderSamWorkflow() {
         <svg id="samChip" class="sam-chip sam-tool-${state.samTool}" viewBox="${chipBox.x} ${chipBox.y} ${chipBox.width} ${chipBox.height}" role="img" aria-label="SAM prompt annotation chip">
           <rect width="640" height="360" fill="#1b2623" />
           <image href="${samChipUrl(parcel)}" x="0" y="0" width="640" height="360" preserveAspectRatio="none" />
-          <polygon class="sam-source-boundary" points="${samChipPolygon(parcel)}" />
+          ${state.samSuggestions.length === 0 ? `<polygon class="sam-source-boundary" points="${samChipPolygon(parcel)}" />` : ""}
           ${samSuggestionMarkup()}
           ${candidateVisible ? `<polygon class="sam-mask-preview ${state.samQcAccepted ? "accepted" : ""}" points="${pointsToString(candidatePoints)}" />` : ""}
           ${samPromptMarkup()}
@@ -943,10 +1282,9 @@ function renderSamWorkflow() {
             <button class="${state.samTool === "pan" ? "active" : ""}" type="button" data-sam-tool="pan">Pan</button>
           </div>
           <div class="sam-tool-actions">
-            <button type="button" data-sam-action="run" ${state.samLoading ? "disabled" : ""}>Run backend SAM</button>
-            <button type="button" data-sam-action="accept" ${state.samCandidateReady && state.selectedSamMaskIds.length ? "" : "disabled"}>QC accept</button>
+            <button type="button" data-sam-action="run" ${state.samLoading ? "disabled" : ""}>Detect fields</button>
             <button type="button" data-sam-action="save-draft" ${state.samDraftPoints.length >= 3 ? "" : "disabled"}>Save drawn</button>
-            <button type="button" data-sam-action="publish" ${(state.samQcAccepted && state.selectedSamMaskIds.length) ? "" : "disabled"}>Save selected</button>
+            <button type="button" data-sam-action="publish" ${state.selectedSamMaskIds.length ? "" : "disabled"}>Save selected</button>
             <button type="button" data-sam-action="reset-view">Reset view</button>
             <button type="button" data-sam-action="clear-draw">Clear draw</button>
             <button type="button" data-sam-action="reset">Reset</button>
@@ -1058,18 +1396,14 @@ function renderSamWorkflow() {
       return;
     }
 
-    if (sample && state.samTool === "edit") {
+    // Clicking a detected candidate toggles its selection (multi-select). It must
+    // stop here — falling through to prompt placement would reset the candidate
+    // state and disable QC accept, so saved fields never reach the map.
+    if (sample && state.samTool !== "draw") {
       toggleSamMask(sample.dataset.samSample);
       renderSamWorkflow();
       event.preventDefault();
       return;
-    }
-
-    if (sample) {
-      state.selectedSamMaskId = sample.dataset.samSample;
-      if (!state.selectedSamMaskIds.includes(sample.dataset.samSample)) {
-        state.selectedSamMaskIds = [sample.dataset.samSample];
-      }
     }
 
     if (state.samTool === "draw") {
@@ -1228,8 +1562,13 @@ async function runBackendSam() {
   state.samLoading = true;
   renderSamWorkflow();
 
+  // Point/box prompts refine a single field; with none, segment every probable
+  // field boundary in the viewport (SAM automatic mask generation).
+  const useAuto = state.samPrompts.length === 0;
+  const endpoint = useAuto ? "/api/sam/auto" : "/api/sam/suggest";
+
   try {
-    const response = await fetch(`${apiBase}/api/sam/suggest`, {
+    const response = await fetch(`${apiBase}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1244,8 +1583,15 @@ async function runBackendSam() {
     }
     const result = await response.json();
     state.samSuggestions = result.masks || [];
-    state.selectedSamMaskId = state.samSuggestions[0]?.id || null;
-    state.selectedSamMaskIds = state.selectedSamMaskId ? [state.selectedSamMaskId] : [];
+    // Auto mode shows all candidates unselected for the analyst to QC and pick;
+    // prompted mode preselects the top mask.
+    if (useAuto) {
+      state.selectedSamMaskId = null;
+      state.selectedSamMaskIds = [];
+    } else {
+      state.selectedSamMaskId = state.samSuggestions[0]?.id || null;
+      state.selectedSamMaskIds = state.selectedSamMaskId ? [state.selectedSamMaskId] : [];
+    }
     state.samBackendNote = result.model?.note || "";
     state.samCandidateReady = state.samSuggestions.length > 0;
     state.samQcAccepted = false;
@@ -1253,7 +1599,8 @@ async function runBackendSam() {
     state.activeLayers.sam = true;
     renderLayerControls();
     renderMap();
-    showToast(`Backend SAM suggested ${state.samSuggestions.length} mask candidates for ${parcel.id}.`);
+    const verb = useAuto ? "Found" : "Suggested";
+    showToast(`${verb} ${state.samSuggestions.length} field boundaries.`);
   } catch (error) {
     state.samBackendNote = error.message;
     showToast(`SAM backend request failed: ${error.message}`);
@@ -1389,27 +1736,53 @@ function renderIntegrations() {
 function renderMap() {
   const svg = document.querySelector("#mapSvg");
   const epoch = data.epochs[state.epochIndex];
+  const tab = activeProductTab();
   document.querySelector("#epochText").textContent = `${epoch.label}: ${epoch.date} - ${epoch.note}`;
   document.querySelector("#mapStatus").textContent = `${epoch.label} ${epoch.date} imagery active`;
-  document.querySelector("#imageryStatus").textContent = `${data.basemap.provider} | ${data.basemap.rfpSpatialRequirement} display gate | aligned demo parcel overlay`;
+  document.querySelector("#imageryStatus").textContent = `${tab.title} · Insured fields`;
   renderBasemap();
   renderImageryCompliance();
 
-  const parcelMarkup = state.userParcels
+  const allParcels = [...data.parcels, ...state.userParcels];
+  // Only saved fields appear on the map; on the merged Fields tab that is the
+  // live-created portfolio, coloured by crop/risk once analysis is run.
+  const visibleParcels = tab.id === "lgnd"
+    ? allParcels.filter((parcel) => parcelEpochState(parcel).stressScore >= 45 || parcel.id === state.selectedParcelId)
+    : allParcels;
+
+  const parcelMarkup = visibleParcels
     .map((parcel) => {
       const selected = parcel.id === state.selectedParcelId ? "selected" : "";
       const temporal = parcelEpochState(parcel);
       const cropShort = data.crops[temporal.cropClass]?.short || "ML";
-      const opacity = state.activeLayers.crop || state.activeLayers.stress || state.activeLayers.yield ? 0.58 : 0.14;
+      const opacity = state.activeLayers.crop || state.activeLayers.stress || state.activeLayers.yield ? 0.5 : 0.2;
       const centroid = polygonCentroid(parcel.geometry);
+      const showLabel = selected || tab.id === "lgnd";
       return `
         <g class="parcel-group user-parcel ${selected}" data-parcel="${parcel.id}">
           <polygon points="${projectedPolygon(parcel)}" fill="${parcelColor(parcel)}" fill-opacity="${opacity}" />
-          <text x="${centroid.x.toFixed(1)}" y="${centroid.y.toFixed(1)}">${cropShort}</text>
+          ${showLabel ? `<text x="${centroid.x.toFixed(1)}" y="${centroid.y.toFixed(1)}">${cropShort}</text>` : ""}
         </g>
       `;
     })
     .join("");
+
+  const lgndMarkup = state.activeLayers.lgnd
+    ? visibleParcels
+        .filter((parcel) => parcelEpochState(parcel).stressScore >= 45)
+        .map((parcel) => {
+          const temporal = parcelEpochState(parcel);
+          const centroid = polygonCentroid(parcel.geometry);
+          const radius = 28 + temporal.stressScore * 0.34;
+          return `
+        <g class="lgnd-hotspot" data-parcel="${parcel.id}">
+          <circle cx="${centroid.x.toFixed(1)}" cy="${centroid.y.toFixed(1)}" r="${radius.toFixed(1)}" />
+          <text x="${centroid.x.toFixed(1)}" y="${(centroid.y - radius - 8).toFixed(1)}">Similar chip queue</text>
+        </g>
+      `;
+        })
+        .join("")
+    : "";
 
   const samMarkup = state.activeLayers.sam
     ? state.userParcels
@@ -1427,7 +1800,7 @@ function renderMap() {
         .join("")
     : "";
 
-  const gtMarkup = state.activeLayers.gt
+  const gtMarkup = state.activeLayers.gt && tab.id !== "lgnd"
     ? data.groundTruth
         .map((point) => {
           const projected = projectLonLat(point.lon, point.lat);
@@ -1441,7 +1814,7 @@ function renderMap() {
         .join("")
     : "";
 
-  const procurementMarkup = state.activeLayers.procurement
+  const procurementMarkup = state.activeLayers.procurement && tab.id !== "lgnd"
     ? data.procurementCenters
         .map((center) => {
           const projected = projectLonLat(center.lon, center.lat);
@@ -1456,13 +1829,10 @@ function renderMap() {
     : "";
 
   svg.innerHTML = `
-    <rect width="${mapViewBox.width}" height="${mapViewBox.height}" fill="rgba(7, 18, 15, 0.08)" />
-    <rect class="boundary" x="12" y="12" width="${mapViewBox.width - 24}" height="${mapViewBox.height - 24}" rx="2" />
-    ${
-      state.userParcels.length
-        ? ""
-        : `<text class="map-empty-state" x="500" y="303">Use the boundary annotation tool to save parcels</text>`
-    }
+    <rect width="${mapViewBox.width}" height="${mapViewBox.height}" fill="rgba(255, 255, 255, 0.04)" />
+    <rect class="boundary" x="20" y="20" width="${mapViewBox.width - 40}" height="${mapViewBox.height - 40}" rx="18" />
+    ${visibleParcels.length ? "" : `<text class="map-empty-state" x="500" y="303">Use the boundary annotation tool to save parcels</text>`}
+    ${lgndMarkup}
     ${parcelMarkup}
     ${samMarkup}
     ${gtMarkup}
@@ -1665,7 +2035,7 @@ function setupControls() {
 
   document.querySelectorAll(".export-action").forEach((button) => {
     button.addEventListener("click", () => {
-      showToast(`${button.dataset.export} export requested for crop, stress, yield, GT, and procurement layers.`);
+      showToast(`${button.dataset.export} export requested for crop, stress, yield, GT, LGND, and claim layers.`);
     });
   });
 
@@ -1680,13 +2050,18 @@ function setupControls() {
 async function boot() {
   data = await loadDemoData();
   if (!data) {
-    throw new Error("UPAHAR demo data could not be loaded from the backend or static fallback.");
+    throw new Error("Dashboard data could not be loaded from the backend or static fallback.");
   }
   initializeState();
+  state.lgndStatus = await loadLgndStatus();
+  state.mlValidation = await loadMlArtifact("mlValidation", "/api/ml/validation");
+  state.mlPredictions = await loadMlArtifact("mlPredictions", "/api/ml/predictions");
   renderStaticSurfaceBadges();
-  renderReviewerMode();
+  renderProductTabs();
+  renderProductFocus();
   renderLayerControls();
   renderMetrics();
+  renderHeroMetrics();
   renderLegend();
   renderMapModeControls();
   renderMap();
@@ -1694,6 +2069,8 @@ async function boot() {
   renderProcurement();
   renderEvidence();
   renderMlCapabilities();
+  renderMlValidation();
+  renderLgndFlow();
   renderSamWorkflow();
   renderFieldFeed();
   renderCompliance();
@@ -1703,6 +2080,12 @@ async function boot() {
   syncEpochSlider();
   setupControls();
   window.addEventListener("resize", renderMap);
+
+  // Deep-link to a tab: ?tab=parcel|sentinel|lgnd
+  const requestedTab = new URLSearchParams(window.location.search).get("tab");
+  if (requestedTab && productTabs.some((tab) => tab.id === requestedTab)) {
+    applyProductTab(requestedTab, false);
+  }
 }
 
 boot().catch((error) => {
@@ -1711,7 +2094,7 @@ boot().catch((error) => {
     <main class="app-shell">
       <section class="detail-panel">
         <p class="eyebrow">Backend unavailable</p>
-        <h1>UPAHAR demo data could not be loaded</h1>
+        <h1>Dashboard data could not be loaded</h1>
         <p class="muted-text">Start the backend with <code>python3 backend/server.py</code>, or open the app with app/data.js available.</p>
       </section>
     </main>

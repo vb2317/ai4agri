@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "modelVersion": "hgb-temporal-v0.1",
+    "model": "HistGradientBoosting",
+    "validationMethod": "leave-one-out on illustrative labeled set (synthetic intra-class variation)",
+    "imagerySource": "demo-synthetic",
+    "generatedAt": "2026-06-02T16:15:28+00:00",
+    "honestyNote": "Illustrative demo data: synthetic intra-class variation around the curated parcels, used so the matrix is legible. Not field-validated accuracy \u2014 replace with real labels + a holdout before any claim."
+  },
+  "classes": [
+    "Fallow",
+    "Gram",
+    "Paddy",
+    "Soybean",
+    "Wheat"
+  ],
+  "labelDistribution": {
+    "Paddy": 3,
+    "Soybean": 2,
+    "Gram": 1,
+    "Wheat": 1,
+    "Fallow": 1
+  },
+  "confusionMatrix": [
+    [
+      9,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      8,
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      7,
+      0,
+      2
+    ],
+    [
+      0,
+      0,
+      1,
+      8,
+      0
+    ],
+    [
+      0,
+      0,
+      1,
+      0,
+      8
+    ]
+  ],
+  "perClassRecall": {
+    "Fallow": {
+      "recall": 1.0,
+      "support": 9
+    },
+    "Gram": {
+      "recall": 0.889,
+      "support": 9
+    },
+    "Paddy": {
+      "recall": 0.778,
+      "support": 9
+    },
+    "Soybean": {
+      "recall": 0.889,
+      "support": 9
+    },
+    "Wheat": {
+      "recall": 0.889,
+      "support": 9
+    }
+  },
+  "overallAccuracy": 0.889,
+  "balancedAccuracy": 0.889,
+  "sampleSize": 8
+}
